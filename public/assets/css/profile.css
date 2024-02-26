@@ -1,0 +1,89 @@
+*{
+    transition: all .3s;
+}
+p,h6 {
+    margin: 0px;
+    padding: 0px;
+}
+.p-infos{
+    gap: 15px;
+}
+.no_user_found{
+    position: absolute;
+    top: 50%; 
+    right: 50%;
+    transform: translate(50%,-50%);
+}
+.profile-image{
+    width: 300px;
+}
+.show-info {
+    display: none; 
+}
+form label {
+    width: 350px;
+    height: 50px;
+    overflow: hidden;
+    background-color: rgb(241, 147, 147);
+    border-radius: 5px;
+}
+label:has(> input.show-info:checked){
+    width: 350px;
+    height: 100px;
+    background-color: rgba(147, 241, 194, 0.76);
+    box-shadow: 0px 0px 2px 2px rgba(117, 117, 117, 0.712) inset;
+    border-radius: 5px;
+}
+.contacts i{
+    cursor: pointer;
+}
+.facebook-icon:hover{
+    color: rgb(30, 126, 252);
+}
+.instagram-icon:hover{
+    color: transparent;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    background: -webkit-radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+.linkedin-icon:hover{
+    color: rgb(91, 153, 235);
+}
+.post-selector{
+    width: 700px;
+}
+.post-selector h3{
+    position: relative;
+    cursor: pointer;
+}
+.post-selector h3::after{
+    content: "";
+    display: block;
+    position: absolute;
+    width: fit-content;
+    top: 56px;
+    width: 100%;
+    height: 3px;
+    background: #000;
+    transition: transform 0.2s ease-in-out;
+    transform: scale(0);
+}
+.post-selector h3.actived::after{
+    transform: scale(1);
+}
+.posts .post{
+    border: 1px solid rgba(117, 117, 117, 0.7);
+    border-radius: 10px;
+}
+.remove-post{
+    border: 1px solid rgba(0,0,0,0) !important;
+}
+.remove-post *{
+    color: transparent;
+    background-color: transparent;
+}
+.no_posts{
+    margin-left: auto;
+    margin-right: auto;
+}

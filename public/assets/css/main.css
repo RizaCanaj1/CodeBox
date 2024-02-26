@@ -1,0 +1,91 @@
+.CodeBox{
+    margin-top: 12px;
+    transition: all 1s;
+    border-radius: 20px 20px 20px 0px;
+    background-color: rgba(0,0,0,0);
+    border: 2px solid rgb(0, 255, 157);
+    width: 50px;
+    height: 50px;
+    box-shadow: 2px -5px 0px 0px rgb(0, 226, 139),4px -10px 0px 0px rgb(0, 194, 120);
+    animation-name: codebox;
+    animation-duration: 1s;
+}
+.CodeBox p{
+    margin-top: 3px;
+    font-size:28px;
+    color: rgb(0, 174, 255);
+}
+.CodeBox p span{
+    transition: all .3s;
+    overflow:auto;
+    max-width: fit-content;
+    height: fit-content;
+    color: rgb(199, 135, 61);
+}
+.CodeBox:hover{
+    margin-top: 6px;
+    box-shadow: 0px 0px 0px 0px rgb(0, 255, 157);
+}
+.CodeBox:hover p span{
+    margin-left: 2px;
+    margin-right: 2px;
+    max-width: 0px;
+    height: 0px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+@keyframes codebox {
+  from {margin-top: 6px; box-shadow: 0px 0px 0px 0px rgb(0, 255, 157);}
+  to { box-shadow: 2px -5px 0px 0px rgb(0, 226, 139), 4px -10px 0px 0px rgb(0, 194, 120)}
+}
+.f-c{
+    margin-top: 70px;
+    height: 350px;
+    background-color: rgba(0,0,0,.2);
+    overflow: hidden;
+}
+.f-c *{
+    transition: all .3s;
+}
+.f-c img{
+    transition: all 1s;
+    width: 100%;
+}
+.f-c a{
+    text-decoration: none;
+    margin-left: 40%;
+    padding: 20px;
+    margin-top: 200px;
+    position: absolute;
+    color: white !important;
+    background-color: rgba(54, 54, 54, 0.7);
+}
+.f-c a:hover{
+    padding: 25px;
+    margin-top: 190px;
+    margin-left: 39.5%;
+}
+.f-c:hover img{
+    margin-top: -300px;
+}
+.navbar{
+    max-height: 50px;
+}
+.searchbar {
+    width: 20%;
+}
+.searchbar .form-control{
+    transition: all .2s;
+    border-radius: 15px;
+}
+.searchbar .form-control:focus{
+    text-align: center;
+    border: 1px solid black;
+    color: white;
+    box-shadow: 0px 0px 0px 20px rgb(160, 160, 160) inset;
+}
+.searchbar .form-control:focus::placeholder{
+    text-align: center;
+    color: white;
+}

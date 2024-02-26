@@ -1,0 +1,419 @@
+*{
+    transition: all .3s;
+    margin: 0px;
+    padding: 0px;
+}
+.pop_up{
+    transition: all .2s;
+}
+.pop_up.remove_popup{
+    color: rgba(0,0,0,0);
+    border: rgba(0,0,0,0);
+    background-color: rgba(0,0,0,0);
+}
+.left-container{
+    width: 70%;
+}
+.add-post {
+    height: 120px;
+    transition: all .3s;
+}
+.add-post{
+    overflow: hidden;
+    width: 40%;
+    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+}
+
+.add-post:hover{
+    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+}
+.opened{
+    box-shadow: 5px 5px 20vh 2px rgb(187, 187, 187)!important;
+    height: 450px;
+}
+i{
+    transition: all .3s;
+}
+#caret{
+    width: 25px;
+    height: 25px;
+    padding: 4px;
+    border-radius: 5px;
+    border: 1px solid rgb(105, 105, 105);
+}
+.rotate{
+    border: 1px solid red!important;
+    color: red;
+    rotate: 90deg;
+}
+.add-code,.add-media{
+    transition: all .3s;
+    background-color: rgba(50,50,50,.2);
+    border: 1px solid rgb(50,50,50);
+    border-radius: 5px;
+    padding: 5px;
+}
+.add-code:hover,.add-media:hover{
+    background-color: rgba(100, 100, 100, 0.2);
+    border: 1px solid rgb(100,100,100);
+    box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
+    border-radius: 5px;
+    padding: 5px;
+}
+.description{
+    width: 90%;
+    resize: none;
+    height: 150px;
+}
+.stories {
+    display: grid;
+    grid-template-columns: repeat(3,150px);
+    height: 160px;
+    gap: 24px ;
+}
+.m-story ,.i-story{
+    transition: all .3s;
+    border-radius: 10px 10px 0px 0px;
+    height: 150px;
+    width: 150px;
+    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+}
+.m-story:hover ,.i-story:hover{
+    border-radius: 10px 10px 0px 0px;
+    height: 160px;
+    width: 150px;
+    box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
+}
+.open-story{
+    position: absolute;
+    top:50px;
+    left: 50px;
+    width: 60%;
+    height: 80%;
+    box-shadow: 0px 0px 600px 100px black;
+    z-index: 3;
+}
+.open-story:hover{
+    position: absolute;
+    top:50px;
+    left: 50px;
+    width: 60%;
+    height: 80%;
+    box-shadow: 0px 0px 600px 100px black;
+}
+.i-story{
+    overflow: hidden;
+}
+.i-story img{
+    filter: blur(2px);
+    width: 100%;
+}
+.user-s img{
+    margin-top: -15px;
+    border: 1px solid black;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    z-index: 1;
+}
+.add-story {
+    border-radius: 10px 10px 0px 0px;
+    width: 100%;
+    height: 50%;
+    background-color: black;
+}
+.profile-chat{
+    width: 20%;
+    transition: all .3s;
+    position: fixed;
+    right: 50px;
+    top: 90px;
+}
+.profile-chat.sticky{
+    top: 10px;
+}
+.profile-chat.sticky .chats{
+    margin-top: 30px;
+    max-height: 500px;
+}
+.profile-chat .infos span{
+    color: white;
+    border-radius: 7px;
+    padding: 5px;
+    background-color: rgb(253, 83, 83);
+}
+.profile-chat .filter{
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+}
+.profile-chat .filter a{
+    width: 120px;
+    padding: 8px;
+    transition: all .3s;
+    border-radius: 15px;
+    text-align: center;
+    color: #000000;
+    transition: all .3s;
+    text-decoration: none;
+    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+}
+.profile-chat .filter a:hover{
+    font-size: 17px;
+    padding: 6px;
+    background-color: rgb(173, 171, 171);
+    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+}
+.profile-chat .chats{
+    transition: all .3s;
+    border-radius: 15px;
+    overflow-y: scroll;
+    max-height: 450px;
+    padding: 20px;
+}
+.profile-chat .chat{
+    margin-bottom: 20px;
+}
+.profile-chat .chat{
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+
+}
+.profile-chat .chat img{
+    border-radius: 50%;
+    border:1px solid rgb(50,50,50);
+    width: 40px;
+    height: 40px;
+}
+.posts{
+    display: grid;
+    grid-template-columns: 35% 35%;
+}
+.post *{
+    transition: all .3s;
+}
+.post{
+    height: fit-content;
+    transition: all .3s;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+}
+.post:hover {
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+}
+.post.post-focus{
+    position: absolute;
+    left:30px;
+    width: 60%;
+    box-shadow: 0px 0px 150px 2px rgb(134, 134, 134);
+}
+.post .from {
+    width: fit-content;
+}
+.post .from img{
+    border-radius: 50%;
+    border:1px solid rgb(50,50,50);
+    width: 30px;
+    height: 30px;
+}
+.post .from a:hover{
+    color: rgba(50, 70, 99, 0.7);
+}
+.post .codeblock{
+    border: 5px solid rgb(22, 22, 22);
+    padding: 7px;
+    border-radius: 5px;
+    background-color: rgb(50,50,50);
+    color: white;
+    width: 90%;
+    height: 300px;
+    overflow: scroll;
+}
+
+.post .codeblock::-webkit-scrollbar {
+    width: 10px;
+}
+.post .codeblock::-webkit-scrollbar-track {
+    background: rgb(44, 44, 44);
+}
+.post .codeblock::-webkit-scrollbar-thumb {
+    background: #000000;
+    border-radius: 5px;
+}
+.post .codeblock span[id^='line-']{
+    animation: code-revealer .5s;
+}
+@keyframes code-revealer {
+    from{
+        color:rgba(0,0,0,0);
+    }
+    to{
+        color: white;
+    }
+}
+
+.post .codeblock span[id^='line-']:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.post .codeblock span[id^='line-']:hover a{
+    color:rgb(131, 171, 223);
+}
+.post a{
+    text-decoration: none;
+    color: #000000;
+}
+.post .codeblock a{
+    color: rgba(250, 200, 200, 0.7);
+}
+.post .hide-code{
+    color:rgba(255, 255, 255, 0.3);
+}
+.post .hide-code a{
+    color:rgba(250, 200, 200, 0.4);
+}
+.post .hide-code:hover {
+    background-color: rgba(160, 160, 160, 0.1);
+}
+.post .hide-code:hover a{
+    color:rgba(131, 171, 223, 0.4);
+}
+.post i{
+    transition: all .4s;
+}
+.post .fa-comment:hover{
+    color: rgb(71, 169, 194);
+}
+.post .fa-comment.o-comments{
+    color: rgb(71, 169, 194);
+}
+.post .fa-box-open:hover{
+    color: rgb(253, 83, 83);
+}
+.post .pimage img{
+    width: 90%;
+}
+.post .p-mimage .hidden-images{
+    display: none;
+}
+.post .p-mimage{
+    margin-left: 25px;
+    gap: 10px;
+    display: grid;
+    grid-template-columns: 65% 35%;
+    grid-template-rows: auto auto;
+}
+.post .p-mimage img:first-child{
+    width: 90%;
+    grid-row: 1/3;
+}
+.post .p-mimage img{
+    width: 80%;
+}
+.post .p-mimage a{
+    width: 80%;
+    height: 90%;
+    text-align: center;
+    padding-top: 20px;
+    background-color: rgb(100,100,100);
+}
+.post.post-focus .p-mimage{
+    grid-template-columns: 50% 50% ;
+}
+.post.post-focus .p-mimage img:first-child{
+    width: 80%;
+    grid-row: 1/2!important;
+}
+.post.post-focus .p-mimage .hidden-images{
+    display: inline-block!important;
+}
+.post.post-focus .p-mimage a{
+    display: none;
+}
+.codebox-animation *{
+    transition: all .5s;
+}
+.post-btn{
+    border: 1px solid black;
+    border-radius: 5px;
+}
+.seethrow-btn{
+    background-color: rgba(0,0,0,0);
+    border: 0px;
+}
+.m_between_code{
+    transition-delay: .3s;
+}
+.btn-panimation .nr_of_code{
+    display: none;
+}
+.btn-panimation .m_between_code{
+    margin-left: 10px;
+}
+.btn-panimation p{
+    color: rgb(59, 187, 112);
+    rotate: 90deg;
+}
+.scroll-button {
+    position:fixed;
+    width: 40px;
+    height: 40px;
+    padding: 7px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.scroll-button:hover {
+    transition: all .3s;
+    padding: 2px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.code-bar i{
+    position: relative;
+    cursor: pointer;
+}
+.code-search{
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 12px;
+}
+.code-search input.form-control{
+    color: white;
+    height: 20px;
+    min-width: 100px;
+    animation: open-input .5s;
+    font-size:small;
+    background-color: rgb(59, 59, 59);
+}
+.code-search input.form-control:focus{
+    color: white;
+    box-shadow: none;
+    background-color: rgb(70, 70, 70);
+}
+
+@keyframes open-input {
+    from { width: 10px;}
+    to {min-width: 100px;}
+}
+.code-search p{
+    padding: 0px;
+    margin-top: 5px;
+    margin: 0px;
+}
+.mark_search{
+    background-color: rgb(253, 83, 83);
+    color: black;
+}
+.scrolled_to{
+    background-color: rgb(83, 253, 210) !important;
+}
+.sorted_counter{
+    height: 20px;
+    font-size:small;
+    background-color: rgb(59, 59, 59);
+    max-width: fit-content;
+} 

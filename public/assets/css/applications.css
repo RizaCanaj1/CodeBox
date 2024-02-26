@@ -1,0 +1,80 @@
+.applications{
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0; 
+    right: 0; 
+    margin: auto;
+    max-height: fit-content;
+    width: 700px;
+    box-shadow: 0px 0px 200px 20px black;
+    border: 2px solid grey;
+    border-radius: 5px;
+    z-index: 1;
+}
+a{
+    color: black;
+}
+.applications a{
+    text-decoration: none;
+}
+.user-checkbox{
+    transition: all .3s;
+    padding: 5px;
+    width: fit-content;
+    background-color: rgb(47, 149, 245);
+}
+.selector {
+    transition: all .3s;
+}
+.selector:focus,.selector:hover{
+    padding: 1px;
+    border: 1px solid black ;
+    box-shadow: 0px 0px 1px 1px rgba(0,0,0,0);
+}
+.selector:checked{
+    border: 2px solid white ;
+    box-shadow: 0px 0px 2px 2px black;
+}
+.user-checkbox:has(> .selector:checked) {
+    background-color: rgb(238, 120, 120);
+}
+.hide-applications{
+    box-shadow: 0px 0px 0px 0px rgba(0,0,0,0);
+    border: 0px;
+}
+.hide-animation{
+    transition: all .2s;
+    color:rgba(0,0,0,0)!important;
+}
+.hide-animation *{
+    color:rgba(0,0,0,0)!important;
+    border: 0px solid rgba(0,0,0,0) !important;
+    background-color: rgba(0,0,0,0) !important;
+}
+.hide-animation img{
+    width: 10px;
+    height: 10px;
+}
+.d-none-applications>.applications-form,.d-none-applications h2{
+    display: none!important;
+}
+a[class^='back_to']{
+    width: fit-content;
+    height: fit-content;
+}
+i.fa-solid{
+    transition: all .2s;
+    width: fit-content;
+    height: fit-content;
+}
+a[class^='back_to']:hover i.fa-solid{
+    color: white;
+    background-color: rgba(0,0,0,.25);
+}
+.user-img{
+    transition: all .5s;
+    width: 20%;
+    height: 20%;
+    margin: auto;
+}
