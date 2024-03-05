@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Posts;
 use App\Models\PostCodes;
 use App\Models\PostComments;
+use App\Models\Notifications;
 use Illuminate\Http\Request;
 use App\Models\PostInvitations;
 use Illuminate\Support\Facades\DB;
@@ -34,18 +35,33 @@ class CrudController extends Controller
     }
     public function add_comment(Request $request, $post_id)
     {
+        $post = Posts::where('id', $post_id)->get();
         $user_id = Auth::id();
         $comment = new PostComments();
         $comment->user_id = $user_id;
         $comment->post_id = $post_id;
         $comment->content = $request->input('content');
+        $shortenedText ='';
+        if (strlen($comment->content ) > 15) {
+            $shortenedText = substr($comment->content , 0, 15) . "...";
+        } else {
+            $shortenedText = $comment->content ;
+        }
+        $notification = [
+            'user_id'=>$post[0]['user_id'],
+            'from_user_id'=>$user_id,
+            'post_id'=>$post_id,
+            'title'=>$post[0]['title'].' | Comment',
+            'content'=>User::find($user_id)['name'].' commented : "'.$shortenedText.'"',
+        ];
+        if(!Notifications::create($notification)){
+            return response()->json(['error' => 'Failed to create notification'], 500);
+        }
         if (!$comment->save()) {
             return response()->json(['error' => 'Failed to add comment'], 500);
         }
-    
         return response()->json(['message' => 'Comment added successfully']);
 
-        // Return a response (e.g., success message, updated data)
     }
     public function get_comments(Request $request, $post_id)
     {

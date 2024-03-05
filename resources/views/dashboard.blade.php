@@ -103,9 +103,13 @@
         </div>
         <div class='notifications d-none'>
         @if($notifications->count()>0)
+        
             @for($i=0;$i<($notifications->count());$i++)
+            @php 
+                $type_of = explode('|', $notifications[$i]['title'])[1];
+            @endphp
                 <div class="notification {{$notifications[$i]['status']}}">
-                    <h6 class="nid-{{$notifications[$i]['id']}}" id="id-{{$notifications[$i]['post_id']}}">{{$notifications[$i]['title']}}</h6>
+                    <h6 class="nid-{{$notifications[$i]['id']}} {{$type_of}}" id="id-{{$notifications[$i]['post_id']}}">{{$notifications[$i]['title']}}</h6>
                     <p>From: <a href="/profile?id={{$notifications[$i]['from_user_id']}}">{{Illuminate\Foundation\Auth\User::find($notifications[$i]['from_user_id'])['name']}}</a></p>
                     <p>{{$notifications[$i]['content']}}</p>
                     @if($i != $notifications->count()-1)
@@ -151,7 +155,7 @@
             @for($i=0;$i<($posts->count());$i++)
                 @if($i%2==0)
                     @if($posts[$i]['type']=='question')
-                    <div class="pid-{{$posts[$i]['id']}} post pquestion mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pquestion mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -188,7 +192,7 @@
                         </form>
                     </div>
                     @elseif($posts[$i]['type']=='showcase')
-                    <div class="pid-{{$posts[$i]['id']}} post pshowcase mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pshowcase mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3 >{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -244,7 +248,7 @@
                         </form>
                     </div>
                     @elseif($posts[$i]['type']=='invitation')
-                    <div class="pid-{{$posts[$i]['id']}} post pinvitation mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pinvitation mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -284,7 +288,7 @@
                         </div>
                     </div>
                     @elseif($posts[$i]['type']=='community')
-                    <div class="pid-{{$posts[$i]['id']}} post pcommunity mt-4 ms-4 mb-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pcommunity mt-4 ms-4 mb-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3 class='w-75'>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -357,7 +361,7 @@
             @for($i=0;$i<($posts->count());$i++)
                 @if($i%2!=0)
                     @if($posts[$i]['type']=='question')
-                    <div class="pid-{{$posts[$i]['id']}} post pquestion mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pquestion mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -394,7 +398,7 @@
                         </form>
                     </div>
                     @elseif($posts[$i]['type']=='showcase')
-                    <div class="pid-{{$posts[$i]['id']}} post pshowcase mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pshowcase mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3 >{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -449,7 +453,7 @@
                         </form>
                     </div>
                     @elseif($posts[$i]['type']=='invitation')
-                    <div class="pid-{{$posts[$i]['id']}} post pinvitation mt-4 ms-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pinvitation mt-4 ms-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>
@@ -488,7 +492,7 @@
                         </div>
                     </div>
                     @elseif($posts[$i]['type']=='community')
-                    <div class="pid-{{$posts[$i]['id']}} post pcommunity mt-4 ms-4 mb-4 bg-light">
+                    <div class="pid-{{$posts[$i]['id']}} post pcommunity mt-4 ms-4 mb-4 bg-light" id="{{$posts[$i]['id']}}">
                         <div class='title-from d-flex justify-content-between gap-2'>
                             <h3 class='w-75'>{{$posts[$i]['title']}}</h3>
                             <div class='from d-flex gap-3'>

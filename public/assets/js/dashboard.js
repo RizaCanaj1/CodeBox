@@ -145,6 +145,7 @@ document.querySelectorAll('form.add-comment').forEach(add_comment=>{
         .then(response => {
             this.querySelector('input[type="text"]').value = '';
             console.log('Form submitted successfully!', response);
+            comments.forEach(c => {if(c.className =='text-danger')c.classList.add('d-none')})
             fetchComments(post_id,comments_text);
             this.querySelector('input[type="text"]').placeholder = 'Comment added successfully';
             setTimeout(() => {
@@ -164,6 +165,7 @@ document.querySelectorAll('form.add-comment').forEach(add_comment=>{
 
 function fetchComments(postId) {
     comments = document.querySelectorAll(`#comments_id-${postId} p`)
+    
     let comments_text = []
     comments.forEach(c => {
         comments_text.push(c.innerHTML)
@@ -213,20 +215,43 @@ notification_span.addEventListener('click',()=>{
     else
     notifications.classList.add('d-none')
 })
-notifications.addEventListener('transitionend', function() {
-    if (notifications.scrollHeight === notifications.clientHeight) {
+
+notifications.addEventListener('animationend', function() {
+    console.log(notifications.scrollHeight)
+    
+    console.log('Transition has ended');
+    if (notifications.scrollHeight > 350) {
         notifications.style.overflowY = 'scroll';
     } else {
         notifications.style.overflowY = 'hidden';
     }
+    
 });
 notification.forEach(n =>{
     n.querySelector('h6').addEventListener('click',e=>{
+        let type_of = e.target.className.split(' ')[2]
         n.classList.remove('delivered')
-        let n_id = e.target.className.split('-')[1]
+        let n_id = e.target.className.split(' ')[0].split('-')[1]
         fetch(`read_notification/${n_id}`, {
             method: 'GET'
         })
-        window.location.href = '../group/'+e.target.id.split('-')[1]
+        switch(type_of.toLowerCase() ){
+            case 'status':
+                window.location.href = '../group/'+e.target.id.split('-')[1]
+            break;
+            case 'comment':
+                window.location.href = '#'+e.target.id.split('-')[1]
+                document.querySelectorAll('.selected-post').forEach(e=>e.classList.remove('selected-post'))
+                document.getElementById(`${e.target.id.split('-')[1]}`).classList.add('selected-post')
+            break;
+            case 'applicant':
+                window.location.href = '../applications/'+e.target.id.split('-')[1]
+            break;
+            default:
+            break;
+        }
     })
 })
+if(window.location.href.split('#')[1]!= ''){
+    document.getElementById(`${window.location.href.split('#')[1]}`).classList.add('selected-post')
+}

@@ -36,7 +36,7 @@ class ApplicationsController extends Controller
             'user_id'=>$post[0]['user_id'],
             'from_user_id'=>$auth_id,
             'post_id'=>$post[0]['id'],
-            'title'=>$post[0]['title'].' | New applicant',
+            'title'=>$post[0]['title'].' | Applicant',
             'content'=>User::find($auth_id)['name'].' applied to your invitation.',
         ];
         if(PostInvitations::create($data)){
