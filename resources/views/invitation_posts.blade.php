@@ -1,7 +1,22 @@
 <x-app-layout>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <link rel="stylesheet" href="../assets/css/dashboard.css"/>
+    <pre>
+    @php
+        $notifications = App\Models\Notifications::where('user_id','=',auth()->id())->orderBy('id', 'DESC')->get();
+    @endphp
+    </pre>
+    @if (session()->has('pop_up'))
+        @php
+            $pop_up = session('pop_up');
+        @endphp
+        <div class="alert alert-info mb-4 w-75 pop_up">
+            <ul>
+                <li>{{ $pop_up }}</li>
+            </ul>
+        </div>
+    @endif
     <div class="left-container">
         @if ($errors->any())
             <div class="alert alert-info mb-4">
@@ -54,7 +69,8 @@
             <div class='stories mt-4'>
                 <div class='m-story bg-light'>
                     <div class='add-story d-flex justify-content-center align-items-center'>
-                        <i class='fa-solid fa-plus text-white'></i>
+                        <label for="story"><i class='fa-solid fa-plus text-white'></i></label>
+                        <input type="file" name="story[]" class="form-control story-media d-none" id='story' accept='image/video' multiple /> 
                     </div>
                     <div class='d-flex justify-content-center user-s'>
                         <img src="./assets/images/user.png" alt="y-story">
@@ -83,8 +99,31 @@
     <div class='profile-chat'>
         <p>Infos:</p>
         <div class='infos'>
-            <p>Invitations <span>0</span></p>
-            <p>Post notifications <span>0</span></p>
+            <p>Notifications <span class='notifications_btn'>{{$notifications->where('status','=','delivered')->count()}}</span></p>
+        </div>
+        <div class='notifications d-none'>
+        @if($notifications->count()>0)
+        
+            @for($i=0;$i<($notifications->count());$i++)
+            @php 
+                $type_of = explode('|', $notifications[$i]['title'])[1];
+            @endphp
+                <div class="notification {{$notifications[$i]['status']}}">
+                    <h6 class="nid-{{$notifications[$i]['id']}} {{$type_of}}" id="id-{{$notifications[$i]['post_id']}}">{{$notifications[$i]['title']}}</h6>
+                    <p>From: <a href="/profile?id={{$notifications[$i]['from_user_id']}}">{{Illuminate\Foundation\Auth\User::find($notifications[$i]['from_user_id'])['name']}}</a></p>
+                    <p>{{$notifications[$i]['content']}}</p>
+                    @if($i != $notifications->count()-1)
+                    <hr>
+                    @endif
+                </div>
+            @endfor
+        @else
+            <div class="notification text-danger">
+                <h6>No notifications</h6>
+            </div>
+        @endif
+        
+
         </div>
         <hr/>
         <p>Filter:</p>
