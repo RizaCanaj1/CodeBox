@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Posts;
 use App\Models\PostCodes;
 use App\Models\PostComments;
 use Illuminate\Http\Request;
@@ -12,7 +13,14 @@ use Illuminate\Support\Facades\Auth;
 
 
 class CrudController extends Controller
-{
+{   
+    public function show_group($groupId){
+        $check_user = PostInvitations::where('from_user_id', auth()->id())->where('post_id', $groupId)->where('status', 'approved')->get()->count();
+        $check_creator = Posts::where('id','=', $groupId)->where('user_id', auth()->id())->get()->count();
+        if($check_user == 0 && $check_creator == 0) return redirect()->route('applications', ['id' => $groupId]);
+        
+        return view('groups', compact('groupId'));
+    }
     public function get_all_users()
     {
         return view('users', ['users' => User::all()]);

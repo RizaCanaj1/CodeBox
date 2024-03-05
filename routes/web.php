@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\CrudController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ApplicationsController;
@@ -29,12 +30,13 @@ Route::get('/get-user/{user_id}', [CrudController::class, 'get_user']);
 Route::get('/get-post-code/{id}', [CrudController::class, 'post_codes'])->name('post_codes');
 Route::get('/get-group-users/{id}',[CrudController::class,'get_group_users'])->name('get_group_users');
 Route::get('/get-posts-from-user/{id}', [PostController::class, 'get_posts_from_user'])->name('posts_from_user');
+Route::get('/read_notification/{id}', [NotificationsController::class, 'read_notification'])->name('read_notification');
 
 Route::get('/applications/{id}',  [ApplicationsController::class, 'get_applications'])->name('applications');
 Route::post('/applications/{id}',  [ApplicationsController::class, 'apply'])->name('applications');
 Route::get('/handle_applications/{id}',[ApplicationsController::class, 'handle_applications'])->name('handle_applications');
 
-Route::get('/group/{id}',function(){ return view('groups');})->name('group');
+Route::get('/group/{id}',[CrudController::class,'show_group'])->name('group');
 Route::get('/invitation', function () { return view('invitation_posts');});
 Route::get('/showcase', function () { return view('showcase_posts');});
 Route::get('/question', function () { return view('question_posts');});

@@ -12,6 +12,9 @@ const comments_btn = document.querySelectorAll('.fa-comment');
 const add_comment = document.querySelectorAll('.add-comment');
 const my_story = document.querySelector('.m-story');
 const popup = document.querySelector('.pop_up');
+const notification_span = document.querySelector('.notifications_btn');
+const notifications = document.querySelector('.notifications');
+const notification = document.querySelectorAll('.notification');
 let postUpdateInterval = null;
 
 let comments = [];
@@ -93,38 +96,6 @@ comments_btn.forEach(comment_btn =>{
         }
     })
 })
-function formatXml(node, level) {
-    let formattedString = "\n";
-    for (let i = 0; i < level; i++) {
-        formattedString += "  ";
-    }
-    formattedString += `<${node.nodeName}`;
-    if (node.attributes) {
-        for (let i = 0; i < node.attributes.length; i++) {
-            formattedString += ` ${node.attributes[i].name}="${node.attributes[i].value}"`;
-        }
-    }
-    if (node.childNodes.length > 0) {
-        formattedString += ">";
-        for (let i = 0; i < node.childNodes.length; i++) {
-            if (node.childNodes[i].nodeType === 1) {
-                formattedString += formatXml(node.childNodes[i], level + 1);
-            } else if (node.childNodes[i].nodeType === 3) {
-                formattedString += node.childNodes[i].nodeValue.trim();
-            }
-        }
-        formattedString += `\n`;
-        for (let i = 0; i < level; i++) {
-            formattedString += "  ";
-        }
-        formattedString += `</${node.nodeName}>`;
-    } else {
-        formattedString += `/>`;
-    }
-    formattedString += "\n";
-    return formattedString;
-}
-
 
 view_more.forEach(view=>{
     view.addEventListener('click',()=>{
@@ -136,6 +107,7 @@ view_more.forEach(view=>{
 })
 window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
+        my_story.classList.remove('open-story');
         removePostFocus();
     }
 });
@@ -167,7 +139,7 @@ document.querySelectorAll('form.add-comment').forEach(add_comment=>{
         });
         const formData = new FormData(this); 
         fetch(`add-comment/${post_id}`, {
-            method: 'POST', // or 'PUT', 'GET', etc. depending on your API
+            method: 'POST',
             body: formData
         })
         .then(response => {
@@ -234,3 +206,27 @@ if (popup) {
         popup.classList.add('d-none');
     }, 3800);
 }
+notification_span.addEventListener('click',()=>{
+    console.log(notifications.className.split(' '))
+    if(notifications.className.split(' ')[1] =='d-none')
+    notifications.classList.remove('d-none')
+    else
+    notifications.classList.add('d-none')
+})
+notifications.addEventListener('transitionend', function() {
+    if (notifications.scrollHeight === notifications.clientHeight) {
+        notifications.style.overflowY = 'scroll';
+    } else {
+        notifications.style.overflowY = 'hidden';
+    }
+});
+notification.forEach(n =>{
+    n.querySelector('h6').addEventListener('click',e=>{
+        n.classList.remove('delivered')
+        let n_id = e.target.className.split('-')[1]
+        fetch(`read_notification/${n_id}`, {
+            method: 'GET'
+        })
+        window.location.href = '../group/'+e.target.id.split('-')[1]
+    })
+})

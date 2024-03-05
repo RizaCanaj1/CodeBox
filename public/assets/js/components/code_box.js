@@ -278,3 +278,34 @@ function animateCodeLines(code,lines, index = 0) {
         }
     }
 }
+function formatXml(node, level) {
+    let formattedString = "\n";
+    for (let i = 0; i < level; i++) {
+        formattedString += "  ";
+    }
+    formattedString += `<${node.nodeName}`;
+    if (node.attributes) {
+        for (let i = 0; i < node.attributes.length; i++) {
+            formattedString += ` ${node.attributes[i].name}="${node.attributes[i].value}"`;
+        }
+    }
+    if (node.childNodes.length > 0) {
+        formattedString += ">";
+        for (let i = 0; i < node.childNodes.length; i++) {
+            if (node.childNodes[i].nodeType === 1) {
+                formattedString += formatXml(node.childNodes[i], level + 1);
+            } else if (node.childNodes[i].nodeType === 3) {
+                formattedString += node.childNodes[i].nodeValue.trim();
+            }
+        }
+        formattedString += `\n`;
+        for (let i = 0; i < level; i++) {
+            formattedString += "  ";
+        }
+        formattedString += `</${node.nodeName}>`;
+    } else {
+        formattedString += `/>`;
+    }
+    formattedString += "\n";
+    return formattedString;
+}

@@ -23,7 +23,7 @@ class PostController extends Controller
     public function create_post(Request $request)
     {
         $request->validate([
-            'code'=>'required',
+            //'code'=>'required',
             'type' => 'required|string',
             'title' => 'required|string',
             'content' => 'required|string'
