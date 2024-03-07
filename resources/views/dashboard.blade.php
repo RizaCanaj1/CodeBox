@@ -147,11 +147,11 @@
             
         </div>
     </div>
-    @php
+    <!--@php
         $posts = App\Models\Posts::orderByRaw('RAND()')->get();
-    @endphp
+    @endphp-->
     <div class='posts'>
-        <div>
+        <!--<div>
             @for($i=0;$i<($posts->count());$i++)
                 @if($i%2==0)
                     @if($posts[$i]['type']=='question')
@@ -560,10 +560,11 @@
                     @endif
                 @endif
             @endfor
-        </div>
+        </div>-->
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/components/post.js"></script>
     <script src="assets/js/components/code_box.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

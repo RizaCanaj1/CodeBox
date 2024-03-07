@@ -1,4 +1,5 @@
-
+setTimeout(()=>{
+    
 let extension;
 let code_boxes
 let code_opened = false;
@@ -309,3 +310,4 @@ function formatXml(node, level) {
     formattedString += "\n";
     return formattedString;
 }
+},500)

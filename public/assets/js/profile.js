@@ -77,3 +77,12 @@ fetch(`get-posts-from-user/${user_id}`)
 .catch(error => {
     console.error('Error getting posts:', error);
 })
+window.addEventListener('scroll',()=>{
+    let profile = document.querySelector('.profile-bar');
+    if(window.scrollY<200){
+        profile.classList.remove('right-bar')
+    }
+    if(window.scrollY>450){
+        profile.classList.add('right-bar')
+    }
+})

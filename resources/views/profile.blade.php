@@ -6,12 +6,12 @@
     <body class="font-sans antialiased">
     <div class='container'>
         <div class='mt-5'>
-            <div class='d-flex gap-5'>
+            <div class='profile-bar'>
                 <div>
                     <img class="profile-image rounded-circle" src="../assets/images/user.png" alt="User-image">
                 </div>
                 <div>
-                <h1 class='profile-name'>Profile-name</h1>
+                    <h1 class='profile-name'>Profile-name</h1>
                     <h4>Infos:</h4>
                     <div class='p-infos'>
                     <form class='d-flex flex-column gap-2'>
@@ -29,7 +29,7 @@
                     </form>
                     </div>
                 </div>
-                <div>
+                <div class='m-info'>
                     <h1>Contacts:</h1>
                     <div class='contacts d-flex gap-2 my-2'>
                         <i class="fa-brands fa-facebook fa-2x facebook-icon"></i>

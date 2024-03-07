@@ -1,3 +1,7 @@
+:root{
+    --color1:rgb(202, 21, 21);
+    --color2:rgb(49, 168, 152);
+}
 .CodeBox{
     margin-top: 12px;
     transition: all 1s;
@@ -39,36 +43,6 @@
   from {margin-top: 6px; box-shadow: 0px 0px 0px 0px rgb(0, 255, 157);}
   to { box-shadow: 2px -5px 0px 0px rgb(0, 226, 139), 4px -10px 0px 0px rgb(0, 194, 120)}
 }
-.f-c{
-    margin-top: 70px;
-    height: 350px;
-    background-color: rgba(0,0,0,.2);
-    overflow: hidden;
-}
-.f-c *{
-    transition: all .3s;
-}
-.f-c img{
-    transition: all 1s;
-    width: 100%;
-}
-.f-c a{
-    text-decoration: none;
-    margin-left: 40%;
-    padding: 20px;
-    margin-top: 200px;
-    position: absolute;
-    color: white !important;
-    background-color: rgba(54, 54, 54, 0.7);
-}
-.f-c a:hover{
-    padding: 25px;
-    margin-top: 190px;
-    margin-left: 39.5%;
-}
-.f-c:hover img{
-    margin-top: -300px;
-}
 .navbar{
     max-height: 50px;
 }
@@ -88,4 +62,86 @@
 .searchbar .form-control:focus::placeholder{
     text-align: center;
     color: white;
+}
+.welcome{
+    width: 100%;
+    height: 50vh;
+    margin: auto;
+    background: linear-gradient(90deg, var(--color1)  30%, var(--color2) 100%);
+    text-align: center;
+    animation: welcome 2s;
+    animation-duration: 2s;
+}
+.first-text{
+    padding-top: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    animation: first_text 2s;
+    animation-duration: 2s;
+    transition: all .2s;
+}
+.first-text span{
+    position: relative;
+}
+.first-text span::after {
+    overflow: hidden;
+    content: 'Share';
+    position: absolute;
+    color: black;
+    left: 0;
+    bottom: 0px; 
+    width: 0px; 
+    height: 50px;
+    border-radius: 10px;
+    background-color: rgb(255, 199, 125); 
+    transition: all 0.3s ease, bottom 0.3s ease;
+    opacity: 0;
+}
+
+.first-text span:hover::after {
+    opacity: 1;
+    width: 165px;
+    cursor: pointer;
+}
+.first-text span.clicked:hover::after{
+    white-space: nowrap;
+    content: 'Share your work!';
+    width: 475px;
+    background-color:  rgb(140, 255, 125);
+}
+.first-text span.second::before{
+    overflow: hidden;
+    content: 'Start now for free';
+    position: absolute;
+    color: rgba(0, 0, 0, 0.37);
+    left: 50px;
+    top: 70px; 
+    width: 375px; 
+    height: 50px;
+    border-radius: 10px;
+    font-size:x-large;
+    transition: all 0.3s ease, bottom 0.3s ease;
+    opacity: 0.5;
+    cursor: pointer;
+}
+.first-text span.second:hover::before{
+    color: rgba(0, 0, 0, 0.651);
+    background-color: rgba(80, 66, 47, 0.5); 
+    border: 2px;
+    opacity: 1;
+}
+@keyframes first_text {
+    0%{
+        opacity: 0;
+    }
+    50%{
+        opacity: 0;
+    }
+    to{
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+@keyframes welcome {
+    from{
+        width: 0px;
+    }
 }

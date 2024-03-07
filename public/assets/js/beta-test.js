@@ -12,3 +12,6 @@ jQuery.get(`./storage/codes/${file}`,function (data){
     iframeDocument.close();
 
 })
+.fail(function () {
+    document.querySelector('.informations').innerHTML=`Error: This file doesn't exist`
+});

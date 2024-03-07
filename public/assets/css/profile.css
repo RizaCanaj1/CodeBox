@@ -50,6 +50,46 @@ label:has(> input.show-info:checked){
 .linkedin-icon:hover{
     color: rgb(91, 153, 235);
 }
+.profile-bar{
+    display: flex;
+    gap: 50px;
+    position: static;
+    flex-direction: row;
+    animation: show_normal_bar 1s;
+}
+@keyframes show_normal_bar {
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+.profile-bar.right-bar{
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 25px;
+    position: fixed;
+    flex-direction: column;
+    right: 100px;
+    top: 15px;
+    animation: show_right_bar 1s;
+}
+.profile-bar.right-bar .profile-image{
+    margin-top: 25px;
+    width: 250px;
+}
+.profile-bar.right-bar .m-info{
+    grid-column: 1/3;
+}
+@keyframes show_right_bar {
+    from{
+        top: -1000px;
+    }
+    to{
+        top: 15px;
+    }
+}
 .post-selector{
     width: 700px;
 }

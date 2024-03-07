@@ -26,6 +26,36 @@ class CrudController extends Controller
     {
         return view('users', ['users' => User::all()]);
     }
+    public function get_posts(){
+        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username')->get();
+        
+        foreach ($posts as $post) {
+            $post->auth_id = auth()->id();
+            if($post->type == 'community'){
+                $media = $post->media()->pluck('source')->toArray();
+                $post->media = $media ;
+            }
+            else if($post->type == 'showcase'){
+                $code = $post->code()->pluck('source')->toArray();
+                $post->code = $code ;
+            }
+            else if($post->type == 'invitation'){
+                $invitation = PostInvitations::where('from_user_id', auth()->id())->where('post_id', $post->id)->get('status');
+                $applied = $invitation->count();
+                $post->applied = $applied;
+                if($applied == 1){
+                    $post->invitation_status = $invitation[0]->status;
+                }
+                else if($applied > 1){
+                    $post->invitation_status = $invitation[count($invitation) - 1]->status;
+                }
+            }
+            $comments = PostComments::where('post_id', $post->id)->get();
+            $post->comments = $comments;
+        }
+        return response()->json($posts);
+    }
+    
     public function post_codes($id){
         $data = PostCodes::where('post_id', $id)->get();
         if (!$data) {

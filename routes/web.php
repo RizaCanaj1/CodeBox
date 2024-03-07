@@ -26,7 +26,9 @@ Route::post('/dashboard',[PostController::class, 'create_post'])->name('create_p
 Route::post('/add-comment/{post_id}', [CrudController::class, 'add_comment']);
 
 Route::get('/get-comments/{post_id}', [CrudController::class, 'get_comments']);
+
 Route::get('/get-user/{user_id}', [CrudController::class, 'get_user']);
+Route::get('/get-posts', [CrudController::class, 'get_posts'])->name('posts');
 Route::get('/get-post-code/{id}', [CrudController::class, 'post_codes'])->name('post_codes');
 Route::get('/get-group-users/{id}',[CrudController::class,'get_group_users'])->name('get_group_users');
 Route::get('/get-posts-from-user/{id}', [PostController::class, 'get_posts_from_user'])->name('posts_from_user');
