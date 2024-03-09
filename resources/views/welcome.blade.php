@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="assets/css/main.css"/>
     </head>
     <body class='bg-dots-darker bg-center bg-gray-100'>
-        <div class="relative min-h-screen  selection:bg-red-500 selection:text-white">
+    <div class="relative min-h-screen  selection:bg-red-500 selection:text-white">
         <div class="sm:top-0 d-flex justify-content-between p-6 z-10 navbar">
             <div class='sm:absolute CodeBox d-flex justify-content-center ms-3'>
                 <p>
@@ -23,29 +23,28 @@
                 </p>
             </div>
             @if (Route::has('login'))
-                <div class='sm:absolute'>
+            <div class='sm:absolute'>
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</a>
+                <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</a>
                 @else
-                    <a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</a>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="ml-4 font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</a>
-                    @endif
-                @endauth
-                </div>    
-            @endif
-            </div>
-            <br>
-            <div class='mt-5 welcome'>
-                <h1 class='text-center first-text'><span>Home</span> of your experience</h1>
-            </div>
-            <div>
-                
-            </div>
-
+                <a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</a>
+                @if (Route::has('register'))
+                <a href="{{ route('register') }}" class="ml-4 font-semibold text-gray-600 hover:text-gray-900 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</a>
+                @endif @endauth
+            </div>    
+        @endif
         </div>
-        
-    </body>
+        <br>
+        <div class='mt-5 welcome'>
+            <h1 class='text-center first-text'><span>Home</span> of your experience</h1>
+            <div class='welcome_code'>
+                <pre></pre>
+            </div>
+        </div>
+
+    </div>
     <script src="assets/js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    </body>
+    
 </html>

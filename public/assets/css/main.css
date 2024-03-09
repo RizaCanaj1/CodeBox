@@ -64,11 +64,12 @@
     color: white;
 }
 .welcome{
+    position: relative;
+    overflow: hidden;
     width: 100%;
-    height: 50vh;
+    height: 650px;
     margin: auto;
-    background: linear-gradient(90deg, var(--color1)  30%, var(--color2) 100%);
-    text-align: center;
+    background: rgb(24, 24, 24);
     animation: welcome 2s;
     animation-duration: 2s;
 }
@@ -78,9 +79,11 @@
     animation: first_text 2s;
     animation-duration: 2s;
     transition: all .2s;
+    
 }
 .first-text span{
     position: relative;
+    z-index: 2;
 }
 .first-text span::after {
     overflow: hidden;
@@ -123,11 +126,73 @@
     opacity: 0.5;
     cursor: pointer;
 }
+.welcome_code{
+    margin-left: 6%;
+    width: 75%;
+    position: absolute;
+    top: 10px;
+    z-index: 1;
+    perspective:1000px;
+}
+.welcome_code *{
+    transition: all .2s;
+}
+.welcome_code pre {
+    height: fit-content;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    white-space: pre-wrap;
+    cursor:default;
+    animation: rotate_code;
+    animation-duration: 2s;
+    transform: rotateY(-15deg);
+}
+.welcome_code pre .line {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    display: flex;
+    display: block;
+}
+.welcome_code pre .line:hover {
+    margin-bottom: 5px;
+    margin-top: 1px;
+}
+.welcome_code pre .arrow{
+    color: rgb(51, 146, 110);
+}
+.welcome_code pre .outside{
+    color: rgb(148, 48, 48);
+}
+.welcome_code pre .inside{
+    color: rgb(26, 101, 145);
+}
+.welcome_code pre .line:hover .arrow{
+    text-shadow: 0px 15px 5px rgba(214, 158, 158, .5);
+    color: rgb(56, 105, 23);
+}
+.welcome_code pre .line:hover .outside{
+    text-shadow: 0px 15px 5px rgba(148, 48, 48,.5);
+    color: rgb(26, 101, 145);
+}
+.welcome_code pre .line:hover .inside{
+    text-shadow: 0px 15px 5px rgba(26, 101, 145, .5);
+    color: rgb(148, 48, 48);
+}
 .first-text span.second:hover::before{
     color: rgba(0, 0, 0, 0.651);
     background-color: rgba(80, 66, 47, 0.5); 
     border: 2px;
     opacity: 1;
+}
+@keyframes  rotate_code {
+    from{
+        transform: rotateY(0deg);
+    }
+    to{
+        transform: rotateY(-15deg);
+    }
+    
 }
 @keyframes first_text {
     0%{
