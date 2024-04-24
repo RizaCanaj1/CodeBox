@@ -82,7 +82,5 @@ div[class^='message-'] pre{
     border-radius: 50%;
 }
 .remove-previous-screen *{
-    border: 0px;
-    color:rgba(0,0,0,0);
-    box-shadow: 0px 0px 0px 0px rgba(0,0,0,0);
+    opacity: 0;
 }

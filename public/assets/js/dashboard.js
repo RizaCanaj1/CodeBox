@@ -101,14 +101,28 @@ notifications.addEventListener('animationend', function() {
     }
     
 });
+
 notification.forEach(n =>{
     n.querySelector('h6').addEventListener('click',e=>{
         let type_of = e.target.className.split(' ')[2]
         n.classList.remove('delivered')
+        
         let n_id = e.target.className.split(' ')[0].split('-')[1]
         fetch(`read_notification/${n_id}`, {
             method: 'GET'
         })
+        .then(
+            fetch(`get_notifications`)
+            .then(response=>response.json())
+            .then(data=>{ 
+                if(parseInt(notification_span.innerHTML)!=data.delivered){
+                   
+                    notification_span.classList.add('updating')
+                    setTimeout(()=>{notification_span.classList.remove('updating'); notification_span.innerHTML = data.delivered},300)
+                }
+            })
+        )
+        
         switch(type_of.toLowerCase() ){
             case 'status':
                 window.location.href = '../group/'+e.target.id.split('-')[1]
@@ -126,6 +140,9 @@ notification.forEach(n =>{
         }
     })
 })
-if(window.location.href.split('#')[1]!= undefined){
-    document.getElementById(`${window.location.href.split('#')[1]}`).classList.add('selected-post')
-}
+setTimeout(()=>{
+    if(window.location.href.split('#')[1]!= undefined){
+        window.location.href = '#'+window.location.href.split('#')[1]
+        document.getElementById(`${window.location.href.split('#')[1]}`).classList.add('selected-post')
+    }
+},1000)

@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Posts;
 use App\Models\PostCodes;
 use App\Models\PostComments;
-use App\Models\Notifications;
 use Illuminate\Http\Request;
+use App\Models\Notifications;
 use App\Models\PostInvitations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 
 class CrudController extends Controller
@@ -22,12 +23,20 @@ class CrudController extends Controller
         
         return view('groups', compact('groupId'));
     }
+    public function get_auth (){
+        return response()->json(auth()->id());
+    }
+    public function get_role (){
+        $role = Auth::user()->roles->pluck('name')->implode(',');
+        return response()->json($role);
+    }
     public function get_all_users()
     {
-        return view('users', ['users' => User::all()]);
+        $users = User::all(['id', 'name']);
+        return response()->json($users);
     }
     public function get_posts(){
-        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username')->get();
+        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->get();
         
         foreach ($posts as $post) {
             $post->auth_id = auth()->id();
@@ -103,16 +112,26 @@ class CrudController extends Controller
     }
     public function get_user(Request $request, $user_id)
     {
-        $data = User::find($user_id);
+        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email')->find($user_id);
         if (!$data) {
             return response()->json(['error' => 'User not found'], 404); 
         }
         return response()->json($data);
     }
-    public function get_group_users($id){
+    public function get_group($id){
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
-        $data = PostInvitations::with('user')->where('post_id', '=', $id)->where('status', '=', 'approved')->groupBy('from_user_id')->orderByDesc('from_user_id')->get();
+        $data['users'] = PostInvitations::with('user')->where('post_id', '=', $id)->where('status', '=', 'approved')->groupBy('from_user_id')->orderByDesc('from_user_id')->get();
+        $settingsFilePath = 'Group ' . $id . '/settings.json';
+        if (Storage::exists($settingsFilePath)) {
+            $settingsJson = Storage::get($settingsFilePath);
+            $settingsData = json_decode($settingsJson, true);
+            
+        } else {
+            $settingsData =  'Settings for group ' . $id .' not found';
+        }
+        $data['settings'] = $settingsData ;
         return response()->json($data);
+        
     }
     public function destroy(string $id)
     {

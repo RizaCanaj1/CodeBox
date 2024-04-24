@@ -2,6 +2,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <link rel="stylesheet" href="../assets/css/dashboard.css"/>
+    <link rel="stylesheet" href="../assets/css/components/post.css"/>
+    <link rel="stylesheet" href="../assets/css/components/code_box.css"/>
     <pre>
     @php
         $notifications = App\Models\Notifications::where('user_id','=',auth()->id())->orderBy('id', 'DESC')->get();
@@ -36,13 +38,13 @@
                     <i class="fa-solid fa-caret-right" id='caret'></i>
                 </div>
                 <div class='from-group mt-4 d-flex justify-content-center'>
-                <select name="type" id="type" class='type_of_post d-none rounded'>
-                    <option value="">Type</option>
-                    <option value="invitation">Project invitation</option>
-                    <option value="showcase">Project showcase</option>
-                    <option value="question">Question</option>
-                    <option value="community">Community post</option>
-                </select>
+                    <select name="type" id="type" class='type_of_post d-none rounded'>
+                        <option value="">Type</option>
+                        <option value="invitation">Project invitation</option>
+                        <option value="showcase">Project showcase</option>
+                        <option value="question">Question</option>
+                        <option value="community">Community post</option>
+                    </select>
                 </div>
                 <div class='from-group mt-4 d-flex justify-content-center'>
                     <label for="code" class='add-code d-none'>Add Code <i class="fa-regular fa-file-code"></i></label>

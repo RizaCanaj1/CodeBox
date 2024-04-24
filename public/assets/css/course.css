@@ -1,0 +1,297 @@
+*{
+    transition: all .3s;
+}
+
+.twrapper {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 80% 20%;
+    transition: width .2s;
+}
+
+.twrapper:has(> .add_teacher_button.d-none ) {
+    grid-template-columns: 100%;
+    width: 100%;
+    animation:switch_twrapper .3s forwards;
+}
+@keyframes switch_twrapper {
+    from{ width: 80%;}
+    to{ width: 100%;}
+}
+.twrapper:has(> .add_teacher_button.shifting ) {
+    animation: switch_twrapper_reverse  .3s forwards;
+}
+@keyframes switch_twrapper_reverse {
+    from{ width: 100%;}
+    to{ width: 80%;}
+}
+.teachers{
+    transition: height 1s;
+    display: grid;
+    height: 325px;
+    overflow: hidden;
+    grid-template-columns: 33% 34% 33%;
+    grid-template-rows: auto;
+}
+.teacher{
+    transition: all 1s;
+    overflow: hidden;
+    width: 70%;
+    height: 300px;
+    background-color: rgb(228, 209, 206);
+}
+.teacher.middle:hover{
+    margin-left: -5%;
+}
+.teacher.right:hover{
+    margin-left: -10%;
+}
+.teachers:has(>.teacher:hover) {
+    height: 440px;
+}
+.teacher:hover{
+    width: 80%;
+    height: 440px;
+}
+.teacher.expanded:hover{
+    overflow: hidden;
+    height: fit-content;
+}
+.teacher .bio{
+    opacity: 0;
+    animation:change_opacity .5s forwards
+}
+@keyframes change_opacity {
+    to{opacity: 1;}
+}
+.teacher .bio .dots:hover{
+    cursor: pointer;
+    color: rgb(57, 133, 133);
+}
+.teacher:not(:hover) .bio,.teacher:not(:hover) .to_courses{
+    display: none;
+}
+.teacher .to_courses{
+    display: flex;
+}
+.teacher .to_courses .courses_btn{
+    cursor: pointer;
+}
+.teacher img{
+    width: 200px;
+    border-radius: 50%;
+}
+.teacher a{
+    text-decoration: none;
+    color: black;
+}
+.teacher img:hover{
+    width: 200px;
+    border-radius: 0%;
+}
+.add_teacher #bio {
+    resize: none;
+}
+.form_add_teacher{
+    border: 2px solid rgba(20,20,20,.3);
+    border-radius: 15px;
+    transition: all .3s;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: show_form .4s forwards;
+    box-shadow: 0px 0px 10px 2px black;
+}
+@keyframes show_form {
+    to{opacity: 1;}
+}
+
+.add_teacher_button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all .4s;
+}
+.twrapper:has(.teachers[data-quantity='0']) .add_teacher_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -400%;
+}
+.twrapper:has(.teachers[data-quantity='1']) .add_teacher_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -275%;
+}
+.twrapper:has(.teachers[data-quantity='2']) .add_teacher_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -150%;
+}
+.add_teacher_button .btn-add-t{
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+}
+.add_teacher_button .btn-add-t:hover{
+    border-color: rgb(250, 57, 57);
+    background-color: rgb(255, 96, 96);
+}
+.add_teacher{
+    border-radius: 15px;
+    display: inline-block;
+    background-color: rgb(255, 255, 255);
+}
+.twrapper .more_teachers{
+    margin-left: -10%;
+}
+.twrapper .btn-more-teachers{
+    width: 20%;
+}
+.cwrapper {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 80% 20%;
+    transition: width .2s;
+}
+
+.cwrapper:has(> .add_course_button.d-none ) {
+    grid-template-columns: 100%;
+    width: 100%;
+    animation:switch_cwrapper .3s forwards;
+}
+@keyframes switch_cwrapper {
+    from{ width: 80%;}
+    to{ width: 100%;}
+}
+.cwrapper:has(> .add_course_button.shifting ) {
+    animation: switch_cwrapper_reverse  .3s forwards;
+}
+@keyframes switch_cwrapper_reverse {
+    from{ width: 100%;}
+    to{ width: 80%;}
+}
+.courses:not([data-quantity='0']){
+    transition: height 1s;
+    display: grid;
+    height: 325px;
+    overflow: hidden;
+    grid-template-columns: 33% 34% 33%;
+    grid-template-rows: auto;
+}
+.course{
+    transition: all 1s;
+    overflow: hidden;
+    width: 70%;
+    height: 300px;
+    background-color: rgb(228, 209, 206);
+}
+.course.middle:hover{
+    margin-left: -5%;
+}
+.course.right:hover{
+    margin-left: -10%;
+}
+.courses:has(>.course:hover) {
+    height: 440px;
+}
+.course:hover{
+    width: 80%;
+    height: 440px;
+}
+.course.expanded:hover{
+    overflow: hidden;
+    height: fit-content;
+}
+.course .bio{
+    opacity: 0;
+    animation:change_opacity .5s forwards
+}
+.course .bio .dots:hover{
+    cursor: pointer;
+    color: rgb(57, 133, 133);
+}
+.course:not(:hover) .bio,.course:not(:hover) .to_courses{
+    display: none;
+}
+.course .to_courses{
+    display: flex;
+}
+.course .to_courses .courses_btn{
+    cursor: pointer;
+}
+.course img{
+    width: 200px;
+    border-radius: 50%;
+}
+.course a{
+    text-decoration: none;
+    color: black;
+}
+.course img:hover{
+    width: 200px;
+    border-radius: 0%;
+}
+.add_course #bio {
+    resize: none;
+}
+.form_add_course{
+    border: 2px solid rgba(20,20,20,.3);
+    border-radius: 15px;
+    transition: all .3s;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: show_form .4s forwards;
+    box-shadow: 0px 0px 10px 2px black;
+}
+.add_course_button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all .4s;
+}
+.cwrapper:has(.courses[data-quantity='0']) .add_course_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -400%;
+}
+.cwrapper:has(.courses[data-quantity='1']) .add_course_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -275%;
+}
+.cwrapper:has(.courses[data-quantity='2']) .add_course_button{
+    display: block;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: -150%;
+}
+.add_course_button .btn-add-c{
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+}
+.add_course_button .btn-add-c:hover{
+    border-color: rgb(250, 57, 57);
+    background-color: rgb(255, 96, 96);
+}
+.add_course{
+    border-radius: 15px;
+    display: inline-block;
+    background-color: rgb(255, 255, 255);
+}
+.cwrapper .more_course{
+    margin-left: -10%;
+}
+.cwrapper .btn-more-course{
+    width: 20%;
+}

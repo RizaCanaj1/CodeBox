@@ -10,6 +10,17 @@
                     </p>
                 </div>
                 <!-- Navigation Links -->
+                <div class='nav-links d-flex'>
+                    <div class="link">
+                        <a class='first' href="../puzzle" data-type='Puzzle'><i class="fa-solid fa-puzzle-piece fa-2xl"></i></a>
+                    </div>
+                    <div class="link">
+                        <a class='middle' href="../course" data-type='Course'><i class="fa-solid fa-book fa-2xl"></i></a>
+                    </div>
+                    <div class="link">
+                        <a class='last' href="../friends" data-type='Friends'><i class="fa-solid fa-user-group fa-xl"></i></a>
+                    </div>
+                </div>
                 
             </div>
             <div class='searchbar'>

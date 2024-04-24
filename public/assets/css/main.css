@@ -1,6 +1,202 @@
 :root{
     --color1:rgb(202, 21, 21);
     --color2:rgb(49, 168, 152);
+    --angle:-360deg;
+    --translate_z:-118px;
+    --hue:#ffffff;
+    --recent_dot_height:-20px;
+    --scene_logo_padding: 30px;
+    --scene_logo_width: 115px;
+}
+/*Welcome-scene*/
+.welcome-scene *{
+    transition: all .3s;
+}
+.welcome-scene{
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    color: white;
+    height: 100dvh;
+    width: 100%;
+    background-color: rgb(9, 26, 21);
+    z-index: 100;
+}
+.welcome-scene.scene-start{
+    animation:hide_scene 1s 8s forwards;
+}
+@keyframes hide_scene {
+    90%{
+        opacity: 0;
+        background-color:transparent;
+        z-index: -100;
+    }
+    100%{
+        background-color:transparent;
+        z-index: -100;
+        display: none;
+    }
+}
+.welcome-scene .center-position{
+    cursor: pointer;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.welcome-scene .tap_to_start{
+    animation: text_float 2s infinite;
+}
+.welcome-scene.scene-start .tap_to_start{
+    opacity: 0;
+    margin-top: 10px;
+    animation: none;
+}
+@keyframes text_float {
+    0%{
+        padding: 0px;
+    }
+    20%{
+        padding-left: 3px;
+        padding-top: 1px;
+    }
+    40%{
+        padding-left: 2px;
+        padding-top: 2px
+    }
+    60%{
+        padding-right: 3px;
+    }
+    100%{
+        padding: 0px;
+    }
+}
+.welcome-scene.scene-start .center-position h2{
+    transition: padding 1s;
+    padding: var(--scene_logo_padding);
+    animation:close_scene 1s 5s forwards
+}
+@keyframes close_scene {
+    0%{
+        padding: var(--scene_logo_padding);
+    }
+    90%{
+        padding: 0px;
+    }
+    100%{
+        padding: 8px;
+    }
+}
+.welcome-scene.scene-start .center-position h2 .scene-dots{
+    position: absolute;
+    rotate: 90deg;
+    margin-left: 0px;
+    animation:reposition_dots 0.2s 3s forwards
+}
+@keyframes reposition_dots  {
+    from{
+        rotate: 90deg;
+    }
+    to{
+        rotate: 0deg;
+    }
+}
+.welcome-scene .center-position h2 .scene-dots .dot::after{
+    content: '.';
+}
+.welcome-scene.scene-start .center-position h2 .scene-dots .dot{
+    position: relative;
+    padding: 4px;
+}
+.welcome-scene.scene-start .center-position h2 .scene-dots .dot::after{
+    position: absolute;
+    content: '.';
+    color: white;
+    animation: scene-dots-animation 3s forwards,dots_return .2s 6s forwards
+}
+@keyframes dots_return  {
+    from{
+        content: '';
+    }
+    to{
+        content: '.';
+        top: 5px;
+        left: -10px;
+        width: 0px;
+        height: 0px;
+    }
+}
+.welcome-scene.scene-start .scene-logo-text{
+    position: absolute;
+    overflow: hidden;
+    top: 35px;
+    margin-left: 43px;
+    width: 120px;
+    animation:close_text 1s 2.5s forwards;
+}
+@keyframes close_text {
+    0%{
+        width: 120px;
+        top: 35px;
+        margin-left: 43px;
+    }
+    90%{
+        width: 0px;
+    }
+    100%{
+        width: 0px;
+        top: 5px;
+        margin-left: 10px;
+    }
+}
+@keyframes scene-dots-animation {
+    0%,24%{
+        content: '.';
+        top: -20px;
+        left: 20px;
+        width: 0px;
+        height: 0px;
+    }
+    30%{
+        color: transparent;
+        top: -5px;
+    }
+    36%,45%{
+        content: '';
+        top: -20px;
+        left: 5px;
+        width: 0px;
+        height: 0px;
+    }
+    75%{
+        content: '';
+        top: -20px;
+        width: 2px;
+        height: var(--scene_logo_width);
+        background-color: rgb(52, 230, 253);
+    }
+    85%{
+        content: '';
+        top: -20px;
+        height: var(--scene_logo_width);
+        width: 10px;
+        background-color:rgb(253, 126, 52);
+    }
+    
+    95%,100%{
+        content: '';
+        top: -20px;
+        width: 0px;
+        background-color: rgb(253, 126, 52);
+    }
+    
+}
+.welcome-scene.scene-start .open_bracket{
+    color: rgb(52, 230, 253);
+}
+.welcome-scene.scene-start .close_bracket{
+    color: rgb(253, 126, 52);
 }
 .CodeBox{
     margin-top: 12px;
@@ -10,9 +206,11 @@
     border: 2px solid rgb(0, 255, 157);
     width: 50px;
     height: 50px;
-    box-shadow: 2px -5px 0px 0px rgb(0, 226, 139),4px -10px 0px 0px rgb(0, 194, 120);
+    box-shadow: 2px -5px 0px 0px rgb(0, 226, 139),
+    4px -10px 0px 0px rgb(0, 194, 120);
     animation-name: codebox;
     animation-duration: 1s;
+    cursor: pointer;
 }
 .CodeBox p{
     margin-top: 3px;
@@ -40,8 +238,77 @@
 }
 
 @keyframes codebox {
-  from {margin-top: 6px; box-shadow: 0px 0px 0px 0px rgb(0, 255, 157);}
-  to { box-shadow: 2px -5px 0px 0px rgb(0, 226, 139), 4px -10px 0px 0px rgb(0, 194, 120)}
+  from {
+    margin-top: 6px; 
+    box-shadow: 0px 0px 0px 0px rgb(0, 255, 157);
+    }
+  to { 
+    box-shadow: 2px -5px 0px 0px rgb(0, 226, 139), 
+    4px -10px 0px 0px rgb(0, 194, 120)
+    }
+}
+.nav-links{
+    position: absolute;
+    top: 10px;
+    margin-left: 150px;
+    width: 250px;
+    height: 50px;
+    gap: 60px;
+}
+.nav-links .link {
+    position: relative;
+}
+.nav-links a{
+    transition: all .3s;
+    top: 0px;
+    position: absolute;
+    padding: 10px 4px 12px 6px;
+    background-color: rgb(98, 211, 219);
+}
+.nav-links a.active{
+    top: -5px;
+    background-color:transparent;
+    cursor:default;
+}
+.nav-links a.active::before{
+    color: rgb(23, 143, 59);
+    position: absolute;
+    left: -2px;
+    top: 40px;
+    content: attr(data-type);
+    animation: show_text 1s;
+}
+.nav-links a.first{
+    border-radius: 10px;
+}
+.nav-links a.middle{
+    border-radius: 2px 2px 10px 10px;
+}
+.nav-links a.last{
+    border-radius: 2px 10px 10px 10px;
+}
+.nav-links a:not(.active):hover{
+    border-radius: 15px;
+    top: -5px;
+    background-color: rgba(206, 218, 105, 0.2);
+}
+.nav-links a:not(.active):hover::before{
+    color: rgb(23, 143, 59);
+    position: absolute;
+    left: -2px;
+    top: 40px;
+    content: attr(data-type);
+    animation: show_text 1s;
+}
+.nav-links a i{
+    color: rgb(23, 143, 59);
+}
+.nav-links a:not(.active):hover i{
+    color: rgb(98, 211, 219);
+}
+@keyframes show_text {
+    from{opacity: 0}
+    to{opacity: 1}
 }
 .navbar{
     max-height: 50px;
@@ -79,7 +346,6 @@
     animation: first_text 2s;
     animation-duration: 2s;
     transition: all .2s;
-    
 }
 .first-text span{
     position: relative;
@@ -208,5 +474,72 @@
 @keyframes welcome {
     from{
         width: 0px;
+    }
+}
+.second_section *{
+    transition: all .4s;
+}
+.second_section .section_title{
+    background-color: rgb(224, 65, 65);
+    text-align: center;
+    cursor:default;
+    user-select: none;
+}
+.link_btn:hover{
+    color:  rgb(245, 33, 33);
+    text-shadow: 0px 0px 3px rgb(44, 44, 44),0px 0px 5px rgb(92, 92, 92);
+    cursor: pointer;
+}
+.second_section .section_text{
+    height: 50vh;
+    background-color: rgb(20, 117, 161);
+}
+.second_section .section_text .text{
+    width: 40%;
+    margin: 20px;
+}
+.second_section .section_text .logo .dots {
+    position: relative;
+    transition: all .2s;
+    span[class^='dot_']{
+        display: inline-block;
+        vertical-align: middle;
+        animation-play-state:paused;
+    }
+    .dot_1{
+        animation: jump_dots 1s infinite forwards;
+        animation-delay: 0s;
+    }
+    .dot_2{
+        animation: jump_dots 1s infinite forwards;
+        animation-delay: .2s;
+    }
+    .dot_3{
+        animation: jump_dots 1s infinite forwards;
+        animation-delay: .4s;
+    }
+}
+
+.second_section .section_text:hover .logo .dots {
+    span[class^='dot_']{
+        animation-play-state:running;
+    }
+}
+
+
+@keyframes jump_dots {
+    95%,100% {
+        transform: translateY(0);
+    }
+    45%,55% {
+        transform: translateY(-20px);
+    }
+}
+@keyframes stop_dots {
+    from {
+       transform: translateY(var(--recent_dot_height));
+    }
+    to {
+        transform: translateY(0px);
     }
 }

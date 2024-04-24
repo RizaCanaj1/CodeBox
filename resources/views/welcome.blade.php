@@ -14,7 +14,7 @@
         </style>
         <link rel="stylesheet" href="assets/css/main.css"/>
     </head>
-    <body class='bg-dots-darker bg-center bg-gray-100'>
+    <body class='bg-center bg-gray-100'>
     <div class="relative min-h-screen  selection:bg-red-500 selection:text-white">
         <div class="sm:top-0 d-flex justify-content-between p-6 z-10 navbar">
             <div class='sm:absolute CodeBox d-flex justify-content-center ms-3'>
@@ -35,14 +35,23 @@
         @endif
         </div>
         <br>
-        <div class='mt-5 welcome'>
-            <h1 class='text-center first-text'><span>Home</span> of your experience</h1>
-            <div class='welcome_code'>
-                <pre></pre>
-            </div>
+        <div class='mt-5 welcome'><h1 class='text-center first-text'><span>Home</span> of your experience</h1>
+            <div class='welcome_code'><pre></pre></div>
         </div>
+        <div class='second_section'>
+            <div class='section_title'><h3><a class='link_btn share'>Share</a>, <a class='link_btn'>explore</a>, <a class='link_btn'>ask</a> and enjoy</h3></div>
+            <div class='section_text'><div class='d-flex justify-content-center align-items-center flex-column gap-3'><h1 class='text'>By using CodeBox you can share your thoughts, your code, ask questions or invitate others into your projects</h1><h1 class='logo'>{<span class='dots'><span class='dot_1'>.</span><span class='dot_2'>.</span><span class='dot_3'>.</span></span>}<h1></div></div>
+        </div>
+        <div class='welcome-scene'>
+            <div class='center-position d-flex flex-column align-items-center'>
+                <div class='scene-logo d-flex'><h2 class='open_bracket'>{</h2><h3 class='scene-logo-text d-none'>CodeBox</h3><h2><span class='scene-dots'><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></h2><h2 class='close_bracket'>}</h2></div>
+                <h6 class='tap_to_start'>Tap to start</h6>
+            </div>
 
+        </div>
     </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     </body>

@@ -1,0 +1,19 @@
+.requests-notification p{
+    color: red;
+    transition: all .2s;
+    animation: remove_notification 1s 5s forwards;
+}
+@keyframes remove_notification {
+    0%{
+        color: red;
+        opacity: 1;
+    }
+    90%{
+        color: black;
+        opacity: 0;
+    }
+    100%{
+        opacity: 0;
+        display: none;
+    }
+}
