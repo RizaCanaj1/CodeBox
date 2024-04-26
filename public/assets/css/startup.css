@@ -1,0 +1,243 @@
+*{
+    transition: all .5s;
+}
+.startup-wrapper{
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%,-50%);
+}
+.hover_message{
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0px 0px 10px 10px;
+    padding: 5px;
+    z-index: 9999;
+    animation: hide_message 1s forwards;
+}
+@keyframes hide_message {
+    50%{opacity: 0;}
+    to{opacity: 0;display: none;}
+}
+.hover_message.show_message{
+    opacity: 0;
+    display: block;
+    animation: show_message 1s forwards;
+}
+@keyframes show_message {
+    to{opacity: 1;}
+}
+.btn_seethrow{
+    border: 0px;
+    background-color: transparent;
+    cursor: pointer;
+}
+.welcome_text{
+    transition: all .3s;
+    opacity: 0;
+    margin-bottom: 10px;
+    animation: show_text_animation 2s forwards;
+}
+.continue{
+    opacity: 0;
+    position: absolute;
+    top: -10000px;
+    margin-top: 10px;
+    animation: show_text_animation 1s 1.2s forwards;
+}
+.skip{
+    opacity: 0;
+    position: absolute;
+    top: -10000px;
+    margin-top: 10px;
+    animation: show_text_animation 1s 2.4s forwards;
+}
+.log_out{
+    opacity: 0;
+    position: absolute;
+    top: -10000px;
+    margin-top: 10px;
+    animation: show_text_animation 1s 3.6s forwards;
+}
+.setup_buttons button:not(.d-none){
+    opacity: 0;
+    height: 0px;
+    margin-top: 10px;
+    animation: show_text_animation 1s 1.5s forwards;
+}
+.setup_buttons .back_to_beginning:hover{
+    color: rgb(211, 94, 94);
+}
+.setup_buttons .next_setup:hover{
+    color: rgb(94, 211, 147);
+}
+.first_setup,.skip_setup,.second_setup{
+    height: 0px;
+    display: none;
+}
+.select-setting .selection{
+    padding: 10px;
+    border: 1px solid rgba(150, 150, 150, 0.5);
+    border-radius: 10px;
+}
+.select-setting .selection.all_posts{
+    cursor: pointer;
+}
+.select-setting .selection.all_posts.selected{
+    border: 1px solid rgba(146, 248, 255, 0.75);
+    box-shadow: inset 0px 0px 2px 2px rgba(146, 248, 255, 0.5);
+}
+.selection .miniselection{
+    padding: 2px;
+    border: 1px solid rgba(150, 150, 150, 0.5);
+    border-radius: 5px;
+    box-shadow: inset 0px 0px 0px 0px rgba(146, 248, 255, 0.5);
+    background-color: rgba(216, 216, 216, 0.5);
+}
+.selection .miniselection:hover{
+    padding: 2px;
+    border: 1px solid rgba(146, 248, 255, 0.5);
+    box-shadow: inset 0px 0px 1px 1px rgba(146, 248, 255, 0.5);
+    border-radius: 5px 5px 0px 0px;
+    background-color: rgba(216, 216, 216, 0.5);
+}
+
+.selection .miniselection.selected{
+    padding: 2px;
+    border: 1px solid rgba(146, 248, 255, 0.75);
+    box-shadow: inset 0px 0px 2px 2px rgba(146, 248, 255, 0.5);
+    border-radius: 5px;
+    background-color: rgba(216, 216, 216, 0.5);
+}
+@keyframes show_text_animation {
+    from{
+        display: none;
+        position:static;
+        opacity: 0;
+    }
+    to{
+        display: block;
+        position:static;
+        opacity: 1;
+        margin: 0px;
+    }
+}
+/*First Setup*/
+.startup-wrapper.continue_setup .welcome_text{
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.continue_setup .skip{
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.continue_setup .log_out{
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.continue_setup .continue{
+    position:static;
+    font-size: xx-large;
+    opacity: 1;
+    --focused_topMargin:-50%;
+    animation: focus_text_animation 2s forwards;
+    animation-delay: 1s;
+}
+.startup-wrapper.continue_setup .first_setup{
+    display: block;
+    opacity: 0;
+    animation: show_setup 2s 1s forwards;
+}
+@keyframes remove_text_animation {
+    from{
+        position:static;
+        opacity: 1;
+        margin: 0px;
+    }
+    to{
+        position:static;
+        opacity: 0;
+    }
+}
+@keyframes focus_text_animation {
+    from{
+        margin: 0px;
+    }
+    to{
+        margin-top: var(--focused_topMargin);
+    }
+}
+.startup-wrapper.skip_setup .continue,.startup-wrapper.skip_setup .welcome_text{
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.skip_setup .skip{
+    position:static;
+    font-size:x-large;
+    opacity: 1;
+    --focused_topMargin:-40%;
+    animation: focus_text_animation 1s forwards;
+    animation-delay: 1s;
+}
+.startup-wrapper.skip_setup .log_out{
+    margin-top: 70px;
+    opacity: 1;
+    position: static;
+    animation: none;
+}
+.startup-wrapper.skip_setup .skip_setup{
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    opacity: 0;
+    animation: show_setup 2s 1s forwards ;
+}
+@keyframes show_setup {
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+        margin-top: 10px;
+    }
+}
+@keyframes remove_height {
+    from{
+        max-height:50%;
+    }
+    to{
+        max-height:0%;
+    }
+}
+/*Back to start*/
+.startup-wrapper.back_to_start .selection {
+    opacity: 0;
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.back_to_start .selection {
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.back_to_start .setup_buttons{
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards;
+}
+.startup-wrapper.back_to_start .continue{
+    margin-top: 0%;
+    opacity: 0;
+}
+.startup-wrapper.continue_second_setup .selection:not(.update_profile) {
+    opacity: 0;
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards ,remove_height 1s forwards ;
+}
+.startup-wrapper.continue_second_setup .first_setup .setup_buttons{
+    opacity: 0;
+    margin-top: 10px;
+    animation: remove_text_animation 1s forwards ,remove_height 1s forwards ;
+}
+.startup-wrapper.continue_second_setup .second_setup {
+    display: block;
+    opacity: 0;
+    animation: show_setup 2s 1s forwards;
+}

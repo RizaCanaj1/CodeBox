@@ -104,7 +104,7 @@ notifications.addEventListener('animationend', function() {
 
 notification.forEach(n =>{
     n.querySelector('h6').addEventListener('click',e=>{
-        let type_of = e.target.className.split(' ')[2]
+        let type_of = e.target.className.split(' ')[1]
         n.classList.remove('delivered')
         
         let n_id = e.target.className.split(' ')[0].split('-')[1]
@@ -122,7 +122,6 @@ notification.forEach(n =>{
                 }
             })
         )
-        
         switch(type_of.toLowerCase() ){
             case 'status':
                 window.location.href = '../group/'+e.target.id.split('-')[1]
@@ -134,6 +133,9 @@ notification.forEach(n =>{
             break;
             case 'applicant':
                 window.location.href = '../applications/'+e.target.id.split('-')[1]
+            break;
+            case 'friend_request':
+                window.location.href = '../friends'
             break;
             default:
             break;

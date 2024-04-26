@@ -251,7 +251,6 @@ label:has(> input.show-info:checked){
     overflow: hidden;
     height: 50px;
     animation: removepost 1s forwards;
-    
 }
 .remove-post *{
     color: transparent;

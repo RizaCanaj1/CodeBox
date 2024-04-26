@@ -108,7 +108,7 @@
         
             @for($i=0;$i<($notifications->count());$i++)
             @php 
-                $type_of = explode('|', $notifications[$i]['title'])[1];
+                $type_of = strtolower(str_replace(' ', '_', explode('| ', $notifications[$i]['title'])[1]));
             @endphp
                 <div class="notification {{$notifications[$i]['status']}}">
                     <h6 class="nid-{{$notifications[$i]['id']}} {{$type_of}}" id="id-{{$notifications[$i]['post_id']}}">{{$notifications[$i]['title']}}</h6>

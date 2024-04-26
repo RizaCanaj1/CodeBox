@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Models\Role;
 use App\Http\Controllers\CrudController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\CourseController;
@@ -24,10 +26,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::post('/dashboard',[PostController::class, 'create_post'])->name('create_post');
-
+Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::post('/add-comment/{post_id}', [CrudController::class, 'add_comment']);
 
+
 Route::get('/get-comments/{post_id}', [CrudController::class, 'get_comments']);
+Route::get('/count-view/{id}',[CrudController::class,'count_view']);
 
 Route::get('/get-all-users',[CrudController::class,'get_all_users']);
 Route::get('/get-not-teachers',[CourseController::class,'get_not_teachers']);
@@ -65,14 +69,17 @@ Route::get('/add-friend/{user_id}', [FriendsController::class, 'add_friend'])->n
 Route::get('/get-friend-status/{user_id}', [FriendsController::class, 'get_status'])->name('get_friend_status');
 Route::get('/get-requests', [FriendsController::class, 'get_requests'])->name('get_requests');
 Route::get('/beta-test', function () { return view('beta-test');});
-
+Route::get('/startup', function () { return view('startup');})->name('startup');
 
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified',
+    'verified'
 ])->group(function () {
     Route::get('/dashboard', function () {
+        if (!auth()->user()->hasAnyRole(Role::all())) {
+            return view('startup');
+        }
         return view('dashboard');
     })->name('dashboard');
 });

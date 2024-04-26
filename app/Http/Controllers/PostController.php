@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Posts;
 use App\Models\PostCodes;
+use App\Models\PostViews;
 use App\Models\PostMedias;
 use App\Models\PostComments;
 use Illuminate\Http\Request;
 use App\Models\PostInvitations;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
@@ -38,7 +40,25 @@ class PostController extends Controller
                     $post->invitation_status = $invitation[count($invitation) - 1]->status;
                 }
             }
+            if($post->type !='invitation'){
+                $postViews = PostViews::where('post_id', $post->id);
+                $details = [];
+                $views = $postViews->get();
+                foreach($views as $viewer){
+                    $user = User::select('id', 'name as username', 'profile_photo_path as profile')->find($viewer->user_id);
+                    if ($user) {
+                        array_push($details,$user);
+                    }
+                }
+                
+                $post->views_count = $postViews->count() ;
+                $post->views_details = $details;
+            }
             $comments = PostComments::where('post_id', $post->id)->get();
+            foreach($comments as $comment){
+                $comment->user_detail = User::select('id', 'name as username', 'profile_photo_path as profile')->find($comment->user_id);
+            }
+            
             $post->comments = $comments;
         }
         if (!$posts) {

@@ -2,12 +2,20 @@
     transition: all .3s;
 }
 .post{
+    --top_slide:80px;
+    position: relative;
     margin: 1.5rem;
     height: fit-content;
     transition: all .3s;
     border-radius: 10px;
     padding: 10px;
     box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+    opacity: 0;
+    animation:show_post 1s var(--show_post_delay) forwards;
+}
+@keyframes show_post {
+    from{opacity: 0;margin-top:var(--top_slide);}
+    to{opacity: 1;}
 }
 .post.update_post{
     opacity: 0;
@@ -34,10 +42,12 @@
     width: fit-content;
 }
 .post .from img{
+    max-width: fit-content;
     border-radius: 50%;
     border:1px solid rgb(50,50,50);
     width: 30px;
     height: 30px;
+    object-fit: cover;
 }
 .post .from a:hover{
     color: rgba(50, 70, 99, 0.7);
@@ -119,6 +129,61 @@
     background-color: rgb(50, 50, 50);
     color: rgb(253, 83, 83);
 }
+.post .comment-wrapper{
+    border: 1px solid black;
+    margin-bottom: 5px;
+    border-radius: 10px;
+}
+.post .comment-wrapper .comment{
+    margin-top: 5px;
+    margin-left: 5px;
+    word-wrap: break-word;
+    white-space: normal;
+    width: 60%;
+}
+.post .comment-wrapper .user-image{
+    max-width: fit-content;
+    margin-top: 5px;
+    position: relative;
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.post .comment-wrapper .username{
+    user-select: none;
+    display: none;
+    opacity: 0;
+}
+.post .comment-wrapper .image-name{
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+}
+.post .comment-wrapper .image-name:hover{
+    width: 120px;
+    height: 50px;
+    background-color: rgb(28, 37, 39);
+}
+.post .comment-wrapper .image-name:hover .user-image{
+    margin-top: 5px;
+    margin-left: 10px;
+}
+.post .comment-wrapper .image-name:hover .username{
+    display: block;
+    position: absolute;
+    width: 0px;
+    overflow-x: none;
+    color: white;
+    animation: show_image 0.3s 0.3s forwards;
+}
+@keyframes show_image {
+    to{
+        overflow-x:visible;
+        margin-left: 50px;
+        opacity: 1;
+    }
+}
 .post .info-box{
     position: absolute;
     transition: all .4s;
@@ -134,7 +199,6 @@
 
 .post .info-icon:hover .info-box:not(:hover){
     opacity: 1;
-    
 }
 .post .info-icon{
     width: 25px;
@@ -193,6 +257,49 @@
 }
 .post.post-focus .p-mimage a{
     display: none;
+}
+.post .post_settings{
+    font-size: x-large;
+}
+.post .post_settings.settings_opened{
+    color: #bdbdbd;
+    rotate: 90deg;
+}
+.post .settings{
+    display: none;
+    top: 5px;
+    left: 100%;
+    position: absolute;
+    opacity: 0;
+    height: 130px;
+    border-top: 1px solid rgba(41, 41, 41,0.5);
+    border-bottom: 1px solid rgba(41, 41, 41,0.5);
+    border-right: 1px solid rgba(41, 41, 41,0.5);
+    border-radius: 0px 5px 5px 0px;
+    width: 0px;
+}
+.post .settings .hide:hover{
+    color: #bdbdbd;
+}
+.post .settings .report:hover{
+    color: #d8ad21;
+}
+.post .settings .block:hover{
+    color: #fd4040;
+}
+.post .settings.open{
+    display: block;
+    --width_slide: 65px;
+    position: absolute;
+    animation: opacity_show .5s forwards, width_animation .5s forwards;
+}
+@keyframes opacity_show {
+    from{opacity: 0;}
+    to{opacity: 1;}
+}
+@keyframes width_animation {
+    from{width: 0px;overflow-x: hidden;}
+    to{width:var(--width_slide);overflow-x: hidden;}
 }
 .codebox-animation *{
     transition: all .5s;

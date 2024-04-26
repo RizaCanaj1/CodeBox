@@ -19,8 +19,8 @@ class FriendsController extends Controller
             'user_id'=>$user_id,
             'from_user_id'=>auth()->id(),
             'post_id'=>null,
-            'title'=>User::find($user_id)['name'].' | Friend Request',
-            'content'=>User::find($user_id)['name'].' wants to be your frined.',
+            'title'=>User::find(auth()->id())['name'].' | Friend Request',
+            'content'=>User::find(auth()->id())['name'].' wants to be your frined.',
         ];
         if(!Notifications::create($notification)){
             return response()->json(['error' => 'Failed to create notification'], 500);

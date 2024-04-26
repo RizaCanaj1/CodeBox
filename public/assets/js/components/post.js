@@ -8,35 +8,62 @@ else{
 
 let postUpdateInterval = null;
 let comments = [];
+let hovered_post = null;
+let delayTimer = null;
+let currentPostId = null;
+let viewed=[]
 window.addEventListener('mousemove', function(event) {
-    if(event.target.closest('.post'))
-    closest_post = event.target.closest('.post')
+    if(event.target.closest('.post')){
+        closest_post = event.target.closest('.post')
+        currentPostId = closest_post.className.split(' ')[0].split('-')[1];
+        if(!viewed.includes(currentPostId)){
+            hovered_post = closest_post;
+            if(!delayTimer) delayTimer = setTimeout(countView, 8000);
+        }
+    }
+    else{
+        hovered_post = null;
+        currentPostId = null;
+        clearTimeout(delayTimer);
+        delayTimer = null;
+    }
 });
+
+function countView() {
+    viewed.push(currentPostId)
+    console.log('Counting view for post:', hovered_post);
+    fetch(`count-view/${currentPostId}`)
+    .then(response=>response.json())
+    .then(data=>console.log(data))
+    .catch(error=>console.log(error))
+    hovered_post = null;
+    currentPostId = null;
+    clearTimeout(delayTimer);
+    delayTimer = null;
+}
 if(window.location.pathname =='/dashboard'){
     fetch(`get-posts`).then(response=>response.json())
     .then(data=>{
         for(let i = 0; i<data.length;i++){
             let post = data[i]
             if(i%2==0)
-            document.querySelector('.posts .even').innerHTML+= createpost(post);
+            document.querySelector('.posts .even').innerHTML+= createpost(post,i);
             else 
-            document.querySelector('.posts .odd').innerHTML+= createpost(post);
+            document.querySelector('.posts .odd').innerHTML+= createpost(post,i);
+            
         }
         
     })
 }
-
 else{
-    
     let user_id = url.searchParams.get('id');
-    
     fetch(`get-posts-from-user/${user_id}`).then(response=>response.json())
     .then(data=>{
         let type_of_posts = []
         let post_selector = document.querySelector('.post-selector div')
         post_selector.innerHTML=''
-        data.forEach(post=>{
-            document.querySelector('.posts').innerHTML+= createpost(post);
+        data.forEach((post,i)=>{
+            document.querySelector('.posts').innerHTML+= createpost(post,i);
             if (!type_of_posts.includes(post.type)) {
                 type_of_posts.push(post.type);
                 let type = post.type.charAt(0).toUpperCase() + post.type.slice(1);
@@ -49,16 +76,21 @@ else{
         let post_selectors = document.querySelectorAll('.post-selector .p-selector h3')
         post_selectors.forEach(selector => {
             selector.addEventListener('click',()=>{
+
                 let actived=document.querySelectorAll('.actived').length
                 if(selector.className=='actived' && actived>1){
                     selector.classList.remove('actived')
                     document.querySelectorAll(`.p${selector.innerText.toLowerCase()}`).forEach(removePost=>{
+                        removePost.style.opacity='1';
+                        removePost.style.animation='removepost 1s forwards'
                         removePost.classList.add('remove-post')
                     })
                 }
                 else{
                     selector.classList.add('actived')
                     document.querySelectorAll(`.p${selector.innerText.toLowerCase()}`).forEach(showPost=>{
+                        showPost.style.opacity='1';
+                        showPost.style.animation='none'
                         showPost.classList.remove('remove-post')
                     })
                 }
@@ -227,6 +259,31 @@ setTimeout(()=>{
             },50)
         })
     });
+    
+    let post_settings = document.querySelectorAll('.post_settings')
+    post_settings.forEach(btn=>{
+        btn.onclick = () => {
+            let p_id = btn.className.split(' ')[0]
+            let s_post = document.querySelector(`.${p_id}`)
+            let settings = s_post.querySelector(`.settings`)
+            let hide = settings.querySelector('.hide')
+            hide.onclick=()=>{
+                s_post.style.opacity='1';
+                s_post.style.animation='none';
+                setTimeout(()=>{s_post.classList.add('opacity-0')},100)
+                
+                setTimeout(()=>{s_post.classList.add('d-none')},400)
+            }
+            if(!btn.className.includes('settings_opened')) {
+                btn.classList.add('settings_opened')
+                settings.classList.add('open')
+            }
+            else {
+                btn.classList.remove('settings_opened')
+                settings.classList.remove('open')
+            }
+        }
+    })
 },1000)
 function formComment(comment) {
     let constructed_comment = '';
@@ -272,26 +329,39 @@ function escapeHtml(text) {
         return map[m];
     });
 }
-function createpost(post){
-    
+function createpost(post,i){
+    let undo_hide = `<p class='text-danger d-none hide_post'>You won't see this post again! <span class='seethrow-btn text-success'>Undo</span></p>`
     let comments = post.comments
     let type = post.type
+    let views = ()=>{
+        if(post.views_count==1) return `<button class='seethrow-btn views_count'>${post.views_count} view</button>`
+        if(post.views_count>0) return `<button class='seethrow-btn views_count'>${post.views_count} views</button>`
+        return `<p class='views_count'>${post.views_count} views</p>`
+    }
     let comment_form = `
     <div class='d-none comments' id="comments_id-${post.id}">
         <hr>
-        ${(comments.length > 0 ? comments.map(comment => `<pre class='comment'>${formComment(comment.content)}</pre>`).join('') : "<p class='text-danger'>This post has no comments, be the first to comment</p>")}
+        ${(comments.length > 0 ? comments.map(comment => `<div class='comment-wrapper d-flex justify-content-between'><pre class='comment'>${formComment(comment.content)}</pre><div class='d-flex gap-2 image-name'><img class='user-image' src="${comment.user_detail.profile ? `./storage/${comment.user_detail.profile}` : './assets/images/user.png'}" alt="user"><a href='/profile?id=${comment.user_id}' class='username'>${comment.user_detail.username}</a></div></div>`).join('') : "<p class='text-danger'>This post has no comments, be the first to comment</p>")}
     </div>
     <form class='add-comment d-none justify-content-between gap-2' id="fid-${post.id}">
         <input class='form-control' type="text" name='content'>
         <div class='form-group d-flex justify-content-between gap-2'><div class='info-icon'><i class="fa-solid fa-info fa-lg"></i><div class='info-box'><p>By typing '<|' in your comment , you start a code box, which makes it easier to read and nacivage your code. You can close the box by typing '|>' at the end of your code (not doing so, will automatiacally assume that the code is through the end of your comment). <p></div></div><button class='btn btn-dark'>Send</button></div>
     </form>`
+    let settings_form = `<div class='settings bg-light d-flex flex-column justify-content-evenly'>
+        <button class='seethrow-btn hide'>Hide</button>
+        <button class='seethrow-btn report'>Report</button>
+        <button class='seethrow-btn block'>Block</button>
+    </div>`
     let profile = `
     <div class='draggable_post title-from d-flex justify-content-between gap-2'>
         <h3 class='draggable_post'>${escapeHtml(post.title)}</h3>
         ${(window.location.pathname == '/dashboard') ? (
             `<div class='from d-flex gap-3'>
                 <a href="/profile?id=${post.user_id}">${post.username}</a>
-                <img src="${post.profile ? `./storage/${post.profile}` : './assets/images/user.png'}" alt="user">
+                <div>
+                    <img src="${post.profile ? `./storage/${post.profile}` : './assets/images/user.png'}" alt="user">
+                    ${settings_form}
+                </div>
             </div>`
         ) : ('')}
     </div>
@@ -299,7 +369,8 @@ function createpost(post){
     switch (type) {
         case 'question':
             return `
-            <div class="pid-${post.id} post pquestion ms-4 bg-light" id="${post.id}">
+            ${undo_hide}
+            <div class="pid-${post.id} post pquestion ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.2}s'>
                 ${profile}
                 <div class='pdescription'>
                     <p>${escapeHtml(post.content)}</p>
@@ -311,14 +382,15 @@ function createpost(post){
                         <i class="fa-solid fa-box-open fa-lg pt-2"></i><p>5</p>
                         <a href="/${post.type}">#${post.type}</a>
                     </div>
-                    <p>Views:4k</p>
+                    <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
                 </div>
                 ${comment_form}
             </div>`
             break;
         case 'showcase':
             return `
-            <div class="pid-${post.id} post pshowcase ms-4 bg-light" id="${post.id}">
+            ${undo_hide}
+            <div class="pid-${post.id} post pshowcase ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
                 ${profile}
                 <div class='pdescription'>
                     <p>${escapeHtml(post.content)}</p>
@@ -331,45 +403,50 @@ function createpost(post){
                     <div class='d-flex w-75 gap-2'> 
                         <i class="comments_id-${post.id} fa-solid fa-comment fa-lg pt-2"></i>
                         <p class="counter-${post.id}">${comments.length}</p>
-                        <i class="fa-solid fa-box-open fa-lg pt-2" id='box_id-1'></i><p>5</p>
+                        <i class="fa-solid fa-box-open fa-lg pt-2" id='box_id-${post.id}'></i><p>5</p>
                         <a href="/${post.type}">#${post.type}</a>
                     </div>
-                    <p>Views:4k</p>
+                    <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
                 </div>
                 ${comment_form}
             </div>`
             break;
         case 'invitation':
             return `
-            <div class="pid-${post.id} post pinvitation ms-4 bg-light" id="${post.id}">
+            ${undo_hide}
+            <div class="pid-${post.id} post pinvitation ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
                 ${profile}
                 <div class='pdescription'>
                     <p>${escapeHtml(post.content)}</p> 
                 </div>
-                <div class='d-flex gap-2'>
-                    ${(post.auth_id != post.user_id)?(`${(post.applied > 0 ?
-                        (post.applied >= 5 && post.invitation_status == 'refused' ?
-                            `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
-                            (post.invitation_status == 'approved' ?
-                                `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
-                                (post.invitation_status == 'pending' ?
-                                    `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
-                                    `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
+                <div class='d-flex justify-content-between'>
+                    <div class='d-flex gap-2'>
+                        ${(post.auth_id != post.user_id)?(`${(post.applied > 0 ?
+                            (post.applied >= 5 && post.invitation_status == 'refused' ?
+                                `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
+                                (post.invitation_status == 'approved' ?
+                                    `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
+                                    (post.invitation_status == 'pending' ?
+                                        `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
+                                        `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
+                                    )
                                 )
-                            )
-                        ) :
-                        `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
-                    )}`):(`<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`)}
-                    <div class='pt-2 d-flex gap-1'>
-                        <i class="fa-solid fa-box-open fa-lg pt-2 mt-1"></i><p>5</p>
-                        <a href="/${post.type}">#${post.type}</a>
+                            ) :
+                            `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
+                        )}`):(`<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`)}
+                        <div class='pt-2 d-flex gap-1'>
+                            <i class="fa-solid fa-box-open fa-lg pt-2 mt-1"></i><p>5</p>
+                            <a href="/${post.type}">#${post.type}</a>
+                        </div>
                     </div>
+                    <button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button>
                 </div>
             </div>`
             break;
         case 'community':
             return `
-            <div class="pid-${post.id} post pcommunity ms-4 mb-4 bg-light" id="${post.id}">
+            ${undo_hide}
+            <div class="pid-${post.id} post pcommunity ms-4 mb-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
                 ${profile}
                 <div class='pdescription'>
                     <p>${escapeHtml(post.content)}</p>
@@ -395,13 +472,14 @@ function createpost(post){
                             <i class="fa-solid fa-box-open fa-lg pt-2"></i><p>5</p>
                             <a href="/${post.type}">#${post.type}</a>
                         </div>
-                        <p>Views:4k</p>
+                        <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
                     </div>
-                    ${comment_form}
                 </div>
+                ${comment_form}
             </div>`
             break;
         default:
             break;
+        
     }
 }

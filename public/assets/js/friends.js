@@ -17,6 +17,26 @@ fetch('get-requests')
         <h2>Requests:</h2>
             <div class='requests-list'>
         </div>  `
+        let requests_list = requests.querySelector('.requests-list')
+        data.forEach(req => {
+            console.log(req)
+            requests_list.innerHTML += `
+            <div class='card friend-request'>
+                <h4 class='text-center mt-3'>${req.user_name}</h4>
+                <div class='d-flex justify-content-around'>
+                    <div class="card-body">
+                        <img class="requested-image rounded-circle"src="${req.user_image ? `./storage/${req.user_image}` : './assets/images/user.png'}" alt="user">
+                    </div>
+                    <div class="card-text mt-5">
+                        <div class='d-flex gap-3'>
+                            <button class="btn btn-success">Accept</button>
+                            <button class="btn btn-danger">Refuse</button>
+                        </div>
+                        <button class="btn btn-primary mt-3">View Profile</button>
+                    </div>
+                </div>
+            </div>`
+        });
     }
     
     console.log(data)

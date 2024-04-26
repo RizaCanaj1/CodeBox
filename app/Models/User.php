@@ -66,7 +66,7 @@ class User extends Authenticatable
         parent::boot();
 
         static::created(function ($user) {
-            $user->assignRole('programmer');
+            //$user->assignRole('programmer');
         });
     }
     public function posts() {

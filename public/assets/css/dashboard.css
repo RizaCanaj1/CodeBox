@@ -241,4 +241,5 @@ i{
 .posts{
     display: grid;
     grid-template-columns: 35% 35%;
+    gap: 25px;
 }

@@ -102,7 +102,7 @@ let scene_btn = document.querySelector('.welcome-scene .center-position')
 let logo_text = document.querySelector('.welcome-scene .scene-logo-text')
 let has_started = localStorage.getItem("c-box");
 if(!has_started){
-    document.body.style.overflowY='hiden'
+    document.body.style.overflowY='hidden'
     scene_btn.onclick = ()=>{
         localStorage.setItem("c-box", "started");
         scene_btn.parentElement.classList.add('scene-start')

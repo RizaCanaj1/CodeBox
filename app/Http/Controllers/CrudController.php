@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Posts;
 use App\Models\PostCodes;
+use App\Models\PostViews;
 use App\Models\PostComments;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
@@ -26,6 +27,28 @@ class CrudController extends Controller
     public function get_auth (){
         return response()->json(auth()->id());
     }
+    public function count_view($id){
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        $data = [
+            'post_id' => $id,
+            'user_id' => auth()->id(),
+        ];
+        
+        $existingView = PostViews::where('post_id', $id)
+            ->where('user_id', auth()->id())
+            ->count();
+        if ($existingView>0) {
+            return response()->json(['error' => 'User has already viewed this post']);
+        }
+
+        if (!PostViews::create($data)) {
+            return response()->json(['error' => 'View not counted']);
+        }
+
+        return response()->json(['success' => 'View counted'], 200);
+    }
     public function get_role (){
         $role = Auth::user()->roles->pluck('name')->implode(',');
         return response()->json($role);
@@ -39,6 +62,7 @@ class CrudController extends Controller
         $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->get();
         
         foreach ($posts as $post) {
+            
             $post->auth_id = auth()->id();
             if($post->type == 'community'){
                 $media = $post->media()->pluck('source')->toArray();
@@ -59,7 +83,23 @@ class CrudController extends Controller
                     $post->invitation_status = $invitation[count($invitation) - 1]->status;
                 }
             }
+            if($post->type !='invitation'){
+                $postViews = PostViews::where('post_id', $post->id);
+                $details = [];
+                $views = $postViews->get();
+                foreach($views as $viewer){
+                    $user = User::select('id', 'name as username', 'profile_photo_path as profile')->find($viewer->user_id);
+                    if ($user) {
+                        array_push($details,$user);
+                    }
+                }
+                $post->views_count = $postViews->count() ;
+                $post->views_details = $details;
+            }
             $comments = PostComments::where('post_id', $post->id)->get();
+            foreach($comments as $comment){
+                $comment->user_detail = User::select('id', 'name as username', 'profile_photo_path as profile')->find($comment->user_id);
+            }
             $post->comments = $comments;
         }
         return response()->json($posts);
