@@ -1,0 +1,113 @@
+.emojis { 
+    bottom: 100%;
+}
+.emojis_btn{    
+    margin: 0px;
+    background-color: whitesmoke;
+    border: 1px solid black;
+    padding: 6px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+.emojis_wrapper{
+    container-type: inline-size;
+    container-name: emoji_container;
+    opacity: 0;
+    overflow-y: scroll;
+    bottom: 100%;
+    height: 0px;
+    background-color: transparent;
+    outline: 1px solid transparent;
+    user-select: none;
+    animation:index_hide 0s forwards;
+    animation-delay: .3s;
+}
+.emojis_nav {
+    background-color: transparent;
+    animation:index_hide 0s forwards;
+    animation-delay: .3s;
+    opacity: 0;
+    user-select: none;
+}
+.emojis:has( .emojis_wrapper.show_emojis) .emojis_nav {
+    background-color: whitesmoke;
+    padding-top: 7px;
+    padding-left: 2px;
+    padding-right: 2px;
+    animation:none;
+    opacity: 1;
+}
+.emojis:has( .emojis_wrapper.show_emojis) .emojis_nav h6{
+    padding-left: 10px;
+    padding-right: 10px;
+    position: relative;
+    cursor: pointer;
+}
+.emojis:has( .emojis_wrapper.show_emojis) .emojis_nav h6:not(:last-child)::after{
+    content: '';
+    right: 0px;
+    top: 2px;
+    height: 80%;
+    width: 1px;
+    position: absolute;
+    background-color: rgb(180, 180, 180);
+}
+.emojis:has( .emojis_wrapper.show_emojis) .emojis_nav h6.active_nav{
+    background-color: rgb(255, 228, 170);
+}
+.emojis_wrapper.show_emojis{
+    opacity: 1;
+    animation: none;
+    background-color: whitesmoke;
+    height: 20vh;
+    outline: 1px solid black;
+}
+.emojis_wrapper .emojis_group{
+    padding-left: 5px;
+    display: grid;
+    grid-template-columns: repeat(12,1fr);
+}
+.emojis_wrapper .emoji{
+    transition:all .2s;
+    transition-delay: .1s;  
+    width: fit-content;
+    padding: 6px;
+    font-size: 25px;
+    cursor: pointer;
+}
+.emojis_wrapper .emoji:hover{     
+    transition: all .2s;
+    transition-delay: .1s;
+    padding: 0px;
+    padding-top: 2px;
+    padding-left: 2px;
+    font-size: 30px;
+}
+@keyframes index_hide {
+    to{z-index: -1;}
+}
+@container emoji_container (width < 820px){
+    .emojis_group{
+        grid-template-columns: repeat(8,1fr)!important;
+    }
+}
+@container emoji_container (width < 620px){
+    .emojis_group{
+        grid-template-columns: repeat(6,1fr)!important;
+    }
+}
+@container emoji_container (width < 520px){
+    .emojis_group{
+        grid-template-columns: repeat(5,1fr)!important;
+    }
+}
+@container emoji_container (width < 420px){
+    .emojis_group{
+        grid-template-columns: repeat(4,1fr)!important;
+    }
+}
+@container emoji_container (width < 320px){
+    .emojis_group{
+        grid-template-columns: repeat(3,70px)!important;
+    }
+}

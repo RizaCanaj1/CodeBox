@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="../assets/css/dashboard.css"/>
     <link rel="stylesheet" href="../assets/css/components/post.css"/>
     <link rel="stylesheet" href="../assets/css/components/code_box.css"/>
+    <link rel="stylesheet" href="../assets/css/components/emojis.css"/>
     <pre>
     @php
         $notifications = App\Models\Notifications::where('user_id','=',auth()->id())->orderBy('id', 'DESC')->get();
@@ -566,6 +567,7 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/components/emojis.js"></script>
     <script src="assets/js/components/post.js"></script>
     <script src="assets/js/components/code_box.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>

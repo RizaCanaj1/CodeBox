@@ -11,6 +11,9 @@
 </head>
 <body class='bg-light'>
     <p class='hover_message'></p>
+    <div class='errors d-flex flex-column gap-3'>
+        </div>
+    
     <div class='startup-wrapper d-flex flex-column align-items-center'>
         <h2 class='welcome_text'>Welcome to CodeBox</h2>
         <button class='btn_seethrow continue'>Continue to set up your account</button>
@@ -43,16 +46,61 @@
         <div class='second_setup'>
             <div class='select-setting d-flex gap-4'>
                 <div class='selection update_profile'>
-                    <h4>Update your profile</h4>
-                    <p>Profile image</p>
-                    <p>Bio:</p>
-                    <p>Link account</p>
-                    <p>Socialmedia</p>
+                    <div class='d-flex justify-content-center'>
+                        <div>
+                            <h4 class='text-center'>Update your profile</h4>
+                            <div class="d-flex justify-content-around gap-4">
+                                <div  class='d-flex flex-column gap-3 profile-image'>
+                                    <button class='btn_seethrow'><h5>Profile image</h5></button>
+                                    <img class="ms-3 rounded-circle" src="../assets/images/user.png" alt="User-image">
+                                    <label for="profile_photo_path"><div class='profile_hover d-flex justify-content-center align-items-center'><i class="fa-solid fa-upload fa-xl text-white"></i></div></label>
+                                    <input class='d-none' type="file" name='profile_photo_path' id='profile_photo_path' accept="image/png, image/jpeg, image/jpg">
+                                    <div class='remove_image d-none'><p class='text-center text-white'>x</p></div>
+                                </div>
+                                
+                                <div class='d-flex flex-column gap-3'>
+                                    <label for="bio"><button class='btn_seethrow'><h5>Bio:</h5></button></label>
+                                    <textarea class='m-auto' name="bio" id="bio"></textarea>
+                                    <p class='hidden_textarea opacity-0'></p>
+                                    <div class="bio_length"><p><span class='length'>0</span>/<span class='max-length'>255</span></p></div>
+                                </div>
+                            </div>
+                            <h5 class='text-center mt-2'>Socialmedia</h5>
+                            <div class="d-flex justify-content-around my-2">
+                                <select name="social_media" id="social_media">
+                                    <option value="">Social Media</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="LinkedIn">Linkedin</option>
+                                    <option value="YouTube">Youtube</option>
+                                </select>
+                                <div class='d-flex social_input d-none'>
+                                    <input type="text" name='prefix' id='prefix' placeholder='prefix' readonly><input type="text" name='social_link' id='social_link'>
+                                </div>
+                                <button class='add_social btn btn-success d-none'><i class="fa-solid fa-check"></i></button>
+                            </div>
+                            <div class="added_social d-none d-flex justify-content-center gap-3"></div>
+                            <h5 class='text-center mt-2'>CV</h5>
+                            <div class="d-flex justify-content-around my-2">
+                                <label for="cv">Import CV</label>
+                                <input class='d-none' type="file" name='cv' id='cv' accept=".pdf, image/png, image/jpeg, image/jpg">
+                            </div>
+                        </div>
+                        <div class='show_cv d-none p-3 d-flex flex-column justify-content-center'>
+                            <div class='d-flex justify-content-center cv_images'>
+                                <img class="cv_image" class="ms-3" alt="User-CV">
+                            </div>
+                            <div class='d-flex gap-4 mt-3 justify-content-center cv_buttons'>
+                                <button class="btn btn-primary view_cv">View</button>
+                                <button class="btn btn-secondary remove_cv">Remove</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class='setup_buttons d-flex justify-content-between mt-4'>
                 <button class='btn_seethrow back_to_first'><-back</button>
-                <button class='btn_seethrow next_setup'>Finish-></button>
+                <button class='btn_seethrow finish_setup'>Finish-></button>
             </div>
         </div>
         <button class='btn_seethrow text-danger skip'>Skip (set default)</button>
@@ -62,9 +110,18 @@
         </div>
         <button class='btn_seethrow text-warning log_out'>Log Out</button>
     </div>
-    
-    
+    <div class="focus_cv d-none p-5">
+        <div class='d-flex justify-content-center cv_images'>
+            <img class="cv_image" class="ms-3" alt="User-CV">
+        </div>
+        <div class='d-flex gap-4 mt-3 justify-content-center cv_buttons'>
+            <button class="btn btn-primary close_focus">Close</button>
+            <button class="btn btn-secondary remove_cv">Remove</button>
+        </div>
+    </div>
+    <iframe id='responseFrame' frameborder="0"></iframe>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/components/pdf.min.js"></script>
     <script src="assets/js/startup.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

@@ -43,9 +43,20 @@ fetch(`get-user/${user_id}`)
     return response.json();
 })
 .then(data=>{
+    console.log(data)
     document.querySelector('.profile-name').innerHTML=data.username
     if(data.profile){
         document.querySelector('.profile-image').src=`./storage/${data.profile}`
+    }
+    if(data.bio){
+        bio.innerHTML=data.bio
+    }
+    if(data.social_media){
+        data.social_media.forEach(s=>{
+            contacts_element.innerHTML +=`<span class='removable-icons' id='${s.social_media}-icon'><a href="${s.media_link}" id='${s.social_media}-link'><i class="fa-brands fa-${s.social_media} fa-2x ${s.social_media}-icon"></i></a><span class='remove-btn d-none'></span></span>`
+        })
+        remove_button = document.querySelectorAll('.m-info .remove-btn')
+        initialise_remove_buttons()
     }
 })
 .catch(() => {

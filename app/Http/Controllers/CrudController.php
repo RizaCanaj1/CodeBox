@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Posts;
 use App\Models\PostCodes;
 use App\Models\PostViews;
+use App\Models\UserMedia;
 use App\Models\PostComments;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
@@ -53,14 +54,12 @@ class CrudController extends Controller
         $role = Auth::user()->roles->pluck('name')->implode(',');
         return response()->json($role);
     }
-    public function get_all_users()
-    {
+    public function get_all_users(){
         $users = User::all(['id', 'name']);
         return response()->json($users);
     }
     public function get_posts(){
-        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->get();
-        
+        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->paginate(10);
         foreach ($posts as $post) {
             
             $post->auth_id = auth()->id();
@@ -152,10 +151,12 @@ class CrudController extends Controller
     }
     public function get_user(Request $request, $user_id)
     {
-        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email')->find($user_id);
+        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email','bio')->find($user_id);
         if (!$data) {
             return response()->json(['error' => 'User not found'], 404); 
         }
+        $social_media = UserMedia::where('user_id', $user_id)->get();
+        $data->social_media = $social_media;
         return response()->json($data);
     }
     public function get_group($id){

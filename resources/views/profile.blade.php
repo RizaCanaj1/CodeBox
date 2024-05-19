@@ -37,11 +37,7 @@
                 <div class='m-info'>
                     <h1>Contacts:</h1>
                     <div class='d-flex gap-2 my-2'>
-                        <div class='contacts d-flex gap-2'>
-                            <span class='removable-icons' id='facebook-icon'><a href="https://www.facebook.com/" id='facebook-link'><i class="fa-brands fa-facebook fa-2x facebook-icon"></i></a><span class='remove-btn d-none'></span></span>
-                            <span class='removable-icons' id='instagram-icon'><a href="https://www.instagram.com/" id='instagram-link'><i class="fa-brands fa-instagram fa-2x instagram-icon"></i></a><span class='remove-btn d-none'></span></span>
-                            <span class='removable-icons' id='linkedin-icon'><a href="https://www.linkedin.com/" id='linkedin-link'><i class="fa-brands fa-linkedin fa-2x linkedin-icon"></i></a><span class='remove-btn d-none'></span></span>
-                        </div>
+                        <div class='contacts d-flex gap-2'></div>
                         <i class='fa-solid fa-plus fa-xl add-icon d-none'></i>
                     </div>
                     

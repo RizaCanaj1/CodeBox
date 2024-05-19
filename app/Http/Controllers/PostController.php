@@ -18,7 +18,7 @@ class PostController extends Controller
 {   
     public function get_posts_from_user(Request $request, $user_id)
     {
-        $posts = Posts::where('user_id', $user_id)->get();
+        $posts = Posts::where('user_id', $user_id)->paginate(10);
         foreach ($posts as $post) {
             $post->auth_id = auth()->id();
             if($post->type == 'community'){
@@ -50,7 +50,6 @@ class PostController extends Controller
                         array_push($details,$user);
                     }
                 }
-                
                 $post->views_count = $postViews->count() ;
                 $post->views_details = $details;
             }

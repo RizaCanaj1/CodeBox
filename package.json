@@ -6,13 +6,23 @@
         "build": "vite build"
     },
     "devDependencies": {
+        "@babel/core": "^7.24.5",
+        "@babel/preset-env": "^7.24.5",
         "@tailwindcss/forms": "^0.5.2",
         "@tailwindcss/typography": "^0.5.0",
         "autoprefixer": "^10.4.7",
         "axios": "^1.6.1",
+        "babel-loader": "^9.1.3",
         "laravel-vite-plugin": "^0.8.0",
         "postcss": "^8.4.14",
         "tailwindcss": "^3.1.0",
-        "vite": "^4.0.0"
+        "vite": "^4.0.0",
+        "webpack": "^5.91.0",
+        "webpack-cli": "^5.1.4"
+    },
+    "dependencies": {
+        "docx-pdf": "^0.0.1",
+        "express": "^4.19.2",
+        "multer": "^1.4.5-lts.1"
     }
 }

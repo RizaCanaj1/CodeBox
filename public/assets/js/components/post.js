@@ -1,11 +1,18 @@
 let closest_post
+let current_page = 1
+let nr_of_posts = ''
+let last_page = null
+let post_even = null
+let post_odd = null
 if(window.location.pathname =='/dashboard'){
+show_emojis().then(e=>{console.log(e)})
     document.querySelector('.posts').innerHTML='<div class="odd"></div><div class="even"></div>'
+    post_even = document.querySelector('.posts .even')
+    post_odd = document.querySelector('.posts .odd')
 }
 else{
     document.querySelector('.posts').innerHTML=''
 }
-
 let postUpdateInterval = null;
 let comments = [];
 let hovered_post = null;
@@ -41,24 +48,68 @@ function countView() {
     clearTimeout(delayTimer);
     delayTimer = null;
 }
-if(window.location.pathname =='/dashboard'){
-    fetch(`get-posts`).then(response=>response.json())
+function get_posts(page){
+    let postsHTML = [];
+    fetch(`get-posts?page=${page}`).then(response=>response.json())
     .then(data=>{
-        for(let i = 0; i<data.length;i++){
-            let post = data[i]
-            if(i%2==0)
-            document.querySelector('.posts .even').innerHTML+= createpost(post,i);
-            else 
-            document.querySelector('.posts .odd').innerHTML+= createpost(post,i);
-            
-        }
-        
+        console.log(data)
+        let from = data.from - 1
+        let p = data.current_page
+        nr_of_posts = data.total - data.from + 1 
+        last_page = data.last_page
+        data = data.data
+        console.log(nr_of_posts)
+            for (let i = 0; i < data.length ; i++) {
+                let post = data[i];
+                let postHTML = createpost(post, i);
+                postsHTML.push(postHTML);
+            }
+            for (let i = 0; i < data.length ; i++) {
+                if (i % 2 == 0) post_odd.innerHTML += postsHTML[i];
+                else post_even.innerHTML += postsHTML[i];
+                setTimeout(()=>{let d = document.querySelector(`.post.pid-${data[i].id}`);d.style.animation='none';d.style.opacity= '1';},3500)
+                if(i==data.length-1){
+                    const emojis_btn = document.querySelector('.emojis_btn')
+                    const emojis = document.querySelector('.emojis_wrapper')
+                    emojis_btn.onclick = ()=>{
+                        if (emojis.classList.contains('show_emojis')) {emojis.classList.remove('show_emojis');}
+                        else {emojis.classList.add('show_emojis');}
+                    }
+                    show_emojis().then(emojis_text=>{
+                        document.getElementById('loading_emojis').remove()
+                        const input_field = document.querySelector('.comment_input')
+                        emojis_handler(input_field,emojis_text)
+                    })
+                    .catch(error=>{
+                        console.error(error)
+                        emojis.innerHTML=`<h5 class='text-danger'>${error}</h5>`
+                        emojis.style.overflowY = 'hidden'
+                    })
+                }
+            }
     })
+    current_page++
+    
+}
+
+setTimeout(() => {
+    window.onscroll = () => {
+        if (isBottom() && current_page <= last_page) {
+            get_posts(current_page);
+        }
+    };
+}, 3500);
+function isBottom() { return window.innerHeight + window.scrollY >= document.body.offsetHeight-20; }
+if(window.location.pathname =='/dashboard'){
+    if(last_page>current_page || current_page==1){
+        get_posts(current_page) 
+    }
 }
 else{
     let user_id = url.searchParams.get('id');
     fetch(`get-posts-from-user/${user_id}`).then(response=>response.json())
     .then(data=>{
+        data = data.data
         let type_of_posts = []
         let post_selector = document.querySelector('.post-selector div')
         post_selector.innerHTML=''
@@ -76,7 +127,6 @@ else{
         let post_selectors = document.querySelectorAll('.post-selector .p-selector h3')
         post_selectors.forEach(selector => {
             selector.addEventListener('click',()=>{
-
                 let actived=document.querySelectorAll('.actived').length
                 if(selector.className=='actived' && actived>1){
                     selector.classList.remove('actived')
@@ -344,7 +394,8 @@ function createpost(post,i){
         ${(comments.length > 0 ? comments.map(comment => `<div class='comment-wrapper d-flex justify-content-between'><pre class='comment'>${formComment(comment.content)}</pre><div class='d-flex gap-2 image-name'><img class='user-image' src="${comment.user_detail.profile ? `./storage/${comment.user_detail.profile}` : './assets/images/user.png'}" alt="user"><a href='/profile?id=${comment.user_id}' class='username'>${comment.user_detail.username}</a></div></div>`).join('') : "<p class='text-danger'>This post has no comments, be the first to comment</p>")}
     </div>
     <form class='add-comment d-none justify-content-between gap-2' id="fid-${post.id}">
-        <input class='form-control' type="text" name='content'>
+        <input class='form-control comment_input' type="text" name='content'>
+        <div class='emojis position-absolute w-100'><div class="emojis_nav position-sticky d-flex justify-content-center align-items-center"></div><div class='emojis_wrapper position-absolute w-100 pt-2 px-4'><h5 id="loading_emojis">Loading Emojis</h5></div></div><p class='emojis_btn'><i class="fa-solid fa-icons"></i></p>
         <div class='form-group d-flex justify-content-between gap-2'><div class='info-icon'><i class="fa-solid fa-info fa-lg"></i><div class='info-box'><p>By typing '<|' in your comment , you start a code box, which makes it easier to read and nacivage your code. You can close the box by typing '|>' at the end of your code (not doing so, will automatiacally assume that the code is through the end of your comment). <p></div></div><button class='btn btn-dark'>Send</button></div>
     </form>`
     let settings_form = `<div class='settings bg-light d-flex flex-column justify-content-evenly'>

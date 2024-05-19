@@ -21,7 +21,7 @@ div[class^="feature-"]{
     transition: .5s;
     width: 200px;
     display: block;
-    border-right: 1px solid rgba(0,0,0,.125);
+    border-right: 3px solid rgba(0,0,0,.125);
 }
 div[class^="feature-"]:not(:last-child){
     border-bottom: 1px solid rgba(0,0,0,.125);
@@ -31,6 +31,7 @@ div[class^="feature-"].active{
     border-right: 3px solid rgba(0,0,0,.5);
 }
 .screen{
+    position: relative;
     overflow: hidden;
     transition: all .5s;
     margin: 1rem;
@@ -39,6 +40,28 @@ div[class^="feature-"].active{
     border: 2px solid rgba(0,0,0,.5);
     border-radius: 10px;
 }
+.screen .chat{
+    overflow: hidden;
+    height: 55vh;
+}
+.screen .message_form{
+    padding: 10px;
+    background-color: rgb(211,211,211);
+    bottom: 0px;
+}
+.screen .message_form .chat_msg{
+    resize: none;
+    height: 42px;
+    border-radius: 20px;
+}
+.screen .message_form .emojis_btn , .screen .message_form .send_message{
+    background-color: whitesmoke;
+    border: 1px solid black;
+    padding: 8px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
 
 div[class^='message-'] .msg{
     border: 1px solid rgba(0,0,0,.5);
