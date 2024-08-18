@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use ZipArchive;
 use App\Models\Posts;
 use App\Models\PostCodes;
 use App\Models\PostViews;
@@ -16,54 +17,24 @@ use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {   
-    public function get_posts_from_user(Request $request, $user_id)
+    public function unzipFile($filePath, $destinationPath)
     {
-        $posts = Posts::where('user_id', $user_id)->paginate(10);
-        foreach ($posts as $post) {
-            $post->auth_id = auth()->id();
-            if($post->type == 'community'){
-                $media = $post->media()->pluck('source')->toArray();
-                $post->media = $media ;
+        Storage::makeDirectory($destinationPath);
+        $zip = new ZipArchive();
+
+        if ($zip->open($filePath) === TRUE) {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $filename = $zip->getNameIndex($i);
+
+                $zip->extractTo($destinationPath, $filename);
             }
-            else if($post->type == 'showcase'){
-                $code = $post->code()->pluck('source')->toArray();
-                $post->code = $code ;
-            }
-            else if($post->type == 'invitation'){
-                $invitation = PostInvitations::where('from_user_id', auth()->id())->where('post_id', $post->id)->get('status');
-                $applied = $invitation->count();
-                $post->applied = $applied;
-                if($applied == 1){
-                    $post->invitation_status = $invitation[0]->status;
-                }
-                else if($applied > 1){
-                    $post->invitation_status = $invitation[count($invitation) - 1]->status;
-                }
-            }
-            if($post->type !='invitation'){
-                $postViews = PostViews::where('post_id', $post->id);
-                $details = [];
-                $views = $postViews->get();
-                foreach($views as $viewer){
-                    $user = User::select('id', 'name as username', 'profile_photo_path as profile')->find($viewer->user_id);
-                    if ($user) {
-                        array_push($details,$user);
-                    }
-                }
-                $post->views_count = $postViews->count() ;
-                $post->views_details = $details;
-            }
-            $comments = PostComments::where('post_id', $post->id)->get();
-            foreach($comments as $comment){
-                $comment->user_detail = User::select('id', 'name as username', 'profile_photo_path as profile')->find($comment->user_id);
-            }
+
+            $zip->close();
             
-            $post->comments = $comments;
+            return true;
+        } else {
+            return false; 
         }
-        if (!$posts) {
-            return response()->json(['error' => 'Error finding posts'], 404); 
-        }
-        return response()->json($posts);
     }
     public function create_post(Request $request)
     {
@@ -75,7 +46,12 @@ class PostController extends Controller
         ]);
         $data = $request->except(['_token', 'code']);
         $data['user_id'] = auth()->user()->id;
-        //return view('create_post', ['data' => $data]);
+        if($data['type']=='question'){
+            $same_content = Posts::where('title','LIKE',$data['title'])->where('type','LIKE','question')->get();
+            if($same_content->count() > 0){
+                return redirect()->back()->with('status',$same_content);
+            }
+        }
         if($newPost = Posts::create($data)){
             if($request->hasFile('code') && $data['type']=='showcase'){
                 $destinationPath = 'public/codes/';
@@ -126,9 +102,135 @@ class PostController extends Controller
                     redirect()->back()->with('status', 'Creating settings for your group has failed!');
                 }
             }
+            
             return redirect()->route('dashboard')->with('status', 'Post is added');
         }
         return redirect()->back()->with('status', 'Something went wrong!');
+    }
+    public function edit_comment(Request $request){
+        if(isset($request['content']) && isset($request['comment_id'])){
+            $comment_data = PostComments::find($request['comment_id']);
+            if(isset($comment_data)){
+                $comment_data->content = $request['content'];
+                if (!$comment_data->save()) {
+                    return response()->json(['message' => 'Failed to edit comment'], 500);
+                }
+                return response()->json(['message' => 'Comment edited successfully']);
+            }
+            return response()->json(['message' => 'Comment was not found!']);
+        }
+        return response()->json(['message' => 'Nothing to be edited on this comment'], 500);
+    }
+    public function project_code(Request $request)  {
+        $formData = $request->all();
+        $groupId = $request->post_id;
+        $destinationPath = 'Group/' . $groupId . '/Code';
+        $file = $request->file('code');
+        $filename = $file->getClientOriginalName(); 
+        if (!Storage::putFileAs($destinationPath, $file, $filename)) {
+            return response()->json(['message' => "Failed to upload your code"], 500);
+        }
+        $zipFilePath = storage_path('app/' . $destinationPath . '/' . $filename);
+        $extractedPath = storage_path('app/' . $destinationPath . '/');
+        $this->unzipFile($zipFilePath, $extractedPath);
+        if (file_exists($zipFilePath)) {
+            unlink($zipFilePath);
+        }
+        return response()->json(['message' => 'File uploaded and extracted successfully'], 200);
+    }
+    public function get_project($id, $path = ''){
+        $projectFolderPath = storage_path('app/Group/' . $id . '/Code');
+        $fullPath = $projectFolderPath . '/' . $path;
+        if (!file_exists($fullPath)) {
+            return ['error' => false];
+        }
+        $result = [
+            'contents' => [],
+            'file_count' => 0,
+            'folder_count' => 0
+        ];
+        $items = scandir($fullPath);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $itemPath = $fullPath . '/' . $item;
+            $timestamp = filemtime($itemPath);
+            $formattedDate = date('d/m/Y', $timestamp);
+            if (is_dir($itemPath)) {
+                $directory = $this->get_project($id, ltrim($path . '/' . $item, '/'));
+                $result['folder_count'] += 1;
+                
+                $result['folder_count'] += $directory['folder_count'];
+                if ($directory['file_count'] > 0) {
+                    $result['file_count'] += $directory['file_count'];
+                }
+                $dirInfo = [
+                    'type' => 'directory',
+                    'last_updated' => $formattedDate
+                ];
+                $directory['info'] = $dirInfo;
+                $result['contents'][$item] = $directory;
+            } else {
+                $result['file_count']++;
+                $fileInfo = [
+                    'type' => mime_content_type($itemPath),
+                    'size' => filesize($itemPath), 
+                    'last_updated' => $formattedDate
+                ];
+                $result['contents'][$item] = ['info' => $fileInfo];
+            }
+        }
+        return $result;
+    }
+    public function get_code(Request $request){
+        if(!isset($request->group_id)){
+            return response()->json(['message' => 'There is an error loading files from your project'], 500);
+        }
+        $group = Posts::where('id',$request->group_id)->get()->count();
+        if($group!=1){
+            return response()->json(['message' => 'Your project is not found'], 500);
+        }
+        $destinationPath = 'Group/' . $request->group_id . '/Code' . $request->file_position;
+        if (Storage::exists($destinationPath)) {
+            $destinationPath = Storage::get($destinationPath);
+            $formattedCode = $this->format_code($destinationPath);
+            return response()->json(['code' => $formattedCode], 200);
+        }
+        return response()->json(['message' => 'Your file is not found'], 500);
+    }
+    public function format_code ($code) {
+        $decoded = json_decode($code, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // If it's valid JSON, pretty-print it
+            $code = json_encode($decoded, JSON_PRETTY_PRINT);
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $code);
+        $formattedLines = [];
+        $batchSize = 100; // Process 100 lines at a time
+        $totalLines = count($lines);
+        $numBatches = ceil($totalLines / $batchSize);
+        $index = -1;
+        for ($batchIndex = 0; $batchIndex < $numBatches; $batchIndex++) {
+            $startIndex = $batchIndex * $batchSize;
+            $batchLines = array_slice($lines, $startIndex, $batchSize);
+
+            foreach ($batchLines as $line) {
+                $index++;
+                $formattedLine ='<span id="line-' . ($startIndex + $index + 1) . '"><a>' . ($startIndex + $index + 1) . '</a>   <span>' . htmlspecialchars($line) . '</span></span><br/>';
+                $formattedLines[] = $formattedLine;
+            }
+        }
+        return implode('', $formattedLines);
+    }
+    public function get_post_code($file_name){
+        $filePath = 'codes/'.$file_name;
+        if(Storage::disk('public')->exists($filePath)){
+            $code = Storage::disk('public')->get($filePath);
+            $formattedLines = $this->format_code($code);
+            return response()->json(['code' => $formattedLines], 200);
+        }
+        return response()->json(['error' => 'Code is not found'], 200);
     }
     public function destroy(string $id)
     {
@@ -138,4 +240,4 @@ class PostController extends Controller
         }
         return redirect()->back();
     }
-}
+} 

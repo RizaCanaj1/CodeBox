@@ -23,6 +23,9 @@
     animation-delay: .3s;
 }
 .emojis_nav {
+    container-type: inline-size;
+    container-name: emoji_nav;
+    width: 100%;
     background-color: transparent;
     animation:index_hide 0s forwards;
     animation-delay: .3s;
@@ -35,7 +38,11 @@
     padding-left: 2px;
     padding-right: 2px;
     animation:none;
+    max-width: 100%;
     opacity: 1;
+}
+.emojis_symbol{
+    display: none;
 }
 .emojis:has( .emojis_wrapper.show_emojis) .emojis_nav h6{
     padding-left: 10px;
@@ -85,6 +92,22 @@
 }
 @keyframes index_hide {
     to{z-index: -1;}
+}
+@container emoji_nav (width < 620px){
+    .emojis_symbol{
+        display: inline-block;
+    }
+    .emojis_title{
+        display: none;
+    }
+}
+@container emoji_nav (width > 620px){
+    .emojis_symbol{
+        display: none;
+    }
+    .emojis_title{
+        display: inline-block;
+    }
 }
 @container emoji_container (width < 820px){
     .emojis_group{

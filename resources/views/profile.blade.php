@@ -3,7 +3,7 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <link rel="stylesheet" href="../assets/css/profile.css"/>
     <link rel="stylesheet" href="../assets/css/components/post.css"/>
-       
+    <link rel="stylesheet" href="../assets/css/components/emojis.css"/>
     <body class="font-sans antialiased">
     <div class='container'>
         <div class='mt-5'>
@@ -79,6 +79,8 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/profile.js"></script>
+    <script src="assets/js/components/emojis.js"></script>
+    <script src="assets/js/components/comments.js"></script>
     <script src="assets/js/components/post.js"></script>
     <script src="assets/js/components/code_box.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>

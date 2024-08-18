@@ -8,6 +8,7 @@ use App\Http\Controllers\CrudController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\FriendsController;
 use App\Http\Controllers\StartupController;
 use App\Http\Controllers\ApplicationsController;
@@ -44,6 +45,7 @@ Route::middleware([
             if($path=='puzzle'){return view('puzzle');}
             if($path=='profile'){return view('profile');}
             if($path=='friends'){return view('friends');}
+            
             //Crud
             //User
             if($path=='get-all-users'){return app(CrudController::class)->get_all_users();}
@@ -56,6 +58,7 @@ Route::middleware([
             if($path=='get-not-teachers'){return app(CourseController::class)->get_not_teachers();}
         }
         else{
+            if($path=='startup'){return view('startup');}
             return redirect()->to('../startup');
         }
     })->name('path_corrector');
@@ -73,6 +76,8 @@ Route::middleware([
     Route::get('/group/{id}',[CrudController::class,'show_group'])->name('group');
     Route::get('/group_chat/{id}',[GroupController::class,'get_group_chat'])->name('group_chat');
     Route::post('/send_group_message/{id}',[GroupController::class,'send_group_message'])->name('send_group_message');
+    Route::post('/add-group-role/{id}',[GroupController::class,'add_group_role'])->name('add_group_role');
+    Route::get('/searched/{text}',[SearchController::class,'searchEngine'])->name('searched');
     //Crud
     //User
     //Route::get('/get-all-users',[CrudController::class,'get_all_users']);
@@ -93,9 +98,15 @@ Route::middleware([
     Route::get('/get-group/{id}',[CrudController::class,'get_group'])->name('get_group');
     Route::get('/applications/{id}',  [ApplicationsController::class, 'get_applications'])->name('applications');
     Route::get('/group-settings/{id}',[CrudController::class,'group_settings'])->name('group_settings');
+    Route::get('/get_project/{id}',[PostController::class,'get_project'])->name('get_project');
     Route::get('/handle_applications/{id}',[ApplicationsController::class, 'handle_applications'])->name('handle_applications');
+    Route::get('/get-code/{file_name}',[PostController::class,'get_post_code']);
     Route::post('/applications/{id}',  [ApplicationsController::class, 'apply'])->name('apply');
     Route::post('/add-comment/{post_id}', [CrudController::class, 'add_comment']);
+    Route::post('/edit-comment', [PostController::class, 'edit_comment']);
+    Route::post('/project_code',[PostController::class,'project_code']);
+    Route::post('/get-code',[PostController::class,'get_code']);
+    
     //Course
     //Route::get('/get_teachers',[CourseController::class,'get_teachers'])->name('get_teachers');
     //Route::get('/get-not-teachers',[CourseController::class,'get_not_teachers']);

@@ -7,6 +7,8 @@
     --recent_dot_height:-20px;
     --scene_logo_padding: 30px;
     --scene_logo_width: 115px;
+    --bg_theme:white;
+    --bg_color:black;
 }
 /*Welcome-scene*/
 .welcome-scene *{
@@ -211,6 +213,7 @@
     animation-name: codebox;
     animation-duration: 1s;
     cursor: pointer;
+    background-color: white;
 }
 .CodeBox p{
     margin-top: 3px;
@@ -263,18 +266,20 @@
     top: 0px;
     position: absolute;
     padding: 10px 4px 12px 6px;
-    background-color: rgb(98, 211, 219);
 }
 .nav-links a.active{
     top: -5px;
     background-color:transparent;
     cursor:default;
 }
+.nav-links a.active i{
+    color: rgba(0,0,0,0.7);
+}
 .nav-links a.active::before{
-    color: rgb(23, 143, 59);
+    color: rgb(0, 0, 0);
     position: absolute;
     left: -2px;
-    top: 40px;
+    top: 55px;
     content: attr(data-type);
     animation: show_text 1s;
 }
@@ -290,21 +295,20 @@
 .nav-links a:not(.active):hover{
     border-radius: 15px;
     top: -5px;
-    background-color: rgba(206, 218, 105, 0.2);
 }
 .nav-links a:not(.active):hover::before{
-    color: rgb(23, 143, 59);
+    color: rgb(0, 0, 0);
     position: absolute;
     left: -2px;
-    top: 40px;
+    top: 55px;
     content: attr(data-type);
     animation: show_text 1s;
 }
 .nav-links a i{
-    color: rgb(23, 143, 59);
+    color: rgb(0, 0, 0);
 }
 .nav-links a:not(.active):hover i{
-    color: rgb(98, 211, 219);
+    color: rgba(0,0,0,0.7);
 }
 @keyframes show_text {
     from{opacity: 0}
@@ -312,6 +316,12 @@
 }
 .navbar{
     max-height: 50px;
+}
+.navbar a{
+    color:white;
+}
+.navbar a:hover{
+    color: white;
 }
 .searchbar {
     width: 20%;
@@ -331,14 +341,16 @@
     color: white;
 }
 .welcome{
-    position: relative;
+    position: absolute;
+    top: 0%;
     overflow: hidden;
     width: 100%;
-    height: 650px;
+    height: 100vh;
     margin: auto;
     background: rgb(24, 24, 24);
-    animation: welcome 2s;
-    animation-duration: 2s;
+}
+.welcome::-webkit-scrollbar{
+    display: none;
 }
 .first-text{
     padding-top: 20px;
@@ -393,6 +405,7 @@
     cursor: pointer;
 }
 .welcome_code{
+    margin-top: 120px;
     margin-left: 6%;
     width: 75%;
     position: absolute;
@@ -410,8 +423,6 @@
     flex-direction: column;
     white-space: pre-wrap;
     cursor:default;
-    animation: rotate_code;
-    animation-duration: 2s;
     transform: rotateY(-15deg);
 }
 .welcome_code pre .line {
@@ -451,15 +462,6 @@
     border: 2px;
     opacity: 1;
 }
-@keyframes  rotate_code {
-    from{
-        transform: rotateY(0deg);
-    }
-    to{
-        transform: rotateY(-15deg);
-    }
-    
-}
 @keyframes first_text {
     0%{
         opacity: 0;
@@ -471,10 +473,9 @@
         color: rgba(255, 255, 255, 0.5);
     }
 }
-@keyframes welcome {
-    from{
-        width: 0px;
-    }
+.second_section{
+    position: absolute;
+    top: 100vh;
 }
 .second_section *{
     transition: all .4s;

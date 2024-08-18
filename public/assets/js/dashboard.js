@@ -5,7 +5,7 @@ const caret = document.getElementById('caret');
 const add_code = document.querySelector('.add-code');
 const add_media = document.querySelector('.add-media');
 const type_of_post = document.querySelector('.type_of_post');
-const description = document.querySelector('.description');
+const add_post_form = document.querySelector('.add_post_form')
 
 
 
@@ -21,13 +21,11 @@ caret.addEventListener('click', () => {
     if (rotated) {
         caret.classList.remove('rotate');
         add_post.classList.remove('opened');
-        type_of_post.classList.add('d-none');
-        description.classList.add('d-none');
+        add_post_form.classList.add('d-none');
     } else {
         caret.classList.add('rotate');
         add_post.classList.add('opened');
-        type_of_post.classList.remove('d-none');
-        description.classList.remove('d-none');
+        add_post_form.classList.remove('d-none');
     }
     rotated = !rotated;
 });
@@ -50,18 +48,12 @@ type_of_post.addEventListener('change',e=>{
 
     }
 });
-
-
-
-
-
 window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         my_story.classList.remove('open-story');
         removePostFocus();
     }
 });
-
 document.querySelector('#media').addEventListener('change',e=>{
     get_medi_name = e.target.value.split('\\')
     console.log(get_medi_name[get_medi_name.length-1])

@@ -1,3 +1,26 @@
+:root{
+    --post_rotate:2deg;
+}
+.show_opacity:not(.d-none){
+    opacity: 0;
+    animation: show_opacity .3s forwards;
+}
+@keyframes show_opacity {
+    from{opacity: 0;}
+    to{opacity: 1;}
+}
+main:has(.add-post.opened) .post{
+    animation: hide_post 1s forwards!important;
+}
+.add-post{
+    transition: height .3s .2s, width .2s .4s;
+    height: 150px;
+    width: 40%;
+}
+.add-post.opened{
+    width: 70%;
+    height: 80vh;
+}
 .post *{
     transition: all .3s;
 }
@@ -13,6 +36,10 @@
     opacity: 0;
     animation:show_post 1s var(--show_post_delay) forwards;
 }
+@keyframes hide_post {
+    from{opacity: 1;}
+    to{opacity: 0;margin-top:var(--top_slide);}
+}
 @keyframes show_post {
     from{opacity: 0;margin-top:var(--top_slide);}
     to{opacity: 1;}
@@ -26,10 +53,24 @@
 .selected-post h3{
     color: red;
 }
-.post:hover {
+.post:hover{
     border-radius: 5px;
     padding: 10px;
     box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+}
+.odd .post:hover {
+    --post_rotate:2deg;
+    rotate: var(--post_rotate);
+}
+.even .post:hover {
+    --post_rotate:-2deg;
+    rotate: var(--post_rotate);
+}
+.post.post-focus:hover,
+.post:has(.codeblock:not(.d-none)):hover,
+.post:has(.comments:not(.d-none)):hover
+{
+    --post_rotate:0deg;
 }
 .post.post-focus{
     position: absolute;
@@ -52,63 +93,10 @@
 .post .from a:hover{
     color: rgba(50, 70, 99, 0.7);
 }
-.post .codeblock{
-    border: 5px solid rgb(22, 22, 22);
-    padding: 7px;
-    border-radius: 5px;
-    background-color: rgb(50,50,50);
-    color: white;
-    width: 90%;
-    height: 300px;
-    overflow: scroll;
-}
 
-.post .codeblock::-webkit-scrollbar {
-    width: 10px;
-}
-.post .codeblock::-webkit-scrollbar-track {
-    background: rgb(44, 44, 44);
-}
-.post .codeblock::-webkit-scrollbar-thumb {
-    background: #000000;
-    border-radius: 5px;
-}
-.post .codeblock span[id^='line-']{
-    animation: code-revealer .5s;
-}
-@keyframes code-revealer {
-    from{
-        color:rgba(0,0,0,0);
-    }
-    to{
-        color: white;
-    }
-}
-
-.post .codeblock span[id^='line-']:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-.post .codeblock span[id^='line-']:hover a{
-    color:rgb(131, 171, 223);
-}
 .post a{
     text-decoration: none;
     color: #000000;
-}
-.post .codeblock a{
-    color: rgba(250, 200, 200, 0.7);
-}
-.post .hide-code{
-    color:rgba(255, 255, 255, 0.3);
-}
-.post .hide-code a{
-    color:rgba(250, 200, 200, 0.4);
-}
-.post .hide-code:hover {
-    background-color: rgba(160, 160, 160, 0.1);
-}
-.post .hide-code:hover a{
-    color:rgba(131, 171, 223, 0.4);
 }
 .post i{
     transition: all .4s;
@@ -122,6 +110,28 @@
 .post .add-comment{
     position: relative;
 }
+.post .comment{
+    min-width: 80%;
+    margin: 4px;
+    padding: 2px;
+    max-width: fit-content;
+}
+.post .edit_comment input{
+    margin: 4px;
+    padding: 2px;
+    max-width: fit-content;
+    border: 1px solid black;
+}
+.post .comment-wrapper .editing .comment{
+    box-shadow: 0px 0px 10px 10px rgba(100, 100, 100, 0.2);
+}
+.post .comment-wrapper .editing .comment:hover{
+    margin-left: 10px;
+    box-shadow: 0px 0px 10px 10px rgba(100, 100, 100, 0.2);
+}
+.post .comment-wrapper .editing .edit{
+    box-shadow: 0px 0px 10px 10px rgba(100, 100, 100, 0.2);
+}
 .post .comments pre.comment_code{
     width: fit-content;
     margin-top: 5px;
@@ -130,7 +140,7 @@
     color: rgb(253, 83, 83);
 }
 .post .comment-wrapper{
-    border: 1px solid black;
+    border: 1px solid rgba(129, 129, 129, 0.5);
     margin-bottom: 5px;
     border-radius: 10px;
 }
@@ -325,63 +335,3 @@
     color: rgb(59, 187, 112);
     rotate: 90deg;
 }
-.scroll-button {
-    position:fixed;
-    width: 40px;
-    height: 40px;
-    padding: 7px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    z-index: 2;
-}
-
-.scroll-button:hover {
-    transition: all .3s;
-    padding: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-.code-bar i{
-    position: relative;
-    cursor: pointer;
-}
-.code-search{
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 12px;
-}
-.code-search input.form-control{
-    color: white;
-    height: 20px;
-    min-width: 100px;
-    animation: open-input .5s;
-    font-size:small;
-    background-color: rgb(59, 59, 59);
-}
-.code-search input.form-control:focus{
-    color: white;
-    box-shadow: none;
-    background-color: rgb(70, 70, 70);
-}
-
-@keyframes open-input {
-    from { width: 10px;}
-    to {min-width: 100px;}
-}
-.code-search p{
-    padding: 0px;
-    margin-top: 5px;
-    margin: 0px;
-}
-.mark_search{
-    background-color: rgb(253, 83, 83);
-    color: black;
-}
-.scrolled_to{
-    background-color: rgb(83, 253, 210) !important;
-}
-.sorted_counter{
-    height: 20px;
-    font-size:small;
-    background-color: rgb(59, 59, 59);
-    max-width: fit-content;
-} 

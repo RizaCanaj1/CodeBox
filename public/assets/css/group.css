@@ -3,6 +3,9 @@
     margin: 0px;
     padding: 0px;
 }
+:root{
+    --role_color:rgb(206, 89, 89);
+}
 p{
     margin: 0px;
 }
@@ -13,13 +16,13 @@ hr{
     margin: 0px;
 }
 .features{
+    width: 15%;
     display: grid;
     grid-template-rows: 25% 25% 25% 25%;
 }
 div[class^="feature-"]{
     height: 100%;
-    transition: .5s;
-    width: 200px;
+    transition: all .5s;
     display: block;
     border-right: 3px solid rgba(0,0,0,.125);
 }
@@ -30,18 +33,20 @@ div[class^="feature-"].active{
     background-color: rgba(0,0,0,.05);
     border-right: 3px solid rgba(0,0,0,.5);
 }
+.screen_wrapper{
+    width: 85%;
+}
 .screen{
     position: relative;
     overflow: hidden;
     transition: all .5s;
     margin: 1rem;
-    width: 100%;
     height: 65vh;
     border: 2px solid rgba(0,0,0,.5);
     border-radius: 10px;
 }
 .screen .chat{
-    overflow: hidden;
+    overflow-y: auto;
     height: 55vh;
 }
 .screen .message_form{
@@ -61,8 +66,6 @@ div[class^="feature-"].active{
     border-radius: 15px;
     cursor: pointer;
 }
-
-
 div[class^='message-'] .msg{
     border: 1px solid rgba(0,0,0,.5);
     box-shadow: 0px 0px 5px 1px rgba(0,0,0,.5) inset;
@@ -106,4 +109,197 @@ div[class^='message-'] pre{
 }
 .remove-previous-screen *{
     opacity: 0;
+}
+.screen .code .folder,.screen .code .file{
+    transition: all .5s;
+}
+.screen .code{
+    height: 95%;
+    overflow-y: scroll;
+}
+.screen .code .file_position{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.file_position .edit_button{
+    margin-right: 20px;
+}
+.file_position .edit_button button{
+    width: 45px;
+    height: 45px;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: rgba(155,155,155,.5);
+}
+.file_position .edit_button button:hover{
+    border-radius: 20px;
+    background-color: rgba(68, 68, 68, 0.5);
+    border: 1px solid black;
+    color: white;
+}
+.screen .code:has(.folder.open_folder) .folder
+{
+    animation: hide_folder .2s 1s forwards;
+}
+.screen .code::-webkit-scrollbar {
+    margin-right: -10px;
+    background-color: transparent;
+}
+.screen .code::-webkit-scrollbar:hover {
+    margin-right: -10px;
+    background-color: white;
+}
+.screen .code::-webkit-scrollbar-thumb {
+    border-radius: 7px;
+    background: #79797980;
+}
+.screen .code::-webkit-scrollbar-thumb:hover {
+    border-radius: 10px;
+    background: #797979;
+}
+.folder,.file{
+    position: relative;
+}
+.folder,.file{
+    user-select: none;
+}
+.folder .folder_icon,.folder .name ,.file .file_icon ,.file .name{
+    cursor: pointer;
+}
+.folder .folder_icon{
+    position: relative;
+    top: 0px;
+    color: #c68e56;
+    z-index: 2;
+}
+.folder:hover .folder_icon{
+    top: 2px;
+    color: #a57c53;
+    text-shadow:0px 0px 2px black;
+}
+.folder .file_icon{
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    opacity: 0;
+    top: 0px;
+    left: 0px;
+    color: black;
+    z-index: 1;
+}
+.folder:hover .file_icon{
+    top: -2px;
+    left: -10px;
+    rotate: -17deg;
+}
+.folder:hover .file_icon:nth-child(2){
+    top: -5px;
+    left: 0px;
+    rotate: 0deg;
+}
+.folder:hover .file_icon:nth-child(3){
+    top: -5px;
+    left: 12px;
+    rotate: 10deg;
+}
+.folder:hover .file_icon{
+    opacity: 1;
+}
+.file .extention{
+    rotate: -90deg;
+    position: absolute;
+    left: 0px;
+    color: rgb(236, 90, 46);
+    font-size: 10px;
+    opacity: 0;
+    z-index: 2;
+}
+.file:hover .name{
+    margin-left: 7px;
+}
+.file:hover .file_icon{
+    text-shadow:0px 0px 2px black;
+    color: #bebebe;
+}
+.file:hover .extention{
+    left: -14px;
+    opacity: 1;
+}
+@keyframes hide_height {
+    to{height: 0px;display: none!important;}
+}
+@keyframes hide_folder {
+    50%{opacity: 0;}
+    100%{opacity: 0;height: 0px;width: 0px; display: none!important;}
+}
+
+.screen .code:has(.folder.open_folder) {
+    .folder:not(.open_folder),
+    .file,.project_info,
+    .folder .info .last_updated,
+    .folder_icon{
+        opacity: 0;
+        animation: hide_height .2s .5s forwards;
+    }
+    .folder .info .last_updated{
+        display: none;
+    }
+    .folder{
+        margin-right: 2rem;
+        margin-left: .5rem;
+    }
+    .folder:hover .folder_icon{
+        top: 0px;
+        color: #c68e56;
+        text-shadow:0px;
+    }
+    .folder .file_icon{
+        margin-left: -.5rem;
+        opacity: 1;
+        rotate: 0deg;
+        top: 84px;
+        left: 0px;
+    }
+    .file_icon:nth-child(2){
+        top: 36px;
+    }
+    .file_icon:nth-child(3){
+        top: 60px;
+    }
+}
+.screen .codeblock {
+    margin-top: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word; 
+    width: 100%;
+    height: 85%;
+}
+.screen .roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.screen .roles{
+    position: relative;
+    .role,.add_role{
+        user-select: none;
+        padding: 5px 15px 5px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    .role{
+        background-color: var(--role_color);
+    }
+    .add_role{
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+    .add_role_form{
+        position: absolute;
+        top: 100%;
+    }
+    .add_role_form input{
+        border-radius: 20px;
+        border: 1px solid black;
+    }
 }

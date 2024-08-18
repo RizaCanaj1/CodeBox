@@ -10,13 +10,13 @@
         $notifications = App\Models\Notifications::where('user_id','=',auth()->id())->orderBy('id', 'DESC')->get();
     @endphp
     </pre>
-    @if (session()->has('pop_up'))
+    @if (session()->has('status'))
         @php
-            $pop_up = session('pop_up');
+            $status = session('status');
         @endphp
         <div class="alert alert-info mb-4 w-75 pop_up">
             <ul>
-                <li>{{ $pop_up }}</li>
+                <li>{{ $status }}</li>
             </ul>
         </div>
     @endif
@@ -38,28 +38,29 @@
                     <input class='form-control w-75' name='title' type="text" placeholder="What's on your mind?">
                     <i class="fa-solid fa-caret-right" id='caret'></i>
                 </div>
-                <div class='from-group mt-4 d-flex justify-content-center'>
-                    <select name="type" id="type" class='type_of_post d-none rounded'>
-                        <option value="">Type</option>
-                        <option value="invitation">Project invitation</option>
-                        <option value="showcase">Project showcase</option>
-                        <option value="question">Question</option>
-                        <option value="community">Community post</option>
-                    </select>
+                <div class='add_post_form d-none show_opacity'>
+                    <div class='from-group mt-4 d-flex justify-content-center'>
+                        <select name="type" id="type" class='type_of_post rounded'>
+                            <option value="">Type</option>
+                            <option value="invitation">Project invitation</option>
+                            <option value="showcase">Project showcase</option>
+                            <option value="question">Question</option>
+                            <option value="community">Community post</option>
+                        </select>
+                    </div>
+                    <div class='from-group mt-4 d-flex justify-content-center'>
+                        <label for="code" class='add-code d-none'>Add Code <i class="fa-regular fa-file-code"></i></label>
+                        <input type="file" name="code[]" class="form-control code d-none" id='code' accept='text' multiple /> 
+                        <label for="media" class='add-media d-none'>Add Media<i class='fa-solid fa-plus fa-xs'></i></label>
+                        <input type="file" name="media[]" class="form-control media d-none" id='media' accept='image/video' multiple /> 
+                    </div>
+                    <div class='from-group mt-4 d-flex justify-content-center'>
+                        <textarea name="content" class='description' placeholder='Description:'></textarea>
+                    </div>
+                    <div class='d-flex justify-content-center mt-2'>
+                        <button class='post-btn py-1 px-2'>Post</button>
+                    </div>
                 </div>
-                <div class='from-group mt-4 d-flex justify-content-center'>
-                    <label for="code" class='add-code d-none'>Add Code <i class="fa-regular fa-file-code"></i></label>
-                    <input type="file" name="code[]" class="form-control code d-none" id='code' accept='text' multiple /> 
-                    <label for="media" class='add-media d-none'>Add Media<i class='fa-solid fa-plus fa-xs'></i></label>
-                    <input type="file" name="media[]" class="form-control media d-none" id='media' accept='image/video' multiple /> 
-                </div>
-                <div class='from-group mt-4 d-flex justify-content-center'>
-                    <textarea name="content" class='description d-none' placeholder='Description:'></textarea>
-                </div>
-                <div class='d-flex justify-content-center mt-2'>
-                    <button class='post-btn py-1 px-2'>Post</button>
-                </div>
-                
             </form>
         @else
         <p class='text-danger'>You are not allowed to make posts. <a href="">Contact us</a><p>
@@ -568,6 +569,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/components/emojis.js"></script>
+    <script src="assets/js/components/comments.js"></script>
     <script src="assets/js/components/post.js"></script>
     <script src="assets/js/components/code_box.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>

@@ -113,30 +113,37 @@ class CrudController extends Controller
     }
     public function add_comment(Request $request, $post_id)
     {
-        $post = Posts::where('id', $post_id)->get();
+        $post = Posts::find($post_id);
+        $content = $request->input('content');
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+        $check_comments = PostComments::where('post_id', $post_id)->where('content', $content)->count();
+        
+        if ($check_comments > 0) {
+            return response()->json(['message' => 'This comment already exists!'], 400);
+        }
         $user_id = Auth::id();
+        if (!$user_id) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
         $comment = new PostComments();
         $comment->user_id = $user_id;
         $comment->post_id = $post_id;
-        $comment->content = $request->input('content');
-        $shortenedText ='';
-        if (strlen($comment->content ) > 15) {
-            $shortenedText = substr($comment->content , 0, 15) . "...";
-        } else {
-            $shortenedText = $comment->content ;
-        }
+        $comment->content = $content;
+        $shortenedText = (strlen($comment->content) > 15) ? substr($comment->content, 0, 15) . "..." : $comment->content;
         $notification = [
-            'user_id'=>$post[0]['user_id'],
-            'from_user_id'=>$user_id,
-            'post_id'=>$post_id,
-            'title'=>$post[0]['title'].' | Comment',
-            'content'=>User::find($user_id)['name'].' commented : "'.$shortenedText.'"',
+            'user_id' => $post->user_id,
+            'from_user_id' => $user_id,
+            'post_id' => $post_id,
+            'title' => $post->title . ' | Comment',
+            'content' => User::find($user_id)->name . ' commented: "' . $shortenedText . '"',
         ];
-        if(!Notifications::create($notification)){
-            return response()->json(['error' => 'Failed to create notification'], 500);
+        if (!Notifications::create($notification)) {
+            return response()->json(['message' => 'Failed to create notification'], 500);
         }
         if (!$comment->save()) {
-            return response()->json(['error' => 'Failed to add comment'], 500);
+            return response()->json(['message' => 'Failed to add comment'], 500);
         }
         return response()->json(['message' => 'Comment added successfully']);
 
@@ -144,6 +151,9 @@ class CrudController extends Controller
     public function get_comments(Request $request, $post_id)
     {
         $data = PostComments::where('post_id', $post_id)->get();
+        foreach($data as $comment_data){
+            $comment_data->user_detail = User::select('id', 'name as username', 'profile_photo_path as profile')->find($comment_data['user_id']);
+        }
         if (!$data) {
             return response()->json(['error' => 'Comments are not found'], 404); 
         }

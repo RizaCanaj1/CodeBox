@@ -1,4 +1,5 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    <link rel="stylesheet" href="../assets/css/components/search.css"/>
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 align-items-center">
@@ -24,7 +25,10 @@
                 
             </div>
             <div class='searchbar'>
-                <input type="text" placeholder='Search' class='form-control'>
+                <input type="text" placeholder='Search' class='form-control' onKeyUp="searchUp(event)">
+                <div class='search_results'>
+
+                </div>
             </div>
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <!-- Teams Dropdown -->
@@ -224,4 +228,5 @@
             </div>
         </div>
     </div>
+    <script src="assets/js/components/search.js"></script>
 </nav>

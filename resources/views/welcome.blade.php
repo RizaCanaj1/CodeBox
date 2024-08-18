@@ -36,8 +36,10 @@
         @endif
         </div>
         <br>
-        <div class='mt-5 welcome'><h1 class='text-center first-text'><span>Home</span> of your experience</h1>
-            <div class='welcome_code'><pre></pre></div>
+        <div class='first_section'>
+            <div class='welcome'><h1 class='text-center first-text'><span>Home</span> of your experience</h1>
+                <div class='welcome_code'><pre></pre></div>
+            </div>
         </div>
         <div class='second_section'>
             <div class='section_title'><h3><a class='link_btn share'>Share</a>, <a class='link_btn'>explore</a>, <a class='link_btn'>ask</a> and enjoy</h3></div>

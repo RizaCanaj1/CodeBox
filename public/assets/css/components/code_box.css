@@ -1,0 +1,146 @@
+.codeblock{
+    border: 5px solid rgb(22, 22, 22);
+    padding: 7px;
+    border-radius: 5px;
+    background-color: rgb(50,50,50);
+    color: white;
+    width: 90%;
+    height: 300px;
+    overflow: scroll;
+}
+.codeblock::-webkit-scrollbar {
+    width: 10px;
+}
+.codeblock::-webkit-scrollbar-track {
+    background: rgb(44, 44, 44);
+}
+.codeblock::-webkit-scrollbar-thumb {
+    background: #000000;
+    border-radius: 5px;
+}
+.codeblock span[id^='line-']{
+    animation: code-revealer .5s;
+}
+.codeblock ::selection {
+    background: #ffb7b7; 
+    color: #000000;     
+}
+.codeblock ::-moz-selection {
+    background: #ffb7b7;
+    color: #000000;
+}
+.codeblock span[id^='line-'] a{
+    user-select: none;
+}
+@keyframes code-revealer {
+    from{
+        color:rgba(0,0,0,0);
+    }
+    to{
+        color: white;
+    }
+}
+
+.codeblock span[id^='line-']:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.codeblock span[id^='line-']:hover a{
+    color:rgb(131, 171, 223);
+}
+
+.codeblock a{
+    color: rgba(250, 200, 200, 0.7)!important;
+}
+.hide-code{
+    color:rgba(255, 255, 255, 0.3);
+}
+.hide-code a{
+    color:rgba(250, 200, 200, 0.4);
+}
+.hide-code:hover {
+    background-color: rgba(160, 160, 160, 0.1);
+}
+.hide-code:hover a{
+    color:rgba(131, 171, 223, 0.4);
+}
+
+.code-bar i{
+    position: relative;
+    cursor: pointer;
+}
+.code-search{
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 12px;
+}
+.code-search input.form-control{
+    color: white;
+    height: 20px;
+    min-width: 100px;
+    animation: open-input .5s;
+    font-size:small;
+    background-color: rgb(59, 59, 59);
+}
+.code-search input.form-control:focus{
+    color: white;
+    box-shadow: none;
+    background-color: rgb(70, 70, 70);
+}
+
+@keyframes open-input {
+    from { width: 10px;}
+    to {min-width: 100px;}
+}
+.code-search p{
+    padding: 0px;
+    margin-top: 5px;
+    margin: 0px;
+}
+.mark_search{
+    background-color: rgb(253, 83, 83);
+    color: black;
+}
+.scrolled_to{
+    background-color: rgb(83, 253, 210) !important;
+}
+.sorted_counter{
+    height: 20px;
+    font-size:small;
+    background-color: rgb(59, 59, 59);
+    max-width: fit-content;
+} 
+.scroll-button {
+    position:fixed;
+    width: 40px;
+    height: 40px;
+    padding: 7px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    z-index: 2;
+}
+.scroll-button:hover {
+    transition: all .3s;
+    padding: 2px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.codeblock.edit_code span[id^='line-']:hover {
+    background-color: transparent!important;
+}
+.codeblock .edit_line{
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    min-width: 99%;
+    height: min-content;
+    background-color: transparent;
+    outline: 0px;
+    border: 0px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.codeblock .edit_line:focus{
+    background-color: transparent;
+    border: 0px;
+    outline: 0px;
+}

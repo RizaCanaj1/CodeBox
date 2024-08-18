@@ -4,8 +4,11 @@ let nr_of_posts = ''
 let last_page = null
 let post_even = null
 let post_odd = null
+let my_id 
+fetch('../authid')
+.then(response=>response.json())
+.then(data=>my_id = data)
 if(window.location.pathname =='/dashboard'){
-show_emojis().then(e=>{console.log(e)})
     document.querySelector('.posts').innerHTML='<div class="odd"></div><div class="even"></div>'
     post_even = document.querySelector('.posts .even')
     post_odd = document.querySelector('.posts .odd')
@@ -14,7 +17,6 @@ else{
     document.querySelector('.posts').innerHTML=''
 }
 let postUpdateInterval = null;
-let comments = [];
 let hovered_post = null;
 let delayTimer = null;
 let currentPostId = null;
@@ -38,10 +40,8 @@ window.addEventListener('mousemove', function(event) {
 
 function countView() {
     viewed.push(currentPostId)
-    console.log('Counting view for post:', hovered_post);
+    
     fetch(`count-view/${currentPostId}`)
-    .then(response=>response.json())
-    .then(data=>console.log(data))
     .catch(error=>console.log(error))
     hovered_post = null;
     currentPostId = null;
@@ -52,41 +52,51 @@ function get_posts(page){
     let postsHTML = [];
     fetch(`get-posts?page=${page}`).then(response=>response.json())
     .then(data=>{
-        console.log(data)
         let from = data.from - 1
         let p = data.current_page
         nr_of_posts = data.total - data.from + 1 
         last_page = data.last_page
         data = data.data
-        console.log(nr_of_posts)
-            for (let i = 0; i < data.length ; i++) {
-                let post = data[i];
-                let postHTML = createpost(post, i);
-                postsHTML.push(postHTML);
-            }
-            for (let i = 0; i < data.length ; i++) {
-                if (i % 2 == 0) post_odd.innerHTML += postsHTML[i];
-                else post_even.innerHTML += postsHTML[i];
-                setTimeout(()=>{let d = document.querySelector(`.post.pid-${data[i].id}`);d.style.animation='none';d.style.opacity= '1';},3500)
-                if(i==data.length-1){
-                    const emojis_btn = document.querySelector('.emojis_btn')
-                    const emojis = document.querySelector('.emojis_wrapper')
-                    emojis_btn.onclick = ()=>{
-                        if (emojis.classList.contains('show_emojis')) {emojis.classList.remove('show_emojis');}
-                        else {emojis.classList.add('show_emojis');}
-                    }
-                    show_emojis().then(emojis_text=>{
-                        document.getElementById('loading_emojis').remove()
-                        const input_field = document.querySelector('.comment_input')
-                        emojis_handler(input_field,emojis_text)
+        for (let i = 0; i < data.length ; i++) {
+            let post = data[i];
+            let postHTML = createpost(post, i);
+            postsHTML.push(postHTML);
+        }
+        for (let i = 0; i < data.length ; i++) {
+            let post_div = document.createElement('div')
+            post_div.innerHTML = postsHTML[i];
+            post_div = post_div;
+            if (i % 2 == 0) post_odd.appendChild(post_div)
+            else post_even.appendChild(post_div)
+            setTimeout(()=>{let d = document.querySelector(`.post.pid-${data[i].id}`);d.style.animation='none';d.style.opacity= '1';},3500)
+            if(i==data.length-1){
+                const all_posts = document.querySelectorAll('.post')
+                show_emojis().then(emojis_text=>{
+                    all_posts.forEach(p=>{
+                        const emojis = p.querySelector(`.emojis`)
+                        const emojis_btn = p.querySelector(`.emojis_btn`)
+                        const emojis_wrapper = p.querySelector('.emojis_wrapper')
+                        if(emojis&&emojis_btn&&emojis_wrapper){
+                            emojis_btn.onclick = ()=>{
+                                if (emojis_wrapper.classList.contains('show_emojis')) {emojis_wrapper.classList.remove('show_emojis');}
+                                else {emojis_wrapper.classList.add('show_emojis');}
+                            }
+                            document.getElementById('loading_emojis').remove()
+                            const input_field = p.querySelector(`.comment_input`)
+                            emojis_handler(input_field,emojis_text,emojis)
+                        }
                     })
-                    .catch(error=>{
-                        console.error(error)
-                        emojis.innerHTML=`<h5 class='text-danger'>${error}</h5>`
-                        emojis.style.overflowY = 'hidden'
+                })
+                .catch(error=>{
+                    const emojis_wrapper = document.querySelectorAll('.emojis_wrapper')
+                    emojis_wrapper.forEach(x=>{
+                        x.innerHTML=`<h5 class='text-danger'>${error}</h5>`
+                        x.style.overflowY = 'hidden'
                     })
-                }
+                })
             }
+           
+        }
     })
     current_page++
     
@@ -149,56 +159,6 @@ else{
         });
     })
 }
-function update_comments(){
-    const comments_btn = document.querySelectorAll('.fa-comment');
-    comments_btn.forEach(comment_btn =>{
-        comment_btn.addEventListener('click',e=>{
-            let id = e.target.getAttribute('class').split(" ");
-            if(id[(id.length-1)]=='o-comments'){
-                e.target.classList.remove('o-comments');
-                document.querySelector(`#${id[0]}`).classList.add('d-none');
-                document.querySelector(`#fid-${id[0].split('-')[1]}`).classList.add('d-none');
-                document.querySelector(`#fid-${id[0].split('-')[1]}`).classList.remove('d-flex');
-                clearInterval(postUpdateInterval);
-            }
-            else{
-                e.target.classList.add('o-comments');
-                document.querySelector(`#${id[0]}`).classList.remove('d-none');
-                document.querySelector(`#fid-${id[0].split('-')[1]}`).classList.remove('d-none');
-                document.querySelector(`#fid-${id[0].split('-')[1]}`).classList.add('d-flex');
-                startCommentFetch(parseInt(id[0].split('-')[1]));
-            }
-        })
-    })
-    
-}
-function startCommentFetch(postId){
-    postUpdateInterval = setInterval(() => {
-        fetchComments(postId)
-    }, 3000)
-}
-function fetchComments(postId) {
-    comments = document.querySelectorAll(`#comments_id-${postId} pre.comment`)
-    
-    let comments_text = []
-    comments.forEach(c => {
-        comments_text.push(c.innerHTML)
-    });
-    let comment = document.querySelector(`div#comments_id-${postId}`)
-    fetch(`get-comments/${postId}`)
-    .then(response => response.json())
-    .then(data => {
-        document.querySelector(`.counter-${postId}`).innerHTML=data.length;
-        data.forEach(c => {
-            if(!comments_text.includes(formComment(c.content))){
-                comment.innerHTML+=`<pre class='comment'>${formComment(c.content)}</pre>`
-            }
-        });
-      })
-    .catch(error => {
-        console.error('Error fetching comments:', error);
-    });
-}
 function removePostFocus() {
     const focusedPosts = document.querySelectorAll('.post-focus');
     focusedPosts.forEach(post => {
@@ -220,22 +180,18 @@ setTimeout(()=>{
                 method: 'POST',
                 body: formData
             })
-            .then(() => {
+            .then(response =>response.json())
+            .then((data) => {
                 this.querySelector('input[type="text"]').value = '';
-                comments.forEach(c => {if(c.className =='text-danger')c.classList.add('d-none')})
-                fetchComments(post_id);
-                this.querySelector('input[type="text"]').placeholder = 'Comment added successfully';
+                comments.forEach(c => {if(c.className =='text-danger')c.remove()})
+                fetchComments(post_id,null);
+                this.querySelector('input[type="text"]').placeholder = data.message;
                 setTimeout(() => {
                     this.querySelector('input[type="text"]').placeholder = '';
                 }, 2000);
             })
             .catch(error => {
-                this.querySelector('input[type="text"]').value = '';
-                this.querySelector('input[type="text"]').placeholder = 'Error occurred! Comment was not added';
-                setTimeout(() => {
-                    this.querySelector('input[type="text"]').placeholder = '';
-                }, 2000);
-                console.error('Error:', error);
+                console.error(error)
             });
         });
     })
@@ -335,36 +291,6 @@ setTimeout(()=>{
         }
     })
 },1000)
-function formComment(comment) {
-    let constructed_comment = '';
-    let check_starts = 0;
-    let check_ends = 0;
-    var parts = comment.split(/(<\|)|(\|>)/).filter(Boolean);
-    parts.forEach(part => {
-        if (parts.length > 1) {
-            if (part === '<|') {
-                check_starts++;
-                constructed_comment += `<pre class="comment_code">`;
-            } else if (part === '|>') {
-                check_ends++;
-                constructed_comment += '</pre>';
-            } else {
-                constructed_comment += `${escapeHtml(part)}`;
-            }
-        } else if (parts.length === 1 && part === '<|') {
-            check_starts++
-            check_ends++
-            constructed_comment += `${escapeHtml(part)}`;
-        }
-    });
-    if (check_starts !== check_ends) {
-        constructed_comment += '</pre>';
-    }
-    else if(check_starts == 0 && check_ends == 0){
-        constructed_comment += `${escapeHtml(comment)}`;
-    }
-    return constructed_comment;
-}
 
 function escapeHtml(text) {
     var map = {
@@ -383,6 +309,7 @@ function createpost(post,i){
     let undo_hide = `<p class='text-danger d-none hide_post'>You won't see this post again! <span class='seethrow-btn text-success'>Undo</span></p>`
     let comments = post.comments
     let type = post.type
+    let comment_model = comment_m(comments)
     let views = ()=>{
         if(post.views_count==1) return `<button class='seethrow-btn views_count'>${post.views_count} view</button>`
         if(post.views_count>0) return `<button class='seethrow-btn views_count'>${post.views_count} views</button>`
@@ -390,8 +317,7 @@ function createpost(post,i){
     }
     let comment_form = `
     <div class='d-none comments' id="comments_id-${post.id}">
-        <hr>
-        ${(comments.length > 0 ? comments.map(comment => `<div class='comment-wrapper d-flex justify-content-between'><pre class='comment'>${formComment(comment.content)}</pre><div class='d-flex gap-2 image-name'><img class='user-image' src="${comment.user_detail.profile ? `./storage/${comment.user_detail.profile}` : './assets/images/user.png'}" alt="user"><a href='/profile?id=${comment.user_id}' class='username'>${comment.user_detail.username}</a></div></div>`).join('') : "<p class='text-danger'>This post has no comments, be the first to comment</p>")}
+        ${comment_model}
     </div>
     <form class='add-comment d-none justify-content-between gap-2' id="fid-${post.id}">
         <input class='form-control comment_input' type="text" name='content'>
@@ -439,6 +365,7 @@ function createpost(post,i){
             </div>`
             break;
         case 'showcase':
+            let button = (id,source) =>{return `<button class="pid-${id} source-btn" onclick="open_code(event,${id})">${source}</button>`}
             return `
             ${undo_hide}
             <div class="pid-${post.id} post pshowcase ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
@@ -448,7 +375,7 @@ function createpost(post,i){
                 </div>
                 <div class='d-flex justify-content-center'>
                     <button class="pid-${post.id} seethrough-btn codebox-animation"><p class="pid-${post.id}"><<span class="pid-${post.id} m_between_code"></span>/<span class="pid-${post.id} nr_of_code">${post.code.length}CodeBox</span><span class="pid-${post.id} m_between_code"></span>></p></button>
-                    <p><pre class='codeblock d-none align-items-center flex-column' id="pid-${post.id}">${post.code.map(source => `${(source.split(".")[1] == 'html') ?`<div><button class="pid-${post.id} source-btn">${source}</button><button class="pid-${post.id} test-beta" title='This feature is still in development. This works only for simple HTML files for now'> Beta Open</button></div>`:`<button class="pid-${post.id} source-btn">${source}</button>`}`).join('')}</pre></p>
+                    <p><pre class='codeblock d-none align-items-center flex-column' id="pid-${post.id}">${post.code.map(source => `${(source.split(".")[1] == 'html') ?`<div>${button(post.id,source)}<button class="pid-${post.id} test-beta" title='This feature is still in development. This works only for simple HTML files for now'> Beta Open</button></div>`:button(post.id,source)}`).join('')}</pre></p>
                 </div>
                 <div class='d-flex justify-content-between mt-4'>
                     <div class='d-flex w-75 gap-2'> 
@@ -472,7 +399,7 @@ function createpost(post,i){
                 </div>
                 <div class='d-flex justify-content-between'>
                     <div class='d-flex gap-2'>
-                        ${(post.auth_id != post.user_id)?(`${(post.applied > 0 ?
+                        ${(my_id != post.user_id)?(`${(post.applied > 0 ?
                             (post.applied >= 5 && post.invitation_status == 'refused' ?
                                 `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
                                 (post.invitation_status == 'approved' ?
