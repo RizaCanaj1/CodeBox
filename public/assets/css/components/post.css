@@ -319,6 +319,8 @@ main:has(.add-post.opened) .post{
     border-radius: 5px;
 }
 .seethrow-btn{
+    width: fit-content;
+    height: fit-content;
     background-color: rgba(0,0,0,0);
     border: 0px;
 }

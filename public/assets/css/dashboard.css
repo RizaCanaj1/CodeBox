@@ -16,13 +16,11 @@
 }
 .add-post {
     height: 120px;
-    transition: all .3s;
-    z-index: 5;
-}
-.add-post{
-    overflow: hidden;
     width: 40%;
+    transition: all .3s;
+    overflow: hidden;
     box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+    z-index: 5;
 }
 
 .add-post:hover{
@@ -239,8 +237,45 @@ i{
     width: 40px;
     height: 40px;
 }
+.chats .c-content{
+    font-size: small;
+}
+.chats .seethrow-btn{
+    width: 10px;
+}
+.chats .new-mesage{
+    font-size: small;
+    display: none;
+    width: 0px;
+    opacity: 0;
+}
 .posts{
     display: grid;
     grid-template-columns: 35% 35%;
     gap: 25px;
+}
+@media screen and (max-width: 1650px) {
+    .chats .c-content{
+        height: 0px;
+        opacity: 0; 
+        display: none;
+        width: 0px;
+    }
+    .chats .new-mesage{
+        display: inline-block;
+        height: fit-content;
+        width: fit-content;
+        opacity: 1;
+    }
+}
+@media screen and (max-width: 1000px) {
+    .posts{
+        grid-template-columns: 48% 48%;
+    }
+    .left-container {
+        width: 100%;
+    }
+    .profile-chat{
+        opacity: 0;
+    }
 }

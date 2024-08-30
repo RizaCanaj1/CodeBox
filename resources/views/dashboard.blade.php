@@ -141,11 +141,12 @@
         <p>Chat:</p>
         <div class='chats bg-light'>
             @for($i=0;$i<'8';$i++)
-            <div class='chat w-100 d-flex justify-content-between'>
-                <img src="./assets/images/user.png" alt="user">
-                <button class='seethrow-btn ms-2'>Riza</button>
-                <p class='c-content pt-3'>I would love to work wi...</p>
-                <p class='pt-3'>Today</p>
+            <div class='chat w-100 d-flex'>
+                <img class='align-self-center' src="./assets/images/user.png" alt="user">
+                <button class='seethrow-btn ms-2 mt-1'>Riza</button>
+                <p class='c-content mt-4 mb-0 m-auto'>I would love to work with...</p>
+                <p class='new-mesage mt-4 mb-0 m-auto'>New mesage({{$i}})</p>
+                <p class='mt-1 ms-auto'>Today</p>
             </div>
             @endfor
             
