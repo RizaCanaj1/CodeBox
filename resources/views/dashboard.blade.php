@@ -30,7 +30,7 @@
                 </ul>
             </div>
         @endif
-        <div class='add-post position-absolute bg-light ms-4 mt-4 p-4 rounded'>
+        <div class='add-post bg-light ms-4 mt-4 p-4 rounded'>
         @if(Auth::user()->hasPermissionTo('create post'))
             <form action='{{route("create_post")}}' method='POST' enctype="multipart/form-data">
                 @csrf
@@ -66,10 +66,7 @@
         <p class='text-danger'>You are not allowed to make posts. <a href="">Contact us</a><p>
         @endif 
         </div>
-        <div>
-           
-        </div>
-        <div class='d-flex justify-content-end gap-5'>
+        <div class='stories-wrapper d-flex gap-5'>
             <div class='stories mt-4'>
                 <div class='m-story bg-light'>
                     <div class='add-story d-flex justify-content-center align-items-center'>

@@ -15,7 +15,7 @@ main:has(.add-post.opened) .post{
 .add-post{
     transition: height .3s .2s, width .2s .4s;
     height: 150px;
-    width: 40%;
+    width: 100%;
 }
 .add-post.opened{
     width: 70%;
@@ -35,6 +35,9 @@ main:has(.add-post.opened) .post{
     box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
     opacity: 0;
     animation:show_post 1s var(--show_post_delay) forwards;
+}
+.odd , .even{
+    height: fit-content;
 }
 @keyframes hide_post {
     from{opacity: 1;}

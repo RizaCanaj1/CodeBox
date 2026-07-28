@@ -13,10 +13,13 @@
 }
 .left-container{
     width: 70%;
+    display: grid;
+    grid-template-columns: 45% 45%;
+    gap: 10%;
 }
 .add-post {
     height: 120px;
-    width: 40%;
+    width: 100%;
     transition: all .3s;
     overflow: hidden;
     box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
@@ -255,6 +258,12 @@ i{
     gap: 25px;
 }
 @media screen and (max-width: 1650px) {
+    .stories {
+        grid-template-columns: repeat(3,140px);
+    }
+    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
+        width: 140px;
+    }
     .chats .c-content{
         height: 0px;
         opacity: 0; 
@@ -268,7 +277,35 @@ i{
         opacity: 1;
     }
 }
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1350px) {
+    .stories {
+        grid-template-columns: repeat(3,100px);
+    }
+    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
+        width: 160px;
+    }
+    .m-story ,.story{
+        perspective: 1000px;
+        transform: rotateY(40deg) rotateX(10deg) translateZ(0px);
+        box-shadow: -10px 10px 20px 1px rgba(0,0,0,0.5);
+    }
+    .m-story:hover ,.story:hover{
+        perspective: 1000px;
+        transform: rotateY(0deg) translateZ(10px);
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
+        z-index: 2;
+    }
+}
+@media screen and (max-width: 1150px) {
+    .add-post{
+        width: 96% !important;
+    }
+    main{
+        overflow-x: hidden;
+    }
+    .stories {
+        grid-template-columns: repeat(3,80px);
+    }
     .posts{
         grid-template-columns: 48% 48%;
     }
@@ -277,5 +314,90 @@ i{
     }
     .profile-chat{
         opacity: 0;
+        margin-right: -1150px;
+    }
+}
+@media screen and (max-width: 900px) {
+    .add-post{
+        width: 88% !important;
+    }
+    .posts{
+        margin-left: 6%;
+        grid-template-columns: 88%;
+    }
+}
+@media screen and (max-width: 850px) {
+    .left-container{
+        margin-left: 6%;
+        grid-template-columns: 88%;
+        gap: 0px;
+    }
+    .stories-wrapper{
+        justify-content: center;
+    }
+    .stories {
+        grid-template-columns: repeat(3,150px);
+    }
+    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
+        width: 150px;
+    }
+    .m-story ,.story{
+        perspective: 0px;
+        transform: translateZ(0px);
+        box-shadow: none;
+    }
+    .m-story:hover ,.story:hover{
+        perspective: 0px;
+        transform: translateZ(0px);
+        box-shadow: none;
+        z-index: 1;
+    }
+    
+    .m-story ,.i-story{
+        transition: all .3s;
+        border-radius: 10px 10px 0px 0px;
+        height: 150px;
+        width: 150px;
+        box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
+    }
+    .m-story:hover ,.i-story:hover{
+        border-radius: 10px 10px 0px 0px;
+        height: 160px;
+        width: 150px;
+        box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
+    }
+}
+@media screen and (max-width: 750px){
+    .add-post{
+        width: 94% !important;
+    }
+    .posts{
+        margin-left: 3%;
+        grid-template-columns: 94%;
+    }
+}
+@media screen and (max-width: 560px){
+    .stories {
+        grid-template-columns: repeat(3,130px);
+    }
+    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
+        width: 130px;
+    }
+}
+@media screen and (max-width: 475px){
+    .stories {
+        grid-template-columns: repeat(3,100px);
+    }
+    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
+        width: 100px;
+    }
+}
+@media screen and (max-width: 385px){
+    .stories {
+        grid-template-columns: repeat(3,80px);
+    }
+    .m-story ,.i-story{
+        width: 80px;
+        height: 150px;
     }
 }

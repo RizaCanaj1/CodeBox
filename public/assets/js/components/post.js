@@ -66,8 +66,18 @@ function get_posts(page){
             let post_div = document.createElement('div')
             post_div.innerHTML = postsHTML[i];
             post_div = post_div;
-            if (i % 2 == 0) post_odd.appendChild(post_div)
-            else post_even.appendChild(post_div)
+            let odd_height =  post_odd.getBoundingClientRect().y+post_odd.offsetHeight
+            let even_height =  post_even.getBoundingClientRect().y+post_even.offsetHeight
+            console.log("odd: " + odd_height)
+            console.log("even: " + even_height)
+            console.log(window.innerWidth);
+            if(odd_height == even_height) post_odd.appendChild(post_div)
+            else if(odd_height > even_height) post_even.appendChild(post_div)
+            else if(odd_height > even_height) post_odd.appendChild(post_div)
+            else post_odd.appendChild(post_div)
+            //if (i % 2 == 0) post_odd.appendChild(post_div)
+           // else post_even.appendChild(post_div)
+        
             setTimeout(()=>{let d = document.querySelector(`.post.pid-${data[i].id}`);d.style.animation='none';d.style.opacity= '1';},3500)
             if(i==data.length-1){
                 const all_posts = document.querySelectorAll('.post')
