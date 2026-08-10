@@ -48,13 +48,20 @@ function countView() {
     clearTimeout(delayTimer);
     delayTimer = null;
 }
+let post_seed = null
 function get_posts(page){
     let postsHTML = [];
-    fetch(`get-posts?page=${page}`).then(response=>response.json())
+    // Reuse the same random-order seed across every page of a scroll
+    // session (the backend picks one on the first request and hands it
+    // back) — without this, each page was an independently re-shuffled
+    // order and the same post could show up on more than one page.
+    let seed_param = post_seed !== null ? `&seed=${post_seed}` : ''
+    fetch(`get-posts?page=${page}${seed_param}`).then(response=>response.json())
     .then(data=>{
+        if(post_seed === null) post_seed = data.seed
         let from = data.from - 1
         let p = data.current_page
-        nr_of_posts = data.total - data.from + 1 
+        nr_of_posts = data.total - data.from + 1
         last_page = data.last_page
         data = data.data
         for (let i = 0; i < data.length ; i++) {
@@ -105,11 +112,16 @@ function get_posts(page){
                     })
                 })
             }
-           
+
         }
+        // Wire up comments/codebox/drag/etc. for this batch of posts —
+        // see wirePostInteractions() for why this is needed here at all
+        // (previously nothing ever ran this for posts loaded after the
+        // first page).
+        wirePostInteractions();
     })
     current_page++
-    
+
 }
 
 setTimeout(() => {
@@ -175,12 +187,46 @@ function removePostFocus() {
         post.classList.remove('post-focus');
     });
 }
-setTimeout(()=>{
+function checkCollision(post) {
+    const focusedPosts = document.querySelectorAll('.post-focus');
+    focusedPosts.forEach(fpost=>{
+      if(focusedPosts.length >1){
+          if(fpost !== post){
+              const rect1 = post.getBoundingClientRect();
+              const rect2 = fpost.getBoundingClientRect();
+              if (
+                  rect1.top < rect2.bottom &&
+                  rect1.bottom > rect2.top &&
+                  rect1.left < rect2.right &&
+                  rect1.right > rect2.left
+              ) {
+                  fpost.classList.remove('post-focus')
+              }
+          }
+      }
+    })
+}
+
+// Wires up everything a rendered .post needs to actually be interactive:
+// comment form submission, double-click focus, "View more" focus, drag
+// reordering, and the "..." settings menu. This used to be inline in a
+// setTimeout() that ran exactly once, 1000ms after the page's initial
+// script parse — which covered the first page of posts (loaded fast
+// enough to already be in the DOM by then) but nothing loaded afterwards
+// by infinite scroll, since nothing ever ran this again for later pages.
+// Now called once for the initial load AND again at the end of every
+// get_posts() batch. Each per-post listener is guarded with a dataset
+// flag so repeat calls only wire the newly-added posts — without that,
+// re-running this over the whole document would re-attach a second set of
+// listeners to every already-wired post from earlier pages too.
+function wirePostInteractions(){
     const posts = document.querySelectorAll('.post');
     const view_more = document.querySelectorAll('a[class^="pid-"]');
     open_code_box()
     update_comments()
     document.querySelectorAll('form.add-comment').forEach(add_comment=>{
+        if (add_comment.dataset.wired) return;
+        add_comment.dataset.wired = '1';
         add_comment.addEventListener('submit', function(event) {
             event.preventDefault();
             let post_id = parseInt(add_comment.getAttribute('id').split('-')[1])
@@ -206,31 +252,16 @@ setTimeout(()=>{
         });
     })
     posts.forEach(post=>{
+        if (post.dataset.focusWired) return;
+        post.dataset.focusWired = '1';
         post.addEventListener('dblclick',e=>{
             post.classList.add('post-focus')
             checkCollision(post)
         })
     })
-    function checkCollision(post) {
-        const focusedPosts = document.querySelectorAll('.post-focus');
-        focusedPosts.forEach(fpost=>{
-          if(focusedPosts.length >1){
-              if(fpost !== post){
-                  const rect1 = post.getBoundingClientRect();
-                  const rect2 = fpost.getBoundingClientRect();
-                  if (
-                      rect1.top < rect2.bottom &&
-                      rect1.bottom > rect2.top &&
-                      rect1.left < rect2.right &&
-                      rect1.right > rect2.left
-                  ) {
-                      fpost.classList.remove('post-focus')
-                  }
-              }
-          }
-        })
-      }
-      view_more.forEach(view=>{
+    view_more.forEach(view=>{
+        if (view.dataset.wired) return;
+        view.dataset.wired = '1';
         view.addEventListener('click',()=>{
             let post_id = view.getAttribute('class');
             let post = document.querySelector(`div.${post_id}`);
@@ -238,14 +269,11 @@ setTimeout(()=>{
             checkCollision(post);
         })
     })
-    window.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            removePostFocus();
-        }
-    });
     let allPosts = document.querySelectorAll('.post')
     let move_content = ''
     allPosts.forEach(p => {
+        if (p.dataset.dragWired) return;
+        p.dataset.dragWired = '1';
         p.addEventListener('mouseover',e=>{
             if(e.target.className.split(' ')[0]=='draggable_post'){
                 p.draggable=true
@@ -271,11 +299,14 @@ setTimeout(()=>{
                     update_comments()
                     open_code_box()
                 },300)
-                
+
             },50)
         })
     });
-    
+
+    // .onclick = (assignment, not addEventListener) already replaces any
+    // previous handler rather than stacking a new one, so this one's safe
+    // to re-run on already-wired posts without a dataset guard.
     let post_settings = document.querySelectorAll('.post_settings')
     post_settings.forEach(btn=>{
         btn.onclick = () => {
@@ -287,7 +318,7 @@ setTimeout(()=>{
                 s_post.style.opacity='1';
                 s_post.style.animation='none';
                 setTimeout(()=>{s_post.classList.add('opacity-0')},100)
-                
+
                 setTimeout(()=>{s_post.classList.add('d-none')},400)
             }
             if(!btn.className.includes('settings_opened')) {
@@ -300,6 +331,15 @@ setTimeout(()=>{
             }
         }
     })
+}
+
+setTimeout(()=>{
+    wirePostInteractions();
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            removePostFocus();
+        }
+    });
 },1000)
 
 function escapeHtml(text) {

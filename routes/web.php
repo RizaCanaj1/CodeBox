@@ -11,6 +11,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\FriendsController;
 use App\Http\Controllers\StartupController;
+use App\Http\Controllers\StoryController;
 use App\Http\Controllers\ApplicationsController;
 use App\Http\Controllers\NotificationsController;
 
@@ -53,6 +54,8 @@ Route::middleware([
             if($path=='get_role'){return app(CrudController::class)->get_role();}
             //Post
             if($path=='get-posts'){return app(CrudController::class)->get_posts();}
+            //Stories
+            if($path=='get-stories'){return app(StoryController::class)->get_stories();}
             //Course
             if($path=='get_teachers'){return app(CourseController::class)->get_teachers();}
             if($path=='get-not-teachers'){return app(CourseController::class)->get_not_teachers();}
@@ -112,4 +115,13 @@ Route::middleware([
     //Route::get('/get-not-teachers',[CourseController::class,'get_not_teachers']);
     Route::post('/add_teacher',[CourseController::class,'add_teacher'])->name('add_teacher');
     Route::post('/add_course',[CourseController::class,'add_course'])->name('add_course');
+
+    //Stories
+    // GET /get-stories is handled by the /{path} catch-all above instead
+    // (same as get-posts, get-all-users, etc.) — a route registered here
+    // would never be reached anyway, since that catch-all matches first
+    // for any single-segment GET path.
+    Route::post('/add-story', [StoryController::class, 'store']);
+    Route::post('/view-story/{id}', [StoryController::class, 'view']);
+    Route::post('/toggle-story-highlight/{id}', [StoryController::class, 'toggle_highlight']);
 });

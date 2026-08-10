@@ -9,7 +9,6 @@ const add_post_form = document.querySelector('.add_post_form')
 
 
 
-const my_story = document.querySelector('.m-story');
 const popup = document.querySelector('.pop_up');
 const notification_span = document.querySelector('.notifications_btn');
 const notifications = document.querySelector('.notifications');
@@ -50,7 +49,6 @@ type_of_post.addEventListener('change',e=>{
 });
 window.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        my_story.classList.remove('open-story');
         removePostFocus();
     }
 });
@@ -64,9 +62,6 @@ window.addEventListener('scroll',()=>{
     }
 })
 
-my_story.addEventListener('click',e=>{
-    my_story.classList.add('open-story');
-})
 if (popup) {
     setTimeout(function() {
         popup.classList.add('remove_popup');

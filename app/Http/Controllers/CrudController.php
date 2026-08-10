@@ -59,7 +59,17 @@ class CrudController extends Controller
         return response()->json($users);
     }
     public function get_posts(){
-        $posts = Posts::orderByRaw('RAND()')->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->paginate(10);
+        // RAND() alone re-shuffles the whole table on every query execution,
+        // so page 1 and page 2 of infinite scroll were each an independent
+        // random order — the same post could (and often did) land on both.
+        // Seeding it and reusing that seed for every page in the same
+        // scroll session keeps the order stable, so paginated windows over
+        // it don't overlap.
+        // Note: get-posts is dispatched via a manual app(CrudController::class)->get_posts()
+        // call in routes/web.php, not a real Laravel route, so there's no
+        // auto-injected Request param here — use the request() helper instead.
+        $seed = (int) request()->query('seed', random_int(1, 2147483647));
+        $posts = Posts::orderByRaw('RAND(?)', [$seed])->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->paginate(10);
         foreach ($posts as $post) {
             
             $post->auth_id = auth()->id();
@@ -101,7 +111,11 @@ class CrudController extends Controller
             }
             $post->comments = $comments;
         }
-        return response()->json($posts);
+        // Hand the seed back so the frontend can pass it on the next page
+        // request instead of letting the server pick a fresh one each time.
+        $result = $posts->toArray();
+        $result['seed'] = $seed;
+        return response()->json($result);
     }
     
     public function post_codes($id){

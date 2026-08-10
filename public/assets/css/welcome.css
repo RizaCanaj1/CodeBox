@@ -1,0 +1,683 @@
+/*
+ * Landing page (welcome.blade.php) styles only. Kept out of main.css on
+ * purpose — main.css is loaded on every authenticated page (via
+ * layouts/app.blade.php) for the shared .CodeBox/.navbar/.nav-links/
+ * .searchbar rules, and this page doesn't need to ship its own weight to
+ * every dashboard/profile/etc. request.
+ */
+
+.cb-landing{
+    --cb-bg: #08090c;
+    --cb-bg-soft: #0d0f14;
+    --cb-surface: #14161d;
+    --cb-surface-2: #1a1c25;
+    --cb-border: rgba(255,255,255,0.08);
+    --cb-text: #f4f5f7;
+    --cb-text-dim: rgba(244,245,247,0.68);
+    --cb-text-faint: rgba(244,245,247,0.42);
+    --cb-accent: #00e59f;
+    --cb-accent-soft: rgba(0,229,159,0.14);
+    --cb-accent-2: #fd5353;
+    --cb-accent-2-soft: rgba(253,83,83,0.14);
+
+    background: var(--cb-bg);
+    color: var(--cb-text);
+    font-family: 'Figtree', sans-serif;
+    overflow-x: hidden;
+}
+.cb-landing *{
+    box-sizing: border-box;
+}
+.cb-landing a{
+    text-decoration: none;
+    color: inherit;
+}
+.cb-landing .cb-container{
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ---------- nav ---------- */
+.cb-nav{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    background: rgba(8,9,12,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    box-shadow: none;
+    transition: background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+/* Toggled by welcome.js once the page has scrolled a bit, so the nav only
+   picks up a visible edge/shadow once there's content moving under it. */
+.cb-nav.cb-scrolled{
+    border-bottom-color: var(--cb-border);
+    box-shadow: 0 12px 30px -20px rgba(0,0,0,0.8);
+}
+.cb-nav .cb-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+.cb-brand{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.cb-brand-name{
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+}
+.cb-nav-links{
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+.cb-nav-links a{
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--cb-text-dim);
+    transition: color .2s;
+}
+.cb-nav-links a:hover{
+    color: var(--cb-text);
+}
+.cb-nav-actions{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cb-menu-toggle{
+    display: none;
+    background: none;
+    border: 1px solid var(--cb-border);
+    border-radius: 8px;
+    color: var(--cb-text);
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+/* buttons */
+.cb-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
+    white-space: nowrap;
+}
+.cb-btn:active{
+    transform: translateY(1px);
+}
+.cb-btn-primary{
+    background: var(--cb-accent);
+    color: #05130e;
+    box-shadow: 0 8px 24px -8px rgba(0,229,159,0.55);
+}
+.cb-btn-primary:hover{
+    box-shadow: 0 10px 28px -6px rgba(0,229,159,0.65);
+    transform: translateY(-1px);
+}
+.cb-btn-ghost{
+    background: transparent;
+    color: var(--cb-text);
+    border-color: var(--cb-border);
+}
+.cb-btn-ghost:hover{
+    border-color: rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.04);
+}
+.cb-btn-lg{
+    padding: 13px 26px;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+/* ---------- hero ---------- */
+.cb-hero{
+    position: relative;
+    padding: 96px 0 80px;
+    overflow: hidden;
+}
+.cb-hero-glow{
+    position: absolute;
+    inset: -20% -10% auto -10%;
+    height: 620px;
+    background:
+        radial-gradient(480px 320px at 18% 20%, rgba(0,229,159,0.16), transparent 65%),
+        radial-gradient(420px 300px at 82% 10%, rgba(253,83,83,0.12), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    animation: cb-glow-drift 12s ease-in-out infinite;
+    will-change: transform;
+}
+/* Slow ambient drift so the hero doesn't feel static. */
+@keyframes cb-glow-drift{
+    0%, 100%{ transform: translate(0, 0) scale(1); }
+    50%{ transform: translate(-1.5%, 2%) scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce){
+    .cb-hero-glow{ animation: none; }
+}
+.cb-hero .cb-container{
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 56px;
+    align-items: center;
+}
+.cb-eyebrow{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--cb-accent-soft);
+    border: 1px solid rgba(0,229,159,0.28);
+    color: var(--cb-accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 22px;
+}
+.cb-eyebrow i{
+    font-size: 0.7rem;
+}
+.cb-hero h1{
+    font-size: clamp(2.1rem, 4vw, 3.4rem);
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+}
+.cb-hero h1 .cb-accent-text{
+    background: linear-gradient(90deg, var(--cb-accent), #6dffce);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.cb-hero p{
+    font-size: 1.08rem;
+    line-height: 1.65;
+    color: var(--cb-text-dim);
+    max-width: 46ch;
+    margin: 0 0 32px;
+}
+.cb-hero-actions{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 34px;
+}
+.cb-hero-meta{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--cb-text-faint);
+    font-size: 0.85rem;
+}
+.cb-hero-meta i{
+    color: var(--cb-accent);
+}
+
+/* code preview card */
+.cb-code-card{
+    position: relative;
+    background: var(--cb-surface);
+    border: 1px solid var(--cb-border);
+    border-radius: 16px;
+    box-shadow: 0 30px 60px -25px rgba(0,0,0,0.65);
+    overflow: hidden;
+}
+/* Carries .cb-reveal too (for the opacity/transition timing), but its
+   resting transform is a rotate(1deg) tilt rather than the plain
+   translateY the other .cb-reveal elements use, and its :hover state
+   straightens that tilt back to 0deg. Each state below is a higher-
+   specificity override so the tilt and the fade-in offset compose
+   correctly instead of one replacing the other outright (`transform` only
+   ever takes a single value from whichever rule wins the cascade — an
+   earlier version of this used a `animation: ... forwards` for the
+   entrance instead, but CSS animations outrank plain rules like :hover in
+   the cascade, which silently blocked the hover-straighten effect once
+   the entrance animation finished holding `transform`). */
+.cb-code-card.cb-reveal{
+    transform: translateY(24px) rotate(1deg);
+}
+.cb-code-card.cb-reveal.cb-in-view{
+    transform: translateY(0) rotate(1deg);
+}
+.cb-code-card.cb-reveal.cb-in-view:hover{
+    transform: translateY(0) rotate(0deg);
+}
+.cb-code-titlebar{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--cb-surface-2);
+    border-bottom: 1px solid var(--cb-border);
+}
+.cb-code-dots{
+    display: flex;
+    gap: 7px;
+}
+.cb-code-dots span{
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: block;
+}
+.cb-code-dots span:nth-child(1){ background: #fd5353; }
+.cb-code-dots span:nth-child(2){ background: #f7c948; }
+.cb-code-dots span:nth-child(3){ background: #00e59f; }
+.cb-code-filename{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--cb-text-faint);
+}
+.cb-code-body{
+    display: flex;
+    padding: 18px 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.86rem;
+    line-height: 1.75;
+    overflow-x: auto;
+}
+.cb-code-lines{
+    padding: 0 14px;
+    color: var(--cb-text-faint);
+    text-align: right;
+    user-select: none;
+}
+.cb-code-lines span{
+    display: block;
+}
+.cb-code-content{
+    padding-right: 20px;
+}
+/* Was `.cb-code-content span` (a descendant selector) with `white-space:
+   pre` on the container — that made every nested .tok-* token span block
+   too (so each word landed on its own line), and preserved the
+   source-formatting newlines between line spans as extra blank lines.
+   Scoped to the dedicated .cb-code-line wrapper only, and moved
+   `white-space: pre` down onto that same element so it no longer leaks
+   onto the whitespace text nodes between lines. */
+.cb-code-line{
+    display: block;
+    white-space: pre;
+}
+.tok-comment{ color: #6b7280; }
+.tok-keyword{ color: #ff8fb1; }
+.tok-func{ color: #7cc7ff; }
+.tok-string{ color: #ffcf86; }
+.tok-var{ color: #e7e9ee; }
+.tok-prop{ color: #9ad6ff; }
+.tok-punct{ color: #a9adb8; }
+.tok-accent{ color: var(--cb-accent); }
+
+/* ---------- sections shared ---------- */
+.cb-section{
+    padding: 88px 0;
+}
+.cb-section-head{
+    max-width: 640px;
+    margin: 0 auto 52px;
+    text-align: center;
+}
+.cb-section-head .cb-eyebrow{
+    margin-bottom: 16px;
+}
+.cb-section-head h2{
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+}
+.cb-section-head p{
+    color: var(--cb-text-dim);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ---------- scroll reveal ---------- */
+/* Generic "fade + rise in" used across the page (section heads, cards,
+   the code preview, the CTA panel) — welcome.js adds .cb-in-view via an
+   IntersectionObserver once an element scrolls into view, with a small
+   per-item stagger set through --cb-reveal-delay. */
+.cb-reveal{
+    opacity: 0;
+    transform: translateY(18px);
+    /* border-color is here (even though most .cb-reveal elements never
+       change it) so this is the ONE place components declare the
+       `transition` shorthand — a second declaration on a more specific
+       selector like .cb-feature-card would replace this whole value
+       rather than merge with it, silently dropping the reveal timing. */
+    transition: opacity .5s ease, transform .35s ease, border-color .2s ease;
+    transition-delay: var(--cb-reveal-delay, 0ms);
+}
+.cb-reveal.cb-in-view{
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce){
+    .cb-reveal{
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* ---------- features ---------- */
+.cb-features{
+    background: var(--cb-bg-soft);
+    border-top: 1px solid var(--cb-border);
+    border-bottom: 1px solid var(--cb-border);
+}
+.cb-feature-grid{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 20px;
+}
+.cb-feature-card{
+    background: var(--cb-surface);
+    border: 1px solid var(--cb-border);
+    border-radius: 14px;
+    padding: 26px 22px;
+    /* No `transition` declared here on purpose — this always carries the
+       shared .cb-reveal class too, and that's the single place the
+       transition shorthand is set (see the note above .cb-reveal). */
+}
+.cb-feature-card:hover{
+    border-color: rgba(255,255,255,0.18);
+    transform: translateY(-3px);
+}
+.cb-feature-icon{
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cb-accent-soft);
+    color: var(--cb-accent);
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+    transition: transform .3s ease;
+}
+.cb-feature-card:hover .cb-feature-icon{
+    transform: scale(1.08) rotate(-4deg);
+}
+.cb-feature-card:nth-child(2) .cb-feature-icon{
+    background: var(--cb-accent-2-soft);
+    color: var(--cb-accent-2);
+}
+.cb-feature-card h3{
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+.cb-feature-card p{
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--cb-text-dim);
+    margin: 0;
+}
+
+/* ---------- how it works ---------- */
+.cb-steps{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 28px;
+    counter-reset: cb-step;
+}
+.cb-step{
+    position: relative;
+    padding: 28px 22px 22px;
+    border: 1px solid var(--cb-border);
+    border-radius: 14px;
+    background: var(--cb-surface);
+}
+.cb-step-index{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--cb-surface-2);
+    border: 1px solid var(--cb-border);
+    color: var(--cb-accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+.cb-step h3{
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+.cb-step p{
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--cb-text-dim);
+    margin: 0;
+}
+
+/* ---------- learn ---------- */
+.cb-learn{
+    background: var(--cb-bg-soft);
+    border-top: 1px solid var(--cb-border);
+    border-bottom: 1px solid var(--cb-border);
+}
+.cb-learn-grid{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 20px;
+}
+.cb-learn-card{
+    background: var(--cb-surface);
+    border: 1px solid var(--cb-border);
+    border-radius: 14px;
+    padding: 26px 22px;
+}
+.cb-learn-card:hover{
+    border-color: rgba(255,255,255,0.18);
+    transform: translateY(-3px);
+}
+.cb-learn-icon{
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cb-accent-2-soft);
+    color: var(--cb-accent-2);
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+    transition: transform .3s ease;
+}
+.cb-learn-card:hover .cb-learn-icon{
+    transform: scale(1.08) rotate(-4deg);
+}
+.cb-learn-card h3{
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.cb-learn-card p{
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--cb-text-dim);
+    margin: 0;
+}
+.cb-soon{
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.08);
+    color: var(--cb-text-faint);
+    border: 1px solid var(--cb-border);
+}
+
+/* ---------- cta ---------- */
+.cb-cta{
+    position: relative;
+    margin: 0 24px 96px;
+    max-width: 1132px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 64px 40px;
+    text-align: center;
+    border-radius: 22px;
+    border: 1px solid var(--cb-border);
+    background:
+        radial-gradient(600px 260px at 50% -20%, rgba(0,229,159,0.16), transparent 70%),
+        var(--cb-surface);
+    overflow: hidden;
+}
+.cb-cta h2{
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    margin: 0 0 14px;
+}
+.cb-cta p{
+    color: var(--cb-text-dim);
+    max-width: 46ch;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+}
+.cb-cta-actions{
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* ---------- footer ---------- */
+.cb-footer{
+    border-top: 1px solid var(--cb-border);
+    padding: 32px 0;
+}
+.cb-footer .cb-container{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.cb-footer-brand{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--cb-text-faint);
+    font-size: 0.85rem;
+}
+.cb-footer-links{
+    display: flex;
+    gap: 22px;
+}
+.cb-footer-links a{
+    font-size: 0.85rem;
+    color: var(--cb-text-faint);
+    transition: color .2s;
+}
+.cb-footer-links a:hover{
+    color: var(--cb-text-dim);
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 992px){
+    .cb-hero .cb-container{
+        grid-template-columns: 1fr;
+    }
+    .cb-hero{
+        padding: 64px 0 56px;
+        text-align: center;
+    }
+    .cb-hero p{
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .cb-hero-actions,
+    .cb-hero-meta{
+        justify-content: center;
+    }
+    .cb-code-card.cb-reveal{
+        transform: translateY(24px);
+    }
+    .cb-code-card.cb-reveal.cb-in-view,
+    .cb-code-card.cb-reveal.cb-in-view:hover{
+        transform: translateY(0);
+    }
+    .cb-feature-grid{
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+    .cb-steps{
+        grid-template-columns: 1fr;
+    }
+    .cb-learn-grid{
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 768px){
+    .cb-nav-links{
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 14px 24px 18px;
+        background: var(--cb-bg);
+        border-bottom: 1px solid var(--cb-border);
+        display: none;
+    }
+    .cb-nav-links.cb-open{
+        display: flex;
+    }
+    .cb-nav-links a{
+        width: 100%;
+        padding: 10px 0;
+    }
+    .cb-menu-toggle{
+        display: inline-flex;
+    }
+    .cb-feature-grid{
+        grid-template-columns: 1fr;
+    }
+    .cb-cta{
+        padding: 48px 24px;
+        margin: 0 16px 72px;
+    }
+}

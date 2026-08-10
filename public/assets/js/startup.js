@@ -337,7 +337,6 @@ add_social.onclick = ()=>{
         }
         update_social_link()
     })
-    
     added_social.querySelectorAll('.removable-icons')
 }
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
@@ -365,7 +364,6 @@ cv.onchange = () => {
                 reader.readAsArrayBuffer(cv_file);
             }
         };
-        
         const convertPdfToImages = async (pdfData) => {
             const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
             const pageCount = pdf.numPages;
@@ -575,7 +573,6 @@ function check_total_abuse (text_field) {
     });
     let modifiedBio = words.join(' ');
     text_field.value = modifiedBio;
-    
 }
 function check_nr_of_abuse(text_field){
     let words = text_field.value.split(/\s+/);
@@ -597,7 +594,6 @@ finish_setup.onclick = () => {
         errors.push({'Warning':'Your text contains too many abusive words. Please be mindful of the language you use.'})
     }
     if (errors.length == 0) {
-        
         console.log('Lang', lang);
         if (selected_checkbox.length == 0) selected_checkbox = ['all'];
         console.log(selected_checkbox);
@@ -618,7 +614,6 @@ finish_setup.onclick = () => {
         if (uploaded_profile.files[0]) {
             console.log('Profile image', uploaded_profile.files[0])
         }
-
         else console.log('No profile image uploaded');
         if (cv.files[0]) console.log('CV', cv.files[0]);
         else console.log('No CV uploaded');
@@ -654,7 +649,6 @@ finish_setup.onclick = () => {
                 post_type:selected_checkbox,
                 social_media:social_medias
             };
-        
             console.log(user_form); 
             fetch(`/upload_user`, {
                 method: 'POST',
@@ -684,7 +678,6 @@ finish_setup.onclick = () => {
                 }
             });
         });
-    
     }
     else{
         errors_element.innerHTML=''
@@ -698,5 +691,4 @@ finish_setup.onclick = () => {
         }})
         errors=[]
     }
-    
 };

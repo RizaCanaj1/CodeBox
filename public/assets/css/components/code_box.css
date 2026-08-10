@@ -1,3 +1,30 @@
+/*
+ * FIXES / ADDITIONS (numbered comments inline):
+ * 1. .codeblock never had `position: relative`, but .code-search is
+ *    `position: absolute` and .scroll-button is positioned via JS against
+ *    it. Without a positioned ancestor, an absolutely-positioned child
+ *    escapes to whatever positioned ancestor happens to exist further up
+ *    the page (or the initial containing block if there isn't one) —
+ *    which is exactly the kind of bug that gets worse with multiple
+ *    codeboxes on screen, since their search bars can end up positioned
+ *    against the same ancestor instead of each staying inside its own box.
+ * 2. Same fix applied to pre[id^='pid-'] directly, in case that's a
+ *    separate nested element from .codeblock in your markup rather than
+ *    the same element — harmless either way, and covers both cases.
+ * 3. .scroll-button is `position: fixed` but never had a `right`/`left`
+ *    set anywhere (JS only ever sets `top`), so its horizontal position
+ *    was left undefined/unstable. Gave it a fixed `right` so it has a
+ *    predictable anchor. Adjust the value to taste.
+ * 4. .code-search had no default position values either (JS only sets
+ *    `top`); gave it a `right` default for the same reason as #3.
+ * 5. New: .code-loading / .code-loading-line — shimmering skeleton bars
+ *    shown by showCodeLoadingSkeleton() in codebox.js while a file is
+ *    being fetched, replacing the old plain "Loading..." text.
+ * 6. New: .code-render-progress / .spinner — small pinned "Rendering
+ *    X/Y lines…" readout shown by renderCodeInChunks() in codebox.js
+ *    while a large file (1500+ lines) is still being chunk-rendered.
+ */
+
 .codeblock{
     border: 5px solid rgb(22, 22, 22);
     padding: 7px;
@@ -7,6 +34,12 @@
     width: 90%;
     height: 300px;
     overflow: scroll;
+    position: relative; /* 1. see note above */
+}
+/* 2. covers the case where the scrollable/search-anchored element is the
+      pre[id^='pid-'] rather than (or in addition to) .codeblock itself */
+pre[id^='pid-']{
+    position: relative;
 }
 .codeblock::-webkit-scrollbar {
     width: 10px;
@@ -20,6 +53,20 @@
 }
 .codeblock span[id^='line-']{
     animation: code-revealer .5s;
+}
+/* Large files (see LARGE_FILE_LINE_THRESHOLD in codebox.js) skip the
+   per-line fade — animating thousands of spans at once is its own perf
+   cost — and get one cheap container-level fade instead, see .code-reveal
+   below. */
+.codeblock .code.large-file span[id^='line-']{
+    animation: none;
+}
+.code.code-reveal{
+    animation: code-fade-in .35s ease;
+}
+@keyframes code-fade-in{
+    from{ opacity: 0; }
+    to{ opacity: 1; }
 }
 .codeblock ::selection {
     background: #ffb7b7; 
@@ -70,8 +117,10 @@
 }
 .code-search{
     position: absolute;
+    right: 10px; /* 4. stable default anchor, JS only ever sets `top` */
     background-color: rgba(255, 255, 255, 0.1);
     padding: 12px;
+    z-index: 3;
 }
 .code-search input.form-control{
     color: white;
@@ -111,6 +160,7 @@
 } 
 .scroll-button {
     position:fixed;
+    right: 24px; /* 3. stable default anchor, JS only ever sets `top` */
     width: 40px;
     height: 40px;
     padding: 7px;
@@ -143,4 +193,62 @@
     background-color: transparent;
     border: 0px;
     outline: 0px;
+}
+
+/* 5. Skeleton shown while a file is being fetched — see
+      showCodeLoadingSkeleton() in codebox.js */
+.code-loading{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 4px;
+}
+.code-loading-line{
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.16) 37%, rgba(255,255,255,0.06) 63%);
+    background-size: 400% 100%;
+    animation: code-loading-shimmer 1.4s ease infinite;
+}
+@keyframes code-loading-shimmer{
+    0%{ background-position: 100% 50%; }
+    100%{ background-position: 0% 50%; }
+}
+
+/* 6. Pinned progress readout shown while a large file is still being
+      chunk-rendered — see renderCodeInChunks() in codebox.js */
+.code-render-progress{
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    margin: 4px 0;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    width: fit-content;
+}
+.code-render-progress .spinner{
+    width: 10px;
+    height: 10px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    animation: code-render-spin .6s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes code-render-spin{
+    to{ transform: rotate(360deg); }
+}
+
+/* Search variant of the same readout — shown inside the search dropdown
+   (not sticky/pinned like the render one) while a large file's lines are
+   being matched in chunks — see runSearch()/processChunk() in codebox.js */
+.code-search-progress{
+    position: static;
+    margin: 6px 0 0;
 }

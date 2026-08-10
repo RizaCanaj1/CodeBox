@@ -67,63 +67,11 @@ i{
     resize: none;
     height: 150px;
 }
-.stories {
-    display: grid;
-    grid-template-columns: repeat(3,150px);
-    height: 160px;
-    gap: 24px ;
-}
-.m-story ,.i-story{
-    transition: all .3s;
-    border-radius: 10px 10px 0px 0px;
-    height: 150px;
-    width: 150px;
-    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
-}
-.m-story:hover ,.i-story:hover{
-    border-radius: 10px 10px 0px 0px;
-    height: 160px;
-    width: 150px;
-    box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
-}
-.open-story{
-    position: absolute;
-    top:50px;
-    left: 50px;
-    width: 60%;
-    height: 80%;
-    box-shadow: 0px 0px 600px 100px black;
-    z-index: 6;
-}
-.open-story:hover{
-    position: absolute;
-    top:50px;
-    left: 50px;
-    width: 60%;
-    height: 80%;
-    box-shadow: 0px 0px 600px 100px black;
-}
-.i-story{
-    overflow: hidden;
-}
-.i-story img{
-    filter: blur(2px);
-    width: 100%;
-}
-.user-s img{
-    margin-top: -15px;
-    border: 1px solid black;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    z-index: 1;
-}
-.add-story {
-    border-radius: 10px 10px 0px 0px;
-    width: 100%;
-    height: 50%;
-    background-color: black;
-}
+/* The old .stories/.m-story/.i-story/.open-story rules (rectangular cards,
+   a broken "expand in place" hover hack, and a 3D rotateY tilt at some
+   breakpoints below) were the "weird animations" from this app's early
+   days — replaced by a proper IG-style circular story bar + fullscreen
+   viewer. See public/assets/css/components/stories.css. */
 .profile-chat{
     width: 20%;
     transition: all .3s;
@@ -258,12 +206,6 @@ i{
     gap: 25px;
 }
 @media screen and (max-width: 1650px) {
-    .stories {
-        grid-template-columns: repeat(3,140px);
-    }
-    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
-        width: 140px;
-    }
     .chats .c-content{
         height: 0px;
         opacity: 0; 
@@ -277,34 +219,12 @@ i{
         opacity: 1;
     }
 }
-@media screen and (max-width: 1350px) {
-    .stories {
-        grid-template-columns: repeat(3,100px);
-    }
-    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
-        width: 160px;
-    }
-    .m-story ,.story{
-        perspective: 1000px;
-        transform: rotateY(40deg) rotateX(10deg) translateZ(0px);
-        box-shadow: -10px 10px 20px 1px rgba(0,0,0,0.5);
-    }
-    .m-story:hover ,.story:hover{
-        perspective: 1000px;
-        transform: rotateY(0deg) translateZ(10px);
-        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.2);
-        z-index: 2;
-    }
-}
 @media screen and (max-width: 1150px) {
     .add-post{
         width: 96% !important;
     }
     main{
         overflow-x: hidden;
-    }
-    .stories {
-        grid-template-columns: repeat(3,80px);
     }
     .posts{
         grid-template-columns: 48% 48%;
@@ -335,37 +255,6 @@ i{
     .stories-wrapper{
         justify-content: center;
     }
-    .stories {
-        grid-template-columns: repeat(3,150px);
-    }
-    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
-        width: 150px;
-    }
-    .m-story ,.story{
-        perspective: 0px;
-        transform: translateZ(0px);
-        box-shadow: none;
-    }
-    .m-story:hover ,.story:hover{
-        perspective: 0px;
-        transform: translateZ(0px);
-        box-shadow: none;
-        z-index: 1;
-    }
-    
-    .m-story ,.i-story{
-        transition: all .3s;
-        border-radius: 10px 10px 0px 0px;
-        height: 150px;
-        width: 150px;
-        box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
-    }
-    .m-story:hover ,.i-story:hover{
-        border-radius: 10px 10px 0px 0px;
-        height: 160px;
-        width: 150px;
-        box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
-    }
 }
 @media screen and (max-width: 750px){
     .add-post{
@@ -374,30 +263,5 @@ i{
     .posts{
         margin-left: 3%;
         grid-template-columns: 94%;
-    }
-}
-@media screen and (max-width: 560px){
-    .stories {
-        grid-template-columns: repeat(3,130px);
-    }
-    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
-        width: 130px;
-    }
-}
-@media screen and (max-width: 475px){
-    .stories {
-        grid-template-columns: repeat(3,100px);
-    }
-    .m-story ,.i-story,.m-story:hover ,.i-story:hover{
-        width: 100px;
-    }
-}
-@media screen and (max-width: 385px){
-    .stories {
-        grid-template-columns: repeat(3,80px);
-    }
-    .m-story ,.i-story{
-        width: 80px;
-        height: 150px;
     }
 }

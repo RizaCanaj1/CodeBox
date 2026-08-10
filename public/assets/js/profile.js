@@ -223,8 +223,6 @@ save_changes.addEventListener('click',()=>{
             btn.classList.add('d-none')
         })
     },2500)
-    
-    
 })
 discard_changes.addEventListener('click',()=>{
     bio.innerHTML=''
@@ -263,8 +261,6 @@ add_contact.onclick = () =>{
         add_contact.classList.add('editing')
         new_contact.classList.remove('d-none')
     }
-    
-    
 }
 let selectedMedia
 let prefix = '';
@@ -302,8 +298,6 @@ social_selection.addEventListener('change', function() {
     else{
         linkInput.value = prefix;
     }
-    
-    
 });
 linkInput.addEventListener('keyup', function() {
     add_social_btn.classList.remove('d-none')

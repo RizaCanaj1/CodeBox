@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="../assets/css/components/post.css"/>
     <link rel="stylesheet" href="../assets/css/components/code_box.css"/>
     <link rel="stylesheet" href="../assets/css/components/emojis.css"/>
+    <link rel="stylesheet" href="../assets/css/components/stories.css"/>
     <pre>
     @php
         $notifications = App\Models\Notifications::where('user_id','=',auth()->id())->orderBy('id', 'DESC')->get();
@@ -67,32 +68,47 @@
         @endif 
         </div>
         <div class='stories-wrapper d-flex gap-5'>
-            <div class='stories mt-4'>
-                <div class='m-story bg-light'>
-                    <div class='add-story d-flex justify-content-center align-items-center'>
-                        <label for="story"><i class='fa-solid fa-plus text-white'></i></label>
-                        <input type="file" name="story[]" class="form-control story-media d-none" id='story' accept='image/video' multiple /> 
-                    </div>
+            <div class='stories mt-4' id="storiesBar">
+                <div class='m-story bg-light' id="addStoryCard">
                     <div class='d-flex justify-content-center user-s'>
-                        <img src="./assets/images/user.png" alt="y-story">
+                        <img src="{{ Auth::user()->profile_photo_path ? asset('storage/'.Auth::user()->profile_photo_path) : asset('assets/images/user.png') }}" alt="y-story">
+                        <div class='add-story d-flex justify-content-center align-items-center'>
+                            <label for="story"><i class='fas fa-plus text-white'></i></label>
+                            @if(Auth::user()->hasPermissionTo('create stories'))
+                            <input type="file" name="story" class="form-control story-media d-none" id='story' accept='image/*,video/*' />
+                            @endif
+                        </div>
                     </div>
-                    <div class='d-flex justify-content-center mt-2'><button class='seethrow-btn'>Add your story</button></div>
+                    <div class='d-flex justify-content-center mt-2'><button type="button" class='seethrow-btn' id="addStoryBtn">Add your story</button></div>
                 </div>
-                <div class='story'>
-                    <div class='i-story d-flex justify-content-center align-items-center'>
-                        <img src="./assets/images/nature.png" alt="nature-s">
-                    </div>
-                    <div class='d-flex justify-content-center user-s'>
-                        <img src="./assets/images/user.png" alt="y-story">
+                <!-- Other users' story rings are rendered here by stories.js -->
+            </div>
+        </div>
+
+        <!-- Fullscreen story viewer — hidden until stories.js opens it. Sits
+             above everything (see .story-viewer z-index in stories.css) and
+             locks body scroll while open, so the dashboard behind it can't
+             be scrolled/interacted with until it's closed. -->
+        <div class="story-viewer d-none" id="storyViewer">
+            <div class="story-viewer-stage">
+                <div class="story-progress" id="storyProgress"></div>
+                <div class="story-viewer-header">
+                    <img class="story-viewer-avatar" id="storyViewerAvatar" src="" alt="">
+                    <span class="story-viewer-username" id="storyViewerUsername"></span>
+                    <span class="story-viewer-time" id="storyViewerTime"></span>
+                    <div class="story-viewer-actions">
+                        <button type="button" class="story-highlight-btn d-none" id="storyHighlightBtn" title="Save to highlights"><i class="far fa-star"></i></button>
+                        <button type="button" class="story-expand-btn" id="storyExpandBtn" title="Expand to fit image"><i class="fas fa-expand"></i></button>
+                        <button type="button" class="story-close-btn" id="storyCloseBtn" title="Close"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
-                <div class='story'>
-                    <div class='i-story d-flex justify-content-center align-items-center'>
-                        <img src="./assets/images/nature.png" alt="nature-s">
-                    </div>
-                    <div class='d-flex justify-content-center user-s'>
-                        <img src="./assets/images/user.png" alt="y-story">
-                    </div>
+                <div class="story-viewer-media" id="storyViewerMedia"></div>
+                <button type="button" class="story-nav-btn story-nav-prev d-none" id="storyPrevBtn"><i class="fas fa-chevron-left"></i></button>
+                <button type="button" class="story-nav-btn story-nav-next" id="storyNextBtn"><i class="fas fa-chevron-right"></i></button>
+                <div class="story-tap-zone story-tap-prev" id="storyTapPrev"></div>
+                <div class="story-tap-zone story-tap-next" id="storyTapNext"></div>
+                <div class="story-viewers-panel d-none" id="storyViewersPanel">
+                    <i class="fas fa-eye"></i> <span id="storyViewersCount">0</span> views
                 </div>
             </div>
         </div>
@@ -570,6 +586,7 @@
     <script src="assets/js/components/comments.js"></script>
     <script src="assets/js/components/post.js"></script>
     <script src="assets/js/components/code_box.js"></script>
+    <script src="assets/js/components/stories.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </x-app-layout>

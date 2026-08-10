@@ -130,9 +130,18 @@ function comment_m(comments){
     : "<p class='text-danger'>This post has no comments, be the first to comment</p>";
     return model;
 }
+// update_comments() used to only run once, 1000ms after the dashboard's
+// initial script parse (see post.js), so posts loaded later by infinite
+// scroll never got a working comment-toggle button. It's now re-run after
+// every batch of newly-loaded posts — the dataset guard is what makes
+// that safe, so already-wired comment icons from earlier posts don't get
+// a second click listener stacked on top (which would make the open/close
+// toggle immediately flip back on itself).
 function update_comments(){
     const comments_btn = document.querySelectorAll('.fa-comment');
     comments_btn.forEach(comment_btn =>{
+        if (comment_btn.dataset.commentWired) return;
+        comment_btn.dataset.commentWired = '1';
         comment_btn.addEventListener('click',e=>{
             let id = e.target.getAttribute('class').split(" ");
             if(id[(id.length-1)]=='o-comments'){
