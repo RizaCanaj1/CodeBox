@@ -9,6 +9,25 @@ const add_post_form = document.querySelector('.add_post_form')
 
 
 
+// Filter sidebar used to link to /invitation, /showcase, etc. — routes
+// that are commented out in web.php and 404. Filters the already-loaded
+// feed client-side by type instead (click again to clear).
+const dashboardFilter = document.getElementById('dashboardFilter');
+if (dashboardFilter) {
+    let activeFilterType = null;
+    dashboardFilter.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const type = link.dataset.type;
+            activeFilterType = activeFilterType === type ? null : type;
+            dashboardFilter.querySelectorAll('a').forEach(l => l.classList.toggle('active', l.dataset.type === activeFilterType));
+            document.querySelectorAll('.posts .post').forEach(post => {
+                post.classList.toggle('filtered-out', activeFilterType !== null && !post.classList.contains('p' + activeFilterType));
+            });
+        });
+    });
+}
+
 const popup = document.querySelector('.pop_up');
 const notification_span = document.querySelector('.notifications_btn');
 const notifications = document.querySelector('.notifications');
@@ -56,11 +75,9 @@ document.querySelector('#media').addEventListener('change',e=>{
     get_medi_name = e.target.value.split('\\')
     console.log(get_medi_name[get_medi_name.length-1])
 })
-window.addEventListener('scroll',()=>{
-    if(window.scrollY>0){
-        document.querySelector('.profile-chat').classList.toggle("sticky",window.scrollY>50)
-    }
-})
+// .profile-chat used to need this to fake being sticky via a JS scroll
+// listener toggling a class; the redesigned sidebar uses real CSS
+// `position: sticky` now, so there's nothing left for this to do.
 
 if (popup) {
     setTimeout(function() {
@@ -71,23 +88,15 @@ if (popup) {
     }, 3800);
 }
 notification_span.addEventListener('click',()=>{
-    console.log(notifications.className.split(' '))
     if(notifications.className.split(' ')[1] =='d-none')
     notifications.classList.remove('d-none')
     else
     notifications.classList.add('d-none')
 })
-notifications.addEventListener('animationend', function() {
-    console.log(notifications.scrollHeight)
-    
-    console.log('Transition has ended');
-    if (notifications.scrollHeight > 350) {
-        notifications.style.overflowY = 'scroll';
-    } else {
-        notifications.style.overflowY = 'hidden';
-    }
-    
-});
+// Used to toggle overflow-y via a `notifications.scrollHeight > 350` check
+// on 'animationend' (from a CSS keyframe that no longer exists in the
+// redesign) — the notifications panel just scrolls past a fixed
+// max-height in CSS now (see .notifications in dashboard.css).
 
 notification.forEach(n =>{
     n.querySelector('h6').addEventListener('click',e=>{

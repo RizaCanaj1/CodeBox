@@ -30,7 +30,11 @@
 
                 </div>
             </div>
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+                <button type="button" class="t-toggle" aria-pressed="false" title="Toggle day/night mode">
+                    <i class="fa-solid fa-sun t-toggle-light"></i>
+                    <i class="fa-solid fa-moon t-toggle-dark"></i>
+                </button>
                 <!-- Teams Dropdown -->
                 @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
                     <div class="ms-3 relative">

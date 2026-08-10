@@ -7,18 +7,24 @@
  */
 
 .cb-landing{
-    --cb-bg: #08090c;
-    --cb-bg-soft: #0d0f14;
-    --cb-surface: #14161d;
-    --cb-surface-2: #1a1c25;
-    --cb-border: rgba(255,255,255,0.08);
-    --cb-text: #f4f5f7;
-    --cb-text-dim: rgba(244,245,247,0.68);
-    --cb-text-faint: rgba(244,245,247,0.42);
-    --cb-accent: #00e59f;
-    --cb-accent-soft: rgba(0,229,159,0.14);
-    --cb-accent-2: #fd5353;
-    --cb-accent-2-soft: rgba(253,83,83,0.14);
+    /* Aliased to the shared light/dark tokens (theme.css) rather than
+       hardcoded, so the day/night toggle works here — every existing
+       var(--cb-*) rule below picks this up automatically. Kept as a
+       separate --cb-* namespace (instead of a find/replace to --t-*)
+       so this page's own rules stay self-contained/unaffected if
+       theme.css's token names ever change. */
+    --cb-bg: var(--t-bg);
+    --cb-bg-soft: var(--t-bg-soft);
+    --cb-surface: var(--t-surface);
+    --cb-surface-2: var(--t-surface-2);
+    --cb-border: var(--t-border);
+    --cb-text: var(--t-text);
+    --cb-text-dim: var(--t-text-dim);
+    --cb-text-faint: var(--t-text-faint);
+    --cb-accent: var(--t-accent);
+    --cb-accent-soft: var(--t-accent-soft);
+    --cb-accent-2: var(--t-accent-2);
+    --cb-accent-2-soft: var(--t-accent-2-soft);
 
     background: var(--cb-bg);
     color: var(--cb-text);
@@ -241,10 +247,14 @@
 }
 
 /* code preview card */
+/* This card is a "code editor" and deliberately stays dark regardless of
+   the site theme (hardcoded colors below, not the --cb-* tokens) — same
+   convention GitHub/MDN/etc. use for code blocks, and the tok-* syntax
+   colors further down are tuned for a dark background specifically. */
 .cb-code-card{
     position: relative;
-    background: var(--cb-surface);
-    border: 1px solid var(--cb-border);
+    background: #14161d;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     box-shadow: 0 30px 60px -25px rgba(0,0,0,0.65);
     overflow: hidden;
@@ -274,8 +284,8 @@
     align-items: center;
     gap: 16px;
     padding: 12px 16px;
-    background: var(--cb-surface-2);
-    border-bottom: 1px solid var(--cb-border);
+    background: #1a1c25;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .cb-code-dots{
     display: flex;
@@ -293,7 +303,7 @@
 .cb-code-filename{
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.8rem;
-    color: var(--cb-text-faint);
+    color: rgba(244,245,247,0.42);
 }
 .cb-code-body{
     display: flex;
@@ -305,7 +315,7 @@
 }
 .cb-code-lines{
     padding: 0 14px;
-    color: var(--cb-text-faint);
+    color: rgba(244,245,247,0.42);
     text-align: right;
     user-select: none;
 }

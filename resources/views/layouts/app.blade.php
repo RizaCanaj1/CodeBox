@@ -7,6 +7,20 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Applied before first paint so there's no flash of the wrong
+             theme — kept as small/synchronous as possible. -->
+        <script>
+            (function () {
+                try {
+                    var saved = localStorage.getItem('cb-theme');
+                    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -16,6 +30,7 @@
 
         <!-- Styles -->
         @livewireStyles
+        <link rel="stylesheet" href="../assets/css/theme.css"/>
     </head>
     <body class="font-sans antialiased">
         <x-banner />
@@ -41,5 +56,6 @@
         @stack('modals')
 
         @livewireScripts
+        <script src="../assets/js/theme.js"></script>
     </body>
 </html>

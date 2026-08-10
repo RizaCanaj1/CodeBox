@@ -2,20 +2,14 @@ let closest_post
 let current_page = 1
 let nr_of_posts = ''
 let last_page = null
-let post_even = null
-let post_odd = null
-let my_id 
+let my_id
 fetch('../authid')
 .then(response=>response.json())
 .then(data=>my_id = data)
-if(window.location.pathname =='/dashboard'){
-    document.querySelector('.posts').innerHTML='<div class="odd"></div><div class="even"></div>'
-    post_even = document.querySelector('.posts .even')
-    post_odd = document.querySelector('.posts .odd')
-}
-else{
-    document.querySelector('.posts').innerHTML=''
-}
+// Single-column feed now — used to split into .odd/.even wrapper divs and
+// balance posts between them by height (Pinterest-style masonry), but that
+// meant posts landed out of chronological order for a 1-column layout.
+document.querySelector('.posts').innerHTML=''
 let postUpdateInterval = null;
 let hovered_post = null;
 let delayTimer = null;
@@ -69,22 +63,12 @@ function get_posts(page){
             let postHTML = createpost(post, i);
             postsHTML.push(postHTML);
         }
+        const postsContainer = document.querySelector('.posts')
         for (let i = 0; i < data.length ; i++) {
             let post_div = document.createElement('div')
             post_div.innerHTML = postsHTML[i];
-            post_div = post_div;
-            let odd_height =  post_odd.getBoundingClientRect().y+post_odd.offsetHeight
-            let even_height =  post_even.getBoundingClientRect().y+post_even.offsetHeight
-            console.log("odd: " + odd_height)
-            console.log("even: " + even_height)
-            console.log(window.innerWidth);
-            if(odd_height == even_height) post_odd.appendChild(post_div)
-            else if(odd_height > even_height) post_even.appendChild(post_div)
-            else if(odd_height > even_height) post_odd.appendChild(post_div)
-            else post_odd.appendChild(post_div)
-            //if (i % 2 == 0) post_odd.appendChild(post_div)
-           // else post_even.appendChild(post_div)
-        
+            postsContainer.appendChild(post_div)
+
             setTimeout(()=>{let d = document.querySelector(`.post.pid-${data[i].id}`);d.style.animation='none';d.style.opacity= '1';},3500)
             if(i==data.length-1){
                 const all_posts = document.querySelectorAll('.post')
@@ -181,30 +165,31 @@ else{
         });
     })
 }
+// Closes whichever post is currently in fullscreen focus mode (there's
+// only ever one — openPostFullscreen() closes any previous one before
+// opening a new one) and restores the page underneath it.
 function removePostFocus() {
-    const focusedPosts = document.querySelectorAll('.post-focus');
-    focusedPosts.forEach(post => {
-        post.classList.remove('post-focus');
+    document.querySelectorAll('.post-focus').forEach(post => {
+        post.classList.remove('post-focus', 'post-fullscreen');
     });
+    const backdrop = document.getElementById('postFullscreenBackdrop');
+    if (backdrop) backdrop.classList.add('d-none');
+    document.body.style.overflow = '';
 }
-function checkCollision(post) {
-    const focusedPosts = document.querySelectorAll('.post-focus');
-    focusedPosts.forEach(fpost=>{
-      if(focusedPosts.length >1){
-          if(fpost !== post){
-              const rect1 = post.getBoundingClientRect();
-              const rect2 = fpost.getBoundingClientRect();
-              if (
-                  rect1.top < rect2.bottom &&
-                  rect1.bottom > rect2.top &&
-                  rect1.left < rect2.right &&
-                  rect1.right > rect2.left
-              ) {
-                  fpost.classList.remove('post-focus')
-              }
-          }
-      }
-    })
+
+// Full-screen focus mode — same idea as the story viewer's expand button
+// (see storyExpandBtn/setExpanded in stories.js): blows the post up big
+// over a dark backdrop instead of just nudging it forward in the feed.
+// Reuses the *same* .post DOM node (just repositioned via CSS, see
+// .post.post-fullscreen in post.css) rather than cloning it into a
+// separate modal, so every listener already wired to it — comments,
+// codebox, carousel nav — keeps working with zero extra wiring.
+function openPostFullscreen(post) {
+    removePostFocus();
+    post.classList.add('post-focus', 'post-fullscreen');
+    const backdrop = document.getElementById('postFullscreenBackdrop');
+    if (backdrop) backdrop.classList.remove('d-none');
+    document.body.style.overflow = 'hidden';
 }
 
 // Wires up everything a rendered .post needs to actually be interactive:
@@ -221,7 +206,6 @@ function checkCollision(post) {
 // listeners to every already-wired post from earlier pages too.
 function wirePostInteractions(){
     const posts = document.querySelectorAll('.post');
-    const view_more = document.querySelectorAll('a[class^="pid-"]');
     open_code_box()
     update_comments()
     document.querySelectorAll('form.add-comment').forEach(add_comment=>{
@@ -254,19 +238,22 @@ function wirePostInteractions(){
     posts.forEach(post=>{
         if (post.dataset.focusWired) return;
         post.dataset.focusWired = '1';
-        post.addEventListener('dblclick',e=>{
-            post.classList.add('post-focus')
-            checkCollision(post)
-        })
+        post.addEventListener('dblclick', () => openPostFullscreen(post))
     })
-    view_more.forEach(view=>{
-        if (view.dataset.wired) return;
-        view.dataset.wired = '1';
-        view.addEventListener('click',()=>{
-            let post_id = view.getAttribute('class');
-            let post = document.querySelector(`div.${post_id}`);
-            post.classList.add('post-focus');
-            checkCollision(post);
+    // Same expand/compress icon-swap pattern as the story viewer's expand
+    // button (see .t-toggle-light/.t-toggle-dark for the same idea) — both
+    // icons are always in the DOM and CSS shows/hides them based on
+    // whether .post-fullscreen is present, so the button never needs its
+    // own JS-tracked open/closed state (which would drift out of sync
+    // whenever the post is closed some *other* way — Escape, the
+    // backdrop, or opening a different post).
+    document.querySelectorAll('.post-fullscreen-btn').forEach(btn=>{
+        if (btn.dataset.wired) return;
+        btn.dataset.wired = '1';
+        btn.addEventListener('click', () => {
+            const post = btn.closest('.post')
+            if (post.classList.contains('post-fullscreen')) removePostFocus()
+            else openPostFullscreen(post)
         })
     })
     let allPosts = document.querySelectorAll('.post')
@@ -331,6 +318,35 @@ function wirePostInteractions(){
             }
         }
     })
+
+    // Community post media: clicking the blurred "+N" cell jumps straight
+    // into focus mode (same mechanic as double-clicking the post), and the
+    // carousel's prev/next buttons step through .post-carousel-slide,
+    // clamped at both ends rather than wrapping.
+    document.querySelectorAll('.media-more-cell').forEach(cell => {
+        if (cell.dataset.wired) return
+        cell.dataset.wired = '1'
+        cell.addEventListener('click', () => openPostFullscreen(cell.closest('.post')))
+    })
+    document.querySelectorAll('.post-carousel').forEach(carousel => {
+        if (carousel.dataset.wired) return
+        carousel.dataset.wired = '1'
+        const track = carousel.querySelector('.post-carousel-track')
+        const slides = carousel.querySelectorAll('.post-carousel-slide')
+        const prevBtn = carousel.querySelector('.post-carousel-prev')
+        const nextBtn = carousel.querySelector('.post-carousel-next')
+        const counter = carousel.querySelector('.post-carousel-current')
+        let index = 0
+        const render = () => {
+            track.style.transform = `translateX(-${index * 100}%)`
+            counter.textContent = index + 1
+            prevBtn.classList.toggle('d-none', index === 0)
+            nextBtn.classList.toggle('d-none', index === slides.length - 1)
+        }
+        prevBtn.addEventListener('click', () => { if (index > 0) { index--; render() } })
+        nextBtn.addEventListener('click', () => { if (index < slides.length - 1) { index++; render() } })
+        render()
+    })
 }
 
 setTimeout(()=>{
@@ -340,6 +356,10 @@ setTimeout(()=>{
             removePostFocus();
         }
     });
+    const fullscreenBackdrop = document.getElementById('postFullscreenBackdrop');
+    if (fullscreenBackdrop) {
+        fullscreenBackdrop.addEventListener('click', removePostFocus);
+    }
 },1000)
 
 function escapeHtml(text) {
@@ -355,159 +375,188 @@ function escapeHtml(text) {
         return map[m];
     });
 }
+// Relative "2h"/"3d" timestamp for a post's created_at — same style as
+// stories.js's timeAgo(), kept separate since posts and stories are
+// unrelated features that just happen to want the same format.
+function postTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'now';
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d`;
+    return new Date(dateStr).toLocaleDateString();
+}
+
+const POST_TYPE_LABELS = { question: 'Question', showcase: 'Showcase', invitation: 'Invitation', community: 'Community' };
+
+// Community post media: shows up to 3 images clearly, and — if there are
+// more than 3 — the 4th cell is the actual 4th image blurred with a
+// "+N more" overlay (N = however many aren't shown clearly or in that
+// blurred cell), same convention Instagram/Twitter use. Double-clicking
+// the post (existing .post-focus mechanic, see wirePostInteractions())
+// swaps this compact grid for a full carousel of every image — the
+// carousel markup is rendered up front (all slides) and just hidden by
+// CSS until then, rather than building it lazily on focus.
+function buildMedia(post) {
+    const media = post.media;
+    if (media.length === 0) {
+        return `<div class='pimage d-flex justify-content-center'><img src="./assets/images/laravel.png" alt="laravel"></div>`;
+    }
+    if (media.length === 1) {
+        return `<div class='pimage d-flex justify-content-center'><img src="./storage/media/${escapeHtml(media[0])}" alt="laravel"></div>`;
+    }
+
+    const visibleCount = Math.min(3, media.length);
+    const cells = media.slice(0, visibleCount).map(source =>
+        `<img src="./storage/media/${escapeHtml(source)}" alt="laravel">`
+    ).join('');
+    const moreCount = media.length - 3;
+    const moreCell = moreCount > 0
+        ? `<div class="media-more-cell"><img src="./storage/media/${escapeHtml(media[3])}" alt="laravel"><span class="media-more-count">+${moreCount}</span></div>`
+        : '';
+    const grid = `<div class='p-mimage p-mimage-${visibleCount + (moreCount > 0 ? 1 : 0)}'>${cells}${moreCell}</div>`;
+
+    const slides = media.map((source, idx) =>
+        `<div class="post-carousel-slide${idx === 0 ? ' active' : ''}"><img src="./storage/media/${escapeHtml(source)}" alt="laravel ${idx + 1}"></div>`
+    ).join('');
+    const carousel = `
+    <div class="post-carousel">
+        <div class="post-carousel-track">${slides}</div>
+        <button type="button" class="post-carousel-nav post-carousel-prev" aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
+        <button type="button" class="post-carousel-nav post-carousel-next" aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="post-carousel-counter"><span class="post-carousel-current">1</span>/${media.length}</div>
+    </div>`;
+
+    return grid + carousel;
+}
+
 function createpost(post,i){
-    let undo_hide = `<p class='text-danger d-none hide_post'>You won't see this post again! <span class='seethrow-btn text-success'>Undo</span></p>`
     let comments = post.comments
     let type = post.type
     let comment_model = comment_m(comments)
-    let views = ()=>{
-        if(post.views_count==1) return `<button class='seethrow-btn views_count'>${post.views_count} view</button>`
-        if(post.views_count>0) return `<button class='seethrow-btn views_count'>${post.views_count} views</button>`
-        return `<p class='views_count'>${post.views_count} views</p>`
-    }
+    let viewsLabel = `${post.views_count} view${post.views_count == 1 ? '' : 's'}`
     let comment_form = `
     <div class='d-none comments' id="comments_id-${post.id}">
         ${comment_model}
     </div>
     <form class='add-comment d-none justify-content-between gap-2' id="fid-${post.id}">
         <input class='form-control comment_input' type="text" name='content'>
-        <div class='emojis position-absolute w-100'><div class="emojis_nav position-sticky d-flex justify-content-center align-items-center"></div><div class='emojis_wrapper position-absolute w-100 pt-2 px-4'><h5 id="loading_emojis">Loading Emojis</h5></div></div><p class='emojis_btn'><i class="fa-solid fa-icons"></i></p>
-        <div class='form-group d-flex justify-content-between gap-2'><div class='info-icon'><i class="fa-solid fa-info fa-lg"></i><div class='info-box'><p>By typing '<|' in your comment , you start a code box, which makes it easier to read and nacivage your code. You can close the box by typing '|>' at the end of your code (not doing so, will automatiacally assume that the code is through the end of your comment). <p></div></div><button class='btn btn-dark'>Send</button></div>
+        <div class='emojis position-absolute w-100'><div class="emojis_nav position-sticky d-flex justify-content-center align-items-center"></div><div class='emojis_wrapper position-absolute w-100 pt-2 px-4'><h5 id="loading_emojis">Loading Emojis</h5></div></div><p class='emojis_btn'><i class="fa-solid fa-smile"></i></p>
+        <div class='form-group d-flex justify-content-between gap-2'><div class='info-icon'><i class="fa-solid fa-info fa-lg"></i><div class='info-box'><p>Type '<|' in your comment to start a code block (easier to read/navigate code), and '|>' to close it — if you don't, it's assumed to run to the end of your comment.</p></div></div><button class='btn btn-dark'>Send</button></div>
     </form>`
-    let settings_form = `<div class='settings bg-light d-flex flex-column justify-content-evenly'>
-        <button class='seethrow-btn hide'>Hide</button>
-        <button class='seethrow-btn report'>Report</button>
-        <button class='seethrow-btn block'>Block</button>
+    // Same .hide/.report/.block class contract wirePostInteractions() expects
+    // (see post.js) — .report/.block have never had click handlers wired up
+    // (pre-existing, not something this redesign changed), .hide fades the
+    // post out.
+    let settings_form = `<div class='settings'>
+        <button type="button" class='seethrow-btn hide'><i class="fa-solid fa-eye-slash"></i> Hide</button>
+        <button type="button" class='seethrow-btn report'><i class="fa-solid fa-flag"></i> Report</button>
+        <button type="button" class='seethrow-btn block'><i class="fa-solid fa-ban"></i> Block</button>
     </div>`
-    let profile = `
-    <div class='draggable_post title-from d-flex justify-content-between gap-2'>
-        <h3 class='draggable_post'>${escapeHtml(post.title)}</h3>
-        ${(window.location.pathname == '/dashboard') ? (
-            `<div class='from d-flex gap-3'>
-                <a href="/profile?id=${post.user_id}">${post.username}</a>
-                <div>
-                    <img src="${post.profile ? `./storage/${post.profile}` : './assets/images/user.png'}" alt="user">
-                    ${settings_form}
-                </div>
-            </div>`
-        ) : ('')}
+    let typeLabel = POST_TYPE_LABELS[type] || type
+    // draggable_post has to be the FIRST class on whatever the drag-handle
+    // element is — wirePostInteractions()'s mouseover check does an exact
+    // `className.split(' ')[0] == 'draggable_post'` match, not a
+    // classList.contains(), so it can't be buried after other classes.
+    let header = (window.location.pathname == '/dashboard') ? `
+    <div class='post-head'>
+        <img class="draggable_post post-avatar" src="${post.profile ? `./storage/${post.profile}` : './assets/images/user.png'}" alt="user">
+        <div class="draggable_post post-head-meta">
+            <a href="/profile?id=${post.user_id}" class="post-author">${escapeHtml(post.username)}</a>
+            <span class="post-time">${postTimeAgo(post.created_at)}</span>
+        </div>
+        <span class="post-type-badge type-${type}">${typeLabel}</span>
+        <button type="button" class='post-fullscreen-btn' aria-label="Toggle fullscreen"><i class="fa-solid fa-expand"></i><i class="fa-solid fa-compress"></i></button>
+        <div class="post-settings-wrap">
+            <button type="button" class='pid-${post.id} seethrow-btn post_settings' aria-label="Post settings"><i class="fa-solid fa-ellipsis-h"></i></button>
+            ${settings_form}
+        </div>
+    </div>
+    ` : `
+    <div class='post-head'>
+        <span class="post-type-badge type-${type}">${typeLabel}</span>
+        <span class="post-time">${postTimeAgo(post.created_at)}</span>
+        <button type="button" class='post-fullscreen-btn' aria-label="Toggle fullscreen"><i class="fa-solid fa-expand"></i><i class="fa-solid fa-compress"></i></button>
     </div>
     `;
+    let footer = `
+    <div class='post-actions'>
+        <div class='post-comment-action'>
+            <i class="comments_id-${post.id} fa-solid fa-comment"></i>
+            <span class="counter-${post.id}">${comments.length}</span>
+        </div>
+        <span class='views_count'>${viewsLabel}</span>
+    </div>`
     switch (type) {
         case 'question':
             return `
-            ${undo_hide}
-            <div class="pid-${post.id} post pquestion ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.2}s'>
-                ${profile}
+            <div class="pid-${post.id} post pquestion" id="${post.id}" style='--show_post_delay:${i * 0.2}s'>
+                ${header}
                 <div class='pdescription'>
+                    <h3 class='post-title'>${escapeHtml(post.title)}</h3>
                     <p>${escapeHtml(post.content)}</p>
                 </div>
-                <div class='d-flex justify-content-between mt-4'>
-                    <div class='d-flex w-75 gap-2'> 
-                        <i class="comments_id-${post.id} fa-solid fa-comment fa-lg pt-2"></i>
-                        <p class="counter-${post.id}">${comments.length}</p>
-                        <i class="fa-solid fa-box-open fa-lg pt-2"></i><p>5</p>
-                        <a href="/${post.type}">#${post.type}</a>
-                    </div>
-                    <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
-                </div>
+                ${footer}
                 ${comment_form}
             </div>`
-            break;
-        case 'showcase':
+        case 'showcase': {
             let button = (id,source) =>{return `<button class="pid-${id} source-btn" onclick="open_code(event,${id})">${source}</button>`}
             return `
-            ${undo_hide}
-            <div class="pid-${post.id} post pshowcase ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
-                ${profile}
+            <div class="pid-${post.id} post pshowcase" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
+                ${header}
                 <div class='pdescription'>
+                    <h3 class='post-title'>${escapeHtml(post.title)}</h3>
                     <p>${escapeHtml(post.content)}</p>
                 </div>
                 <div class='d-flex justify-content-center'>
                     <button class="pid-${post.id} seethrough-btn codebox-animation"><p class="pid-${post.id}"><<span class="pid-${post.id} m_between_code"></span>/<span class="pid-${post.id} nr_of_code">${post.code.length}CodeBox</span><span class="pid-${post.id} m_between_code"></span>></p></button>
                     <p><pre class='codeblock d-none align-items-center flex-column' id="pid-${post.id}">${post.code.map(source => `${(source.split(".")[1] == 'html') ?`<div>${button(post.id,source)}<button class="pid-${post.id} test-beta" title='This feature is still in development. This works only for simple HTML files for now'> Beta Open</button></div>`:button(post.id,source)}`).join('')}</pre></p>
                 </div>
-                <div class='d-flex justify-content-between mt-4'>
-                    <div class='d-flex w-75 gap-2'> 
-                        <i class="comments_id-${post.id} fa-solid fa-comment fa-lg pt-2"></i>
-                        <p class="counter-${post.id}">${comments.length}</p>
-                        <i class="fa-solid fa-box-open fa-lg pt-2" id='box_id-${post.id}'></i><p>5</p>
-                        <a href="/${post.type}">#${post.type}</a>
-                    </div>
-                    <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
-                </div>
+                ${footer}
                 ${comment_form}
             </div>`
-            break;
+        }
         case 'invitation':
             return `
-            ${undo_hide}
-            <div class="pid-${post.id} post pinvitation ms-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
-                ${profile}
+            <div class="pid-${post.id} post pinvitation" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
+                ${header}
                 <div class='pdescription'>
-                    <p>${escapeHtml(post.content)}</p> 
+                    <h3 class='post-title'>${escapeHtml(post.title)}</h3>
+                    <p>${escapeHtml(post.content)}</p>
                 </div>
-                <div class='d-flex justify-content-between'>
-                    <div class='d-flex gap-2'>
-                        ${(my_id != post.user_id)?(`${(post.applied > 0 ?
-                            (post.applied >= 5 && post.invitation_status == 'refused' ?
-                                `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
-                                (post.invitation_status == 'approved' ?
-                                    `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
-                                    (post.invitation_status == 'pending' ?
-                                        `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
-                                        `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
-                                    )
+                <div class='post-invitation-action'>
+                    ${(my_id != post.user_id)?(`${(post.applied > 0 ?
+                        (post.applied >= 5 && post.invitation_status == 'refused' ?
+                            `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
+                            (post.invitation_status == 'approved' ?
+                                `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
+                                (post.invitation_status == 'pending' ?
+                                    `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
+                                    `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
                                 )
-                            ) :
-                            `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
-                        )}`):(`<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`)}
-                        <div class='pt-2 d-flex gap-1'>
-                            <i class="fa-solid fa-box-open fa-lg pt-2 mt-1"></i><p>5</p>
-                            <a href="/${post.type}">#${post.type}</a>
-                        </div>
-                    </div>
-                    <button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button>
+                            )
+                        ) :
+                        `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
+                    )}`):(`<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`)}
                 </div>
             </div>`
-            break;
         case 'community':
             return `
-            ${undo_hide}
-            <div class="pid-${post.id} post pcommunity ms-4 mb-4 bg-light" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
-                ${profile}
+            <div class="pid-${post.id} post pcommunity" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
+                ${header}
                 <div class='pdescription'>
+                    <h3 class='post-title'>${escapeHtml(post.title)}</h3>
                     <p>${escapeHtml(post.content)}</p>
-                    ${(post.media.length > 1 ?
-                    `${(post.media.length < 4 ? post.media.map(source => `
-                        <img src="./storage/media/${source}" alt="${source}">`).join('') :
-                        `<div class='p-mimage'>
-                            ${post.media.slice(0, 3).map((source, index) => `
-                                ${index > 1 ? `<img class='hidden-images'  src="./storage/media/${source}" alt="laravel">` : `<img src="./storage/media/${source}" alt="laravel">`}
-                                `).join('')}
-                            <a class="pid-${post.id}">View More</a>
-                        </div>`)}` :(post.media.length === 1 ?
-                    `<div class='pimage d-flex justify-content-center'>
-                        <img src="./storage/media/${post.media[0]}" alt="laravel">
-                    </div>` :
-                    `<div class='pimage d-flex justify-content-center'>
-                        <img src="./assets/images/laravel.png" alt="laravel">
-                    </div>`))}
-                    <div class='d-flex justify-content-between mt-4'>
-                        <div class='d-flex w-75 gap-2'> 
-                            <i class="comments_id-${post.id} fa-solid fa-comment fa-lg pt-2"></i>
-                            <p class="counter-${post.id}">${comments.length}</p>
-                            <i class="fa-solid fa-box-open fa-lg pt-2"></i><p>5</p>
-                            <a href="/${post.type}">#${post.type}</a>
-                        </div>
-                        <div class='d-flex gap-3'>${views()}<button class='pid-${post.id} seethrow-btn post_settings'><span>.</span><span>.</span><span>.</span></button></div>
-                    </div>
+                    ${buildMedia(post)}
                 </div>
+                ${footer}
                 ${comment_form}
             </div>`
-            break;
         default:
-            break;
-        
+            return ''
     }
 }

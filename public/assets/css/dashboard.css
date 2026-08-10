@@ -1,7 +1,19 @@
+/*
+ * Dashboard redesign. Uses the shared --t-* theme tokens (see
+ * public/assets/css/theme.css) so it responds to the day/night toggle in
+ * the nav. Layout is a single-column feed + a sticky sidebar, replacing
+ * the old fixed-position sidebar and the odd/even "masonry" post grid
+ * (see post.js get_posts() — posts now append to .posts directly, in
+ * order).
+ */
+
 *{
-    transition: all .3s;
-    margin: 0px;
-    padding: 0px;
+    box-sizing: border-box;
+}
+body:has(.db-shell){
+    background: var(--t-bg);
+    color: var(--t-text);
+    transition: background-color .2s ease, color .2s ease;
 }
 .pop_up{
     transition: all .2s;
@@ -11,257 +23,287 @@
     border: rgba(0,0,0,0);
     background-color: rgba(0,0,0,0);
 }
-.left-container{
-    width: 70%;
-    display: grid;
-    grid-template-columns: 45% 45%;
-    gap: 10%;
+
+/* ---------- shell ---------- */
+.db-shell{
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 32px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
 }
-.add-post {
-    height: 120px;
-    width: 100%;
-    transition: all .3s;
-    overflow: hidden;
-    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
-    z-index: 5;
+.db-feed-col{
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 620px;
 }
 
-.add-post:hover{
-    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
+/* ---------- composer ---------- */
+.add-post{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    box-shadow: var(--t-shadow);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    transition: background-color .2s ease, border-color .2s ease;
 }
-.opened{
-    box-shadow: 5px 5px 20vh 2px rgb(187, 187, 187)!important;
-    height: 450px;
+.composer-disabled{
+    color: var(--t-accent-2);
+    margin: 0;
 }
-i{
-    transition: all .3s;
+.composer-disabled a{
+    color: var(--t-accent-2);
 }
-#caret{
-    width: 25px;
-    height: 25px;
-    padding: 4px;
-    border-radius: 5px;
-    border: 1px solid rgb(105, 105, 105);
+.composer-trigger{
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-.rotate{
-    border: 1px solid red!important;
-    color: red;
-    rotate: 90deg;
+.composer-avatar{
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
-.add-code,.add-media{
-    transition: all .3s;
-    background-color: rgba(50,50,50,.2);
-    border: 1px solid rgb(50,50,50);
-    border-radius: 5px;
-    padding: 5px;
+.composer-title-input{
+    flex: 1;
+    background: var(--t-surface-2) !important;
+    border: 1px solid var(--t-border) !important;
+    color: var(--t-text) !important;
+    border-radius: 999px !important;
+    padding: 8px 16px !important;
 }
-.add-code:hover,.add-media:hover{
-    background-color: rgba(100, 100, 100, 0.2);
-    border: 1px solid rgb(100,100,100);
-    box-shadow: 5px 5px 10px 1px rgb(187, 187, 187);
-    border-radius: 5px;
-    padding: 5px;
+.composer-title-input::placeholder{
+    color: var(--t-text-faint);
+}
+.composer-title-input:focus{
+    box-shadow: none !important;
+    border-color: var(--t-accent) !important;
+}
+.composer-expand{
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--t-border);
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .25s ease, color .2s ease, border-color .2s ease;
+}
+.composer-expand.rotate{
+    transform: rotate(180deg);
+    color: var(--t-accent);
+    border-color: var(--t-accent);
+}
+.add_post_form{
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--t-border);
+}
+.composer-row{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.type_of_post{
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 0.9rem;
+}
+.add-code, .add-media{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0;
+}
+.add-code:hover, .add-media:hover{
+    border-color: var(--t-accent);
 }
 .description{
-    width: 90%;
-    resize: none;
-    height: 150px;
+    width: 100%;
+    resize: vertical;
+    min-height: 110px;
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: inherit;
 }
-/* The old .stories/.m-story/.i-story/.open-story rules (rectangular cards,
-   a broken "expand in place" hover hack, and a 3D rotateY tilt at some
-   breakpoints below) were the "weird animations" from this app's early
-   days — replaced by a proper IG-style circular story bar + fullscreen
-   viewer. See public/assets/css/components/stories.css. */
-.profile-chat{
-    width: 20%;
-    transition: all .3s;
-    position: fixed;
-    right: 50px;
-    top: 90px;
+.description::placeholder{
+    color: var(--t-text-faint);
 }
-.profile-chat.sticky{
-    top: 10px;
+.composer-footer{
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
 }
-.profile-chat.sticky .chats{
-    margin-top: 30px;
-    max-height: 500px;
-}
-.profile-chat .infos{
-    position: relative;
-    perspective: 1000px;
-}
-.profile-chat .infos .notifications_btn{
-    margin-top: -5px;
-    margin-left: 10px;
-    position: absolute;
-    transition: all .3s;
-    color: white;
-    border-radius: 7px;
-    font-size: 16px;
-    padding: 6px;
-    background-color: rgb(253, 83, 83);
+.post-btn{
+    background: var(--t-accent);
+    color: #05130e;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 600;
     cursor: pointer;
 }
-.profile-chat .infos .notifications_btn.updating{
-    transform: rotateY(360deg);
-    padding: 2px;
-    color: rgb(204, 211, 216);
-    background-color: rgb(247, 115, 115);
-}
-.profile-chat .notifications {
-    width: 100%;
-    max-height: 50%; 
-    overflow-y: hidden;
-    position: absolute;
-    margin-top: 10px;
-    padding: 10px;
-    animation: show_notifications;
-    animation-duration: .8s;
-    background-color: white;
-    border: 1px solid rgba(100, 100, 100, 0.2);
-    border-radius: 10px;
-    z-index: 1;
-    opacity: 1;
+:root[data-theme="light"] .post-btn, .post-btn{
+    color: #ffffff;
 }
 
-@keyframes show_notifications {
-    from {
-        opacity: 0;
-        max-height: 0;
-    }
-    to {
-        opacity: 1;
-        max-height: 50%; /* Set the maximum height you desire */
-    }
-}
-.profile-chat .notifications h6{
-    cursor: pointer;
-}
-.profile-chat .notifications .delivered h6{
-    color: rgb(253, 83, 83);
-}
-.profile-chat .notifications a{
-    color: rgb(253, 83, 83);
-    text-decoration: none;
-}
-.profile-chat .filter{
-    display: grid;
-    grid-template-columns: auto auto;
-    gap: 10px;
-}
-.profile-chat .filter a{
-    width: 120px;
-    padding: 8px;
-    transition: all .3s;
-    border-radius: 15px;
-    text-align: center;
-    color: #000000;
-    transition: all .3s;
-    text-decoration: none;
-    box-shadow: 5px 5px 10px 2px rgb(224, 224, 224);
-}
-.profile-chat .filter a:hover{
-    font-size: 17px;
-    padding: 6px;
-    background-color: rgb(173, 171, 171);
-    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
-}
-.profile-chat .chats{
-    transition: all .3s;
-    border-radius: 15px;
-    overflow-y: scroll;
-    max-height: 450px;
-    padding: 20px;
-}
-.profile-chat .chat{
+/* ---------- stories bar spacing ---------- */
+.stories-wrapper{
     margin-bottom: 20px;
 }
-.profile-chat .chat{
-    padding: 5px;
-    border-radius: 5px;
-    box-shadow: 5px 5px 10px 2px rgb(187, 187, 187);
 
-}
-.profile-chat .chat img{
-    border-radius: 50%;
-    border:1px solid rgb(50,50,50);
-    width: 40px;
-    height: 40px;
-}
-.chats .c-content{
-    font-size: small;
-}
-.chats .seethrow-btn{
-    width: 10px;
-}
-.chats .new-mesage{
-    font-size: small;
-    display: none;
-    width: 0px;
-    opacity: 0;
-}
+/* ---------- feed ---------- */
 .posts{
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- sidebar ---------- */
+.profile-chat{
+    width: 280px;
+    flex: 0 0 280px;
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.pc-card{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-shadow: var(--t-shadow);
+}
+.pc-card-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: var(--t-text);
+    margin-bottom: 10px;
+}
+.notifications_btn{
+    background: var(--t-accent-2);
+    color: white;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform .3s ease;
+}
+.notifications_btn.updating{
+    transform: rotateY(360deg);
+}
+.notifications{
+    position: relative;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--t-border);
+    max-height: 320px;
+    overflow-y: auto;
+}
+.notifications .notification{
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+}
+.notifications .notification h6{
+    cursor: pointer;
+    color: var(--t-text);
+    font-size: 0.88rem;
+    margin: 0 0 4px;
+}
+.notifications .notification.delivered h6{
+    color: var(--t-accent-2);
+}
+.notifications .notification a{
+    color: var(--t-accent);
+    text-decoration: none;
+}
+.notifications hr{
+    border-color: var(--t-border);
+    margin: 8px 0;
+}
+.filter{
     display: grid;
-    grid-template-columns: 35% 35%;
-    gap: 25px;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
-@media screen and (max-width: 1650px) {
-    .chats .c-content{
-        height: 0px;
-        opacity: 0; 
-        display: none;
-        width: 0px;
-    }
-    .chats .new-mesage{
-        display: inline-block;
-        height: fit-content;
-        width: fit-content;
-        opacity: 1;
-    }
+.filter a{
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 8px;
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: border-color .15s ease, color .15s ease;
 }
-@media screen and (max-width: 1150px) {
-    .add-post{
-        width: 96% !important;
-    }
-    main{
-        overflow-x: hidden;
-    }
-    .posts{
-        grid-template-columns: 48% 48%;
-    }
-    .left-container {
-        width: 100%;
+.filter a:hover{
+    border-color: var(--t-accent);
+    color: var(--t-accent);
+}
+.filter a.active{
+    background: var(--t-accent);
+    border-color: var(--t-accent);
+    color: #05130e;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 960px){
+    .db-shell{
+        flex-direction: column;
+        align-items: stretch;
     }
     .profile-chat{
-        opacity: 0;
-        margin-right: -1150px;
+        position: static;
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .profile-chat .pc-card{
+        flex: 1 1 260px;
+    }
+    .db-feed-col{
+        max-width: none;
     }
 }
-@media screen and (max-width: 900px) {
-    .add-post{
-        width: 88% !important;
+@media (max-width: 600px){
+    .db-shell{
+        padding: 16px 10px 60px;
     }
-    .posts{
-        margin-left: 6%;
-        grid-template-columns: 88%;
-    }
-}
-@media screen and (max-width: 850px) {
-    .left-container{
-        margin-left: 6%;
-        grid-template-columns: 88%;
-        gap: 0px;
-    }
-    .stories-wrapper{
-        justify-content: center;
-    }
-}
-@media screen and (max-width: 750px){
-    .add-post{
-        width: 94% !important;
-    }
-    .posts{
-        margin-left: 3%;
-        grid-template-columns: 94%;
+    .composer-row{
+        gap: 8px;
     }
 }

@@ -5,6 +5,19 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>CodeBox — Share, learn, and build with other developers.</title>
         <meta name="description" content="CodeBox is a community for developers to share code, ask questions, team up on projects, and learn through courses, puzzles, and badges.">
+        <!-- Applied before first paint so there's no flash of the wrong
+             theme — kept as small/synchronous as possible. -->
+        <script>
+            (function () {
+                try {
+                    var saved = localStorage.getItem('cb-theme');
+                    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            })();
+        </script>
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
@@ -12,6 +25,7 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <!-- Styles -->
+        <link rel="stylesheet" href="assets/css/theme.css"/>
         <link rel="stylesheet" href="assets/css/main.css"/>
         <link rel="stylesheet" href="assets/css/welcome.css"/>
     </head>
@@ -33,6 +47,10 @@
                 </div>
 
                 <div class="cb-nav-actions">
+                    <button type="button" class="t-toggle" aria-pressed="false" title="Toggle day/night mode">
+                        <i class="fas fa-sun t-toggle-light"></i>
+                        <i class="fas fa-moon t-toggle-dark"></i>
+                    </button>
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" class="cb-btn cb-btn-primary">Dashboard</a>
@@ -213,6 +231,7 @@
             </div>
         </footer>
 
+        <script src="assets/js/theme.js"></script>
         <script src="assets/js/welcome.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     </body>

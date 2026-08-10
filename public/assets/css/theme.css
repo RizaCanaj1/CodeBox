@@ -1,0 +1,141 @@
+/*
+ * Shared light/dark theme tokens — used by welcome.css and the redesigned
+ * dashboard/post/stories/emoji stylesheets. Loaded on both welcome.blade.php
+ * and layouts/app.blade.php (so it's available site-wide), but only pages
+ * whose CSS actually references these variables will visibly react to the
+ * toggle — see theme.js for how the .cb-theme-toggle button + persistence
+ * works, and the inline snippet in each layout's <head> for how the theme
+ * is applied before first paint (avoiding a flash of the wrong theme).
+ *
+ * Usage: `background: var(--t-bg);` etc. Never hardcode a color that should
+ * flip between modes — add a token here instead.
+ */
+
+:root{
+    --t-bg: #f6f7f9;
+    --t-bg-soft: #eef0f3;
+    --t-surface: #ffffff;
+    --t-surface-2: #f4f5f7;
+    --t-border: rgba(15,23,42,0.09);
+    --t-border-strong: rgba(15,23,42,0.16);
+    --t-text: #14171c;
+    --t-text-dim: rgba(20,23,28,0.66);
+    --t-text-faint: rgba(20,23,28,0.44);
+    --t-accent: #00a578;
+    --t-accent-soft: rgba(0,165,120,0.12);
+    --t-accent-2: #e6483f;
+    --t-accent-2-soft: rgba(230,72,63,0.1);
+    --t-shadow: 0 4px 16px rgba(15,23,42,0.06);
+    --t-overlay: rgba(10,12,16,0.72);
+    color-scheme: light;
+}
+
+:root[data-theme="dark"]{
+    --t-bg: #08090c;
+    --t-bg-soft: #0d0f14;
+    --t-surface: #14161d;
+    --t-surface-2: #1a1c25;
+    --t-border: rgba(255,255,255,0.08);
+    --t-border-strong: rgba(255,255,255,0.16);
+    --t-text: #f4f5f7;
+    --t-text-dim: rgba(244,245,247,0.68);
+    --t-text-faint: rgba(244,245,247,0.42);
+    --t-accent: #00e59f;
+    --t-accent-soft: rgba(0,229,159,0.14);
+    --t-accent-2: #fd5353;
+    --t-accent-2-soft: rgba(253,83,83,0.14);
+    --t-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    --t-overlay: rgba(0,0,0,0.85);
+    color-scheme: dark;
+}
+
+/* Only matters for the instant before theme.js's inline head snippet runs
+   (or if JS is disabled entirely) — after that, the explicit
+   [data-theme] attribute always wins. */
+@media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+        --t-bg: #08090c;
+        --t-bg-soft: #0d0f14;
+        --t-surface: #14161d;
+        --t-surface-2: #1a1c25;
+        --t-border: rgba(255,255,255,0.08);
+        --t-border-strong: rgba(255,255,255,0.16);
+        --t-text: #f4f5f7;
+        --t-text-dim: rgba(244,245,247,0.68);
+        --t-text-faint: rgba(244,245,247,0.42);
+        --t-accent: #00e59f;
+        --t-accent-soft: rgba(0,229,159,0.14);
+        --t-accent-2: #fd5353;
+        --t-accent-2-soft: rgba(253,83,83,0.14);
+        --t-shadow: 0 8px 24px rgba(0,0,0,0.45);
+        --t-overlay: rgba(0,0,0,0.85);
+        color-scheme: dark;
+    }
+}
+
+/* ---------- shared Jetstream nav (navigation-menu.blade.php) ----------
+   Only the persistent chrome — this app's other not-yet-redesigned pages
+   (profile, friends, puzzle, course) still render light/Tailwind below
+   it, but leaving the nav stark white above a dark dashboard would look
+   broken, so it tracks the toggle everywhere. Specificity here (element +
+   class, or higher) is deliberately above Tailwind's single-class
+   utilities like .bg-white so no !important is needed — relies on
+   theme.css loading after the Vite bundle in <head>. */
+:root[data-theme="dark"] nav.bg-white{
+    background-color: var(--t-surface) !important;
+    border-color: var(--t-border) !important;
+}
+:root[data-theme="dark"] .CodeBox{
+    background-color: var(--t-surface) !important;
+    border-color: var(--t-accent) !important;
+}
+:root[data-theme="dark"] .CodeBox p{
+    color: var(--t-accent) !important;
+}
+:root[data-theme="dark"] .nav-links a i{
+    color: var(--t-text) !important;
+}
+:root[data-theme="dark"] .nav-links a.active::before,
+:root[data-theme="dark"] .nav-links a:not(.active):hover::before{
+    color: var(--t-text) !important;
+}
+:root[data-theme="dark"] .searchbar .form-control{
+    background-color: var(--t-surface-2) !important;
+    color: var(--t-text) !important;
+    border-color: var(--t-border) !important;
+}
+:root[data-theme="dark"] .searchbar .form-control::placeholder{
+    color: var(--t-text-faint) !important;
+}
+
+/* The dashboard's redesigned content lives inside layouts/app.blade.php's
+   shared `.min-h-screen.bg-gray-100` wrapper (Tailwind, hardcoded light).
+   Scoped to pages that actually render dashboard content instead of
+   giving every page under this layout a dark background, since only the
+   dashboard has been redesigned to use these tokens so far. */
+:root[data-theme="dark"] .min-h-screen.bg-gray-100:has(.db-shell){
+    background-color: var(--t-bg) !important;
+}
+
+/* ---------- toggle button (shared markup/JS, see theme.js) ---------- */
+.t-toggle{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--t-border);
+    background: var(--t-surface);
+    color: var(--t-text);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+}
+.t-toggle:hover{
+    border-color: var(--t-border-strong);
+    transform: translateY(-1px);
+}
+.t-toggle .t-toggle-dark{ display: none; }
+:root[data-theme="dark"] .t-toggle .t-toggle-light{ display: none; }
+:root[data-theme="dark"] .t-toggle .t-toggle-dark{ display: inline; }

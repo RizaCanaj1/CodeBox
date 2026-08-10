@@ -12,6 +12,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\FriendsController;
 use App\Http\Controllers\StartupController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ApplicationsController;
 use App\Http\Controllers\NotificationsController;
 
@@ -56,6 +57,8 @@ Route::middleware([
             if($path=='get-posts'){return app(CrudController::class)->get_posts();}
             //Stories
             if($path=='get-stories'){return app(StoryController::class)->get_stories();}
+            //Chat
+            if($path=='get-conversations'){return app(ChatController::class)->conversations();}
             //Course
             if($path=='get_teachers'){return app(CourseController::class)->get_teachers();}
             if($path=='get-not-teachers'){return app(CourseController::class)->get_not_teachers();}
@@ -124,4 +127,11 @@ Route::middleware([
     Route::post('/add-story', [StoryController::class, 'store']);
     Route::post('/view-story/{id}', [StoryController::class, 'view']);
     Route::post('/toggle-story-highlight/{id}', [StoryController::class, 'toggle_highlight']);
+
+    //Chat
+    // GET /get-conversations is handled by the /{path} catch-all above
+    // (same reasoning as get-stories) — these two have a second URL
+    // segment so they don't collide with it.
+    Route::get('/get-messages/{friend_id}', [ChatController::class, 'messages']);
+    Route::post('/send-message/{friend_id}', [ChatController::class, 'send']);
 });
