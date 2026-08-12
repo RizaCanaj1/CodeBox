@@ -585,8 +585,59 @@ fetch('assets/others/rules.json')
     forbidden_words = data.banned_words;
 })
 
+// Reads a File as a base64 data URI (same technique the profile-image
+// preview already used) — resolves null for an empty/missing file so it
+// can be used unconditionally for optional fields like the CV.
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) { resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Could not read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function showSetupError(message) {
+    errors_element.innerHTML = `
+    <p class='error_text text-white d-flex align-items-center gap-2'>
+        <span class='error_key'>Error</span><span class='error_message'>${message}</span>
+    </p>
+    `;
+}
+
+// Shared by both "Finish" and "Skip (set default)" — posts to
+// /upload_user and, on success, moves on to the dashboard (the whole
+// point of finishing setup). On failure the promise rejects with a
+// message pulled from the server's JSON error response so the caller can
+// show it and let the user retry.
+function submitSetup(user_form) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    return fetch('/upload_user', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify(user_form)
+    }).then(response => {
+        if (!response.ok) {
+            return response.json().catch(() => ({})).then(data => {
+                throw new Error(data.error || 'Something went wrong. Please try again.');
+            });
+        }
+        return response.json();
+    }).then(() => {
+        window.location.href = '/dashboard';
+    });
+}
+
+document.querySelector('.skip-confirmation').onclick = () => {
+    submitSetup({ profile_image: null, cv: null, bio: '', post_type: ['all'], social_media: [] })
+        .catch(error => showSetupError(error.message));
+};
+
 finish_setup.onclick = () => {
-    finish_setup.classList.add('d-none')
     let errors = []
     check_total_abuse(bio)
     let abussive_words = check_nr_of_abuse(bio)
@@ -594,32 +645,8 @@ finish_setup.onclick = () => {
         errors.push({'Warning':'Your text contains too many abusive words. Please be mindful of the language you use.'})
     }
     if (errors.length == 0) {
-        console.log('Lang', lang);
+        finish_setup.classList.add('d-none')
         if (selected_checkbox.length == 0) selected_checkbox = ['all'];
-        console.log(selected_checkbox);
-        if (social_links.length > 0) console.log('Social links', social_links);
-        else console.log('No Social Media uploaded');
-        console.log(social_links)
-        function image_convertor(image, callback) {
-            if (image) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const file = e.target.result;
-                    console.log('Base64-encoded image data:', file);
-                    callback(file); // Pass the file data to the callback function
-                };
-                reader.readAsDataURL(image);
-            }
-        }
-        if (uploaded_profile.files[0]) {
-            console.log('Profile image', uploaded_profile.files[0])
-        }
-        else console.log('No profile image uploaded');
-        if (cv.files[0]) console.log('CV', cv.files[0]);
-        else console.log('No CV uploaded');
-        if (bio.value.length > 0) console.log('Bio', bio.value);
-        else console.log('No bio uploaded');
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         let get_media = (url)=>{
             const regex = /www\.(\w+)\.com/;
             const match = url.match(regex);
@@ -632,51 +659,20 @@ finish_setup.onclick = () => {
         social_links.forEach(link=>{
             social_medias.push({social_name:get_media(link),social_link:link})
         })
-        function promiseToString(promise) {
-            return new Promise((resolve, reject) => {
-                promise.then(result => {
-                    resolve(String(result));
-                }).catch(error => {
-                    reject(error);
-                });
-            });
-        }
-        image_convertor(uploaded_profile.files[0], (profile_image) => {
-            let user_form = { 
-                profile_image:profile_image,
+        Promise.all([
+            fileToBase64(uploaded_profile.files[0]),
+            fileToBase64(cv.files[0]),
+        ]).then(([profile_image, cv_data]) => {
+            return submitSetup({
+                profile_image: profile_image,
+                cv: cv_data,
                 bio: bio.value,
-                cv:cv.files[0],
-                post_type:selected_checkbox,
-                social_media:social_medias
-            };
-            console.log(user_form); 
-            fetch(`/upload_user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                },
-                body: JSON.stringify(user_form)
-            })
-            .then(response => {
-                if (response.headers.get('content-type').includes('application/json')) {
-                    return response.json();
-                } else {
-                    response.text().then(html => {
-                        document.getElementById('responseFrame').srcdoc = html;
-                    });
-                }
-            })
-            .then(data => console.log(data))
-            .catch(error => {
-                if (error.headers.get('content-type').includes('text/html')) {
-                    error.text().then(html => {
-                        document.getElementById('responseFrame').srcdoc = html;
-                    });
-                } else {
-                    document.getElementById('responseFrame').srcdoc = `<p>Error: ${error.message}</p>`;
-                }
+                post_type: selected_checkbox,
+                social_media: social_medias
             });
+        }).catch(error => {
+            finish_setup.classList.remove('d-none')
+            showSetupError(error.message)
         });
     }
     else{

@@ -397,6 +397,35 @@
 }
 
 /* ---------- invitation ---------- */
+.post-invitation-meta{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+.pinv-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--t-text-dim);
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    border-radius: 999px;
+    padding: 4px 10px;
+}
+.pinv-chip i{
+    color: var(--t-text-faint);
+    font-size: 0.75rem;
+}
+.pinv-chip-payment{
+    color: var(--t-accent);
+    background: var(--t-accent-soft);
+    border-color: transparent;
+}
+.pinv-chip-payment i{
+    color: var(--t-accent);
+}
 .post-invitation-action{
     margin-top: 8px;
 }

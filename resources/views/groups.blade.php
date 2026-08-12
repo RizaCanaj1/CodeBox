@@ -4,20 +4,27 @@
     <link rel="stylesheet" href="../assets/css/group.css"/>
     <link rel="stylesheet" href="../assets/css/components/emojis.css"/>
     <link rel="stylesheet" href="../assets/css/components/code_box.css"/>
-    <div class='container'>
-        <div class="w-100 card mt-5 bg-light">
+    <!-- CodeMirror — real editor for the Code tab's edit mode (line numbers +
+         per-language autocomplete). The read-only CodeBox viewer (code_box.js)
+         is untouched; this only backs the editable textarea. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css"/>
+    <div class='container groups-shell' data-group-id="{{ $groupId }}">
+        <div class="w-100 card mt-5 group-card">
             <div class="card-title">
-                <h1 class="ms-4 mt-4">Post Title</h1>
+                <h1 class="ms-4 mt-4">{{ $post->title }}</h1>
             </div>
             <hr>
             <div class="d-flex">
                 <div class="features">
-                    <!--p-4 py-5-->
                     <div class="feature-chats active d-flex justify-content-center align-items-center">
                         <h4>Chats</h4>
                     </div>
                     <div class="feature-code d-flex justify-content-center align-items-center">
                         <h4>Code</h4>
+                    </div>
+                    <div class="feature-tasks d-flex justify-content-center align-items-center">
+                        <h4>Tasks</h4>
                     </div>
                     <div class="feature-users d-flex justify-content-center align-items-center">
                         <h4>Users</h4>
@@ -27,23 +34,37 @@
                     </div>
                 </div>
                 <div class='screen_wrapper'>
-                    <h2 class='w-100 warning text-warning text-center'></h2>
                     <div class="screen">
                         <h4 class="text-center mt-4">Loading...</h4>
                     </div>
                 </div>
             </div>
         </div>
-    </div> 
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/xml-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/html-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/css-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/javascript-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
     <script src="../assets/js/components/emojis.js"></script>
     <script src="../assets/js/components/time.js"></script>
     <script src="../assets/js/components/code_box.js"></script>
     <script src="../assets/js/components/group_roles.js"></script>
+    <script src="../assets/js/components/group_todos.js"></script>
     <script src="../assets/js/components/file_management.js"></script>
     <script src="../assets/js/group.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </x-app-layout>
-
-    

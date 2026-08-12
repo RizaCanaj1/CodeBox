@@ -12,6 +12,5 @@ class GroupChat extends Model
         'group_id',
         'from_user_id',
         'content',
-        'replied'
     ];
 }

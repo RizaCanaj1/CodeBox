@@ -139,6 +139,42 @@ body:has(.db-shell){
 .add-code:hover, .add-media:hover{
     border-color: var(--t-accent);
 }
+.composer-invitation-fields{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.composer-field{
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.composer-field label{
+    font-size: 0.78rem;
+    color: var(--t-text-faint);
+}
+.composer-field label i{
+    width: 14px;
+    text-align: center;
+}
+.composer-field input{
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+.composer-field input:focus{
+    outline: none;
+    border-color: var(--t-accent);
+}
+.composer-field input::placeholder{
+    color: var(--t-text-faint);
+}
 .description{
     width: 100%;
     resize: vertical;

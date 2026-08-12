@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PostController extends Controller
 {
@@ -50,11 +51,21 @@ class PostController extends Controller
     {
         $request->validate([
             //'code'=>'required',
-            'type' => 'required|string',
+            'type' => ['required', 'string', Rule::in(['invitation', 'showcase', 'question', 'community'])],
             'title' => 'required|string',
             'content' => 'required|string',
+            // Job-request fields — only meaningful for invitation posts, and
+            // always optional so old posts (created before these columns
+            // existed) and skipped fields alike just fall back to
+            // "Not defined"/"Free" at display time instead of breaking.
+            'programming_languages' => 'nullable|string|max:255',
+            'working_hours' => 'nullable|string|max:255',
+            'payment' => 'nullable|string|max:255',
             // 7. Restrict uploaded file types/sizes instead of accepting anything.
-            'code.*' => 'file|mimes:php,js,ts,py,txt,json,zip|max:10240',
+            // html/htm added — the showcase "Open" live-preview button has
+            // always existed specifically for .html files, but this
+            // whitelist never actually allowed uploading one.
+            'code.*' => 'file|mimes:php,js,ts,py,txt,json,zip,html,htm,css|max:10240',
             'media.*' => 'file|mimes:jpg,jpeg,png,gif,webp,mp4,mov|max:20480',
         ]);
 
@@ -62,6 +73,16 @@ class PostController extends Controller
         //    never get passed into Posts::create().
         $data = $request->except(['_token', 'code', 'media']);
         $data['user_id'] = auth()->user()->id;
+
+        // Blank inputs (or fields not shown for this post type) are stored
+        // as null rather than empty strings, so the frontend's single
+        // "Not defined"/"Free" fallback covers both these and pre-migration
+        // posts the same way.
+        foreach (['programming_languages', 'working_hours', 'payment'] as $field) {
+            if (!isset($data[$field]) || trim($data[$field]) === '') {
+                $data[$field] = null;
+            }
+        }
 
         if ($data['type'] == 'question') {
             // 8. Use exact match instead of LIKE (LIKE lets '%' / '_' in a
@@ -165,12 +186,15 @@ class PostController extends Controller
         $formData = $request->all();
         $groupId = $request->post_id;
 
-        // 6. Authorization check: only the group's creator can upload code to it.
+        // Was creator-only. Now: creator, or a member with a can_manage_files
+        // role — matches whoever's allowed to edit/delete files once the
+        // project exists (topFolder=null since there's no folder structure
+        // yet to scope this initial upload against).
         $group = Posts::find($groupId);
         if (!$group) {
             return response()->json(['message' => 'Your project is not found'], 500);
         }
-        if ($group->user_id !== auth()->id()) {
+        if (!$group->canManageFiles(auth()->id())) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -196,8 +220,107 @@ class PostController extends Controller
         return response()->json(['message' => 'File uploaded and extracted successfully'], 200);
     }
 
+    // Shared by create_project_folder()/add_project_files(): validates the
+    // target folder path (same traversal guard as get_code()/
+    // resolveManageableGroupFile()), loads the group, and checks the
+    // requester can manage files in it. An empty path means "the Code root"
+    // — adding a brand-new top-level folder/file there has no existing
+    // folder to scope permission against, so it falls back to "does this
+    // user have any manage permission at all" (same as the bootstrap zip
+    // upload). Returns [Posts $group, string $storagePath] on success, or a
+    // JsonResponse error the caller should return directly.
+    private function resolveManageableGroupPath($groupId, $path)
+    {
+        $path = (string) $path;
+        if ($path !== '' && (!preg_match('/^[A-Za-z0-9_\-\/\.]+$/', $path) || str_contains($path, '..'))) {
+            return response()->json(['message' => 'Invalid path'], 422);
+        }
+
+        $group = Posts::find($groupId);
+        if (!$group) {
+            return response()->json(['message' => 'Your project is not found'], 404);
+        }
+
+        $topFolder = $path !== '' ? (explode('/', ltrim($path, '/'))[0] ?? null) : null;
+        if (!$group->canManageFiles(auth()->id(), $topFolder)) {
+            return response()->json(['message' => 'You do not have permission to manage this folder'], 403);
+        }
+
+        return [$group, 'Group/' . $groupId . '/Code' . $path];
+    }
+
+    public function create_project_folder(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required',
+            'path' => 'nullable|string',
+            'name' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9_\-. ]+$/'],
+        ]);
+
+        if (str_contains($request->input('name'), '..')) {
+            return response()->json(['message' => 'Invalid folder name'], 422);
+        }
+
+        $resolved = $this->resolveManageableGroupPath($request->group_id, $request->input('path', ''));
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+        [, $storagePath] = $resolved;
+
+        $targetPath = $storagePath . '/' . $request->input('name');
+        if (Storage::exists($targetPath) || Storage::directoryExists($targetPath)) {
+            return response()->json(['message' => 'A file or folder with that name already exists'], 422);
+        }
+        if (!Storage::makeDirectory($targetPath)) {
+            return response()->json(['message' => 'Failed to create folder'], 500);
+        }
+
+        return response()->json(['message' => 'Folder created']);
+    }
+
+    public function add_project_files(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required',
+            'path' => 'nullable|string',
+            'files' => 'required|array|min:1',
+            'files.*' => 'file|mimes:php,js,ts,py,txt,json,html,css,md,xml,yml,yaml,jpg,jpeg,png,gif,webp,svg|max:10240',
+        ]);
+
+        $resolved = $this->resolveManageableGroupPath($request->group_id, $request->input('path', ''));
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+        [, $storagePath] = $resolved;
+
+        foreach ($request->file('files') as $file) {
+            $filename = $file->getClientOriginalName();
+            if (!Storage::putFileAs($storagePath, $file, $filename)) {
+                return response()->json(['message' => "Failed to upload {$filename}"], 500);
+            }
+        }
+
+        return response()->json(['message' => 'Files uploaded']);
+    }
+
     public function get_project($id, $path = '')
     {
+        // Only gate/filter on the outer (HTTP-triggered) call — recursive
+        // calls for subfolders (see below) reuse the same $id with a
+        // non-empty $path and would otherwise repeat this check per folder.
+        // The whole tree (every depth) is built and returned in this single
+        // response — file_management.js navigates it client-side rather
+        // than re-fetching per folder — so filtering the top-level once
+        // here is enough to keep a restricted member from ever receiving
+        // data about a folder they can't see, at any depth.
+        $post = null;
+        if ($path === '') {
+            $post = Posts::findOrFail($id);
+            if (!$post->isAccessibleBy(auth()->id())) {
+                return response()->json(['message' => 'You are not a member of this group'], 403);
+            }
+        }
+
         $projectFolderPath = storage_path('app/Group/' . $id . '/Code');
         $fullPath = $projectFolderPath . '/' . $path;
 
@@ -249,6 +372,26 @@ class PostController extends Controller
                 $result['contents'][$item] = ['info' => $fileInfo];
             }
         }
+
+        if ($path === '' && $post !== null) {
+            $allowedFolders = $post->allowedFoldersFor(auth()->id());
+            if ($allowedFolders !== null) {
+                $result['contents'] = array_intersect_key($result['contents'], array_flip($allowedFolders));
+                $folderCount = 0;
+                $fileCount = 0;
+                foreach ($result['contents'] as $entry) {
+                    if ($entry['info']['type'] === 'directory') {
+                        $folderCount += 1 + $entry['folder_count'];
+                        $fileCount += $entry['file_count'];
+                    } else {
+                        $fileCount++;
+                    }
+                }
+                $result['folder_count'] = $folderCount;
+                $result['file_count'] = $fileCount;
+            }
+        }
+
         return $result;
     }
 
@@ -265,27 +408,130 @@ class PostController extends Controller
             return response()->json(['message' => 'Invalid file path'], 500);
         }
 
-        // 11. exists() instead of get()->count() != 1 — avoids loading the
-        //     row into memory just to count it.
-        $group = Posts::where('id', $request->group_id)->exists();
-        if (!$group) {
+        $groupPost = Posts::find($request->group_id);
+        if (!$groupPost) {
             return response()->json(['message' => 'Your project is not found'], 500);
         }
 
-        // 6. Authorization check: only members/creator of the group can read its code.
-        //    (Adjust the ownership check below to match your actual membership model.)
-        $groupPost = Posts::find($request->group_id);
-        if ($groupPost->user_id !== auth()->id()) {
+        // Was creator-only, which blocked the exact people (approved group
+        // members) this feature exists for. Now: any member, but still
+        // scoped to the folders their roles allow them to see.
+        if (!$groupPost->isAccessibleBy(auth()->id())) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $allowedFolders = $groupPost->allowedFoldersFor(auth()->id());
+        if ($allowedFolders !== null) {
+            $topFolder = explode('/', ltrim($filePosition, '/'))[0] ?? '';
+            if (!in_array($topFolder, $allowedFolders, true)) {
+                return response()->json(['message' => 'You do not have access to this folder'], 403);
+            }
         }
 
         $destinationPath = 'Group/' . $request->group_id . '/Code' . $filePosition;
         if (Storage::exists($destinationPath)) {
-            $destinationPath = Storage::get($destinationPath);
-            $formattedCode = $this->format_code($destinationPath);
+            $rawContent = Storage::get($destinationPath);
+            // Used by the CodeMirror editor (raw source to edit) and the
+            // "Open" live-preview button (raw HTML to render) — both need
+            // the actual file content, not format_code()'s line-numbered
+            // HTML built for the read-only viewer.
+            if ($request->boolean('raw')) {
+                return response()->json(['code' => $rawContent], 200);
+            }
+            $formattedCode = $this->format_code($rawContent);
             return response()->json(['code' => $formattedCode], 200);
         }
         return response()->json(['message' => 'Your file is not found'], 500);
+    }
+
+    // Raw-content sibling of get_post_code() (which returns format_code()'s
+    // line-numbered HTML for the in-page codebox viewer) — used by the
+    // "Open" live-preview button for showcase posts, which needs the
+    // actual HTML to render in an iframe, not a syntax-highlighted listing.
+    public function preview_post_code($file_name)
+    {
+        if (!preg_match('/^[^\/\\\\]+$/', $file_name) || str_contains($file_name, '..')) {
+            return response()->json(['message' => 'Invalid file name'], 422);
+        }
+        $filePath = 'codes/' . $file_name;
+        if (!Storage::disk('public')->exists($filePath)) {
+            return response()->json(['message' => "This file doesn't exist"], 404);
+        }
+        return response()->json(['code' => Storage::disk('public')->get($filePath)]);
+    }
+
+    // Shared by update_project_file()/delete_project_file(): same
+    // path-traversal guard as get_code(), plus a canManageFiles() check
+    // (stricter than get_code()'s view-only isAccessibleBy()). Returns
+    // [Posts $group, string $storagePath] on success, or a JsonResponse
+    // error the caller should return directly.
+    private function resolveManageableGroupFile($groupId, $filePosition)
+    {
+        $filePosition = (string) $filePosition;
+        if ($filePosition === '' || !preg_match('/^[A-Za-z0-9_\-\/\.]+$/', $filePosition) || str_contains($filePosition, '..')) {
+            return response()->json(['message' => 'Invalid file path'], 422);
+        }
+
+        $group = Posts::find($groupId);
+        if (!$group) {
+            return response()->json(['message' => 'Your project is not found'], 404);
+        }
+
+        $topFolder = explode('/', ltrim($filePosition, '/'))[0] ?? '';
+        if (!$group->canManageFiles(auth()->id(), $topFolder)) {
+            return response()->json(['message' => 'You do not have permission to manage this file'], 403);
+        }
+
+        return [$group, 'Group/' . $groupId . '/Code' . $filePosition];
+    }
+
+    public function update_project_file(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required',
+            'file_position' => 'required|string',
+            'content' => 'required|string',
+        ]);
+
+        $resolved = $this->resolveManageableGroupFile($request->group_id, $request->file_position);
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+        [, $storagePath] = $resolved;
+
+        if (!Storage::exists($storagePath)) {
+            return response()->json(['message' => 'Your file is not found'], 404);
+        }
+        if (!Storage::put($storagePath, $request->input('content'))) {
+            return response()->json(['message' => 'Failed to save your file'], 500);
+        }
+
+        return response()->json(['message' => 'File saved']);
+    }
+
+    public function delete_project_file(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required',
+            'file_position' => 'required|string',
+        ]);
+
+        $resolved = $this->resolveManageableGroupFile($request->group_id, $request->file_position);
+        if ($resolved instanceof \Illuminate\Http\JsonResponse) {
+            return $resolved;
+        }
+        [, $storagePath] = $resolved;
+
+        $isDirectory = Storage::directoryExists($storagePath);
+        if (!$isDirectory && !Storage::exists($storagePath)) {
+            return response()->json(['message' => 'Your file is not found'], 404);
+        }
+
+        $deleted = $isDirectory ? Storage::deleteDirectory($storagePath) : Storage::delete($storagePath);
+        if (!$deleted) {
+            return response()->json(['message' => 'Failed to delete'], 500);
+        }
+
+        return response()->json(['message' => 'Deleted']);
     }
 
     public function format_code($code)

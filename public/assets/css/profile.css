@@ -1,66 +1,186 @@
+/*
+ * Profile page redesign. Uses the shared --t-* theme tokens (see
+ * public/assets/css/theme.css) so it responds to the day/night toggle in
+ * the nav, matching the dashboard/post redesign. The post-type filter tabs
+ * (.post-selector/.p-selector) and the Infos radio panel (.p-infos) keep
+ * their original markup/JS contract — only the visuals changed here.
+ */
+
 *{
-    transition: all .3s;
+    box-sizing: border-box;
+}
+body:has(.profile-shell){
+    background: var(--t-bg);
+    color: var(--t-text);
+    transition: background-color .2s ease, color .2s ease;
 }
 p,h6 {
     margin: 0px;
     padding: 0px;
 }
-.p-infos{
-    gap: 15px;
+
+.profile-shell{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 16px 80px;
 }
+
 .no_user_found{
     position: absolute;
-    top: 50%; 
+    top: 50%;
     right: 50%;
     transform: translate(50%,-50%);
 }
 
-.btn-add{
-    width: 120px;
-    border-radius: 25px;
-    padding: 15px;
-    color: #000;
-    background-color: rgb(57, 201, 57);
+/* ---------- profile card ---------- */
+.profile-bar{
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 16px;
+    box-shadow: var(--t-shadow);
+    padding: 28px;
+    animation: opacity_show .4s ease;
+    transition: background-color .2s ease, border-color .2s ease;
 }
-.btn-add.added{
-    border-radius: 25px;
-    padding: 15px;
-    color: #000;
-    background-color: rgb(170, 201, 57);
-    cursor:default;
+@keyframes opacity_show {
+    from{ opacity: 0; }
+    to{ opacity: 1; }
 }
-.btn-edit{
-    width: 120px;
-    border-radius: 25px;
-    padding: 15px;
-    color: #000;
-    background-color: rgb(247, 169, 97);
+@keyframes display_hide {
+    from{ opacity: 1; }
+    to{ opacity: 0; }
+}
+
+.profile-avatar-col{
+    flex-shrink: 0;
 }
 .profile-image {
-    width: 300px;
-    height: 300px;
-    object-fit:cover;
-    border: 1px solid #83838371;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--t-surface);
+    box-shadow: 0 0 0 1px var(--t-border);
+}
+
+.profile-main-col{
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.profile-name{
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--t-text);
+    margin: 0;
+}
+.profile-actions{
+    display: flex;
+    gap: 10px;
+}
+.profile-main-col > h4{
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--t-text-faint);
+    margin: 18px 0 10px;
+}
+
+.btn-add, .btn-edit{
+    width: auto;
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.btn-add{
+    color: #05130e;
+    background-color: var(--t-accent) !important;
+}
+.btn-add.added{
+    color: var(--t-text-dim);
+    background-color: var(--t-surface-2) !important;
+    border-color: var(--t-border);
+    cursor: default;
+}
+.btn-edit{
+    color: var(--t-text);
+    background-color: var(--t-surface-2) !important;
+    border-color: var(--t-border);
+}
+.btn-edit:hover{
+    border-color: var(--t-accent);
+    color: var(--t-accent);
+}
+
+/* ---------- Infos radio panel (kept as the exact markup the user asked
+   to preserve — only restyled) ---------- */
+.p-infos{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 .show-info {
-    display: none; 
+    display: none;
 }
 form label {
-    width: 350px;
-    height: 50px;
+    width: 100%;
+    max-width: 340px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text-dim);
+    cursor: pointer;
     overflow: hidden;
-    background-color: rgb(241, 147, 147);
-    border-radius: 5px;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+form label h5{
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--t-text);
+}
+form label h6{
+    margin-top: 2px;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--t-text-faint);
 }
 label:has(> input.show-info:checked){
-    width: 350px;
-    height: 100px;
-    background-color: rgba(147, 241, 194, 0.76);
-    box-shadow: 0px 0px 2px 2px rgba(117, 117, 117, 0.712) inset;
-    border-radius: 5px;
+    background: var(--t-accent-soft);
+    border-color: var(--t-accent);
+}
+label:has(> input.show-info:checked) h5{
+    color: var(--t-accent);
+}
+
+/* ---------- contacts / bio (m-info) ---------- */
+.m-info {
+    width: auto;
+    flex: 1 1 260px;
+    max-width: 300px;
+    padding-left: 28px;
+    border-left: 1px solid var(--t-border);
+}
+.m-info h1{
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--t-text-faint);
+    margin: 0 0 10px;
+}
+.m-info h1:not(:first-child){
+    margin-top: 18px;
 }
 .contacts a{
-    color:#000;
+    color: var(--t-text-dim);
 }
 .removable-icons{
     position: relative;
@@ -89,44 +209,49 @@ label:has(> input.show-info:checked){
     color: transparent;
 }
 .add-icon{
-    padding: 15px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     animation: add_icon 1s;
-    border: 1px solid black;
+    border: 1px solid var(--t-border);
     border-radius: 10px;
-    background-color: transparent;
-    color: black;
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
 }
 @keyframes add_icon {
     0%,70%{
         border-radius: 20px;
-        background-color: black;
-        color: white;
+        background-color: var(--t-accent);
+        color: #05130e;
     }
     40%{
         transform: rotateY(360deg);
     }
     100%{
-        border: 1px solid black;
+        border: 1px solid var(--t-border);
         border-radius: 10px;
-        background-color: transparent;
-        color: black;
+        background-color: var(--t-surface-2);
+        color: var(--t-text);
     }
 }
 .add-icon.editing{
     border: 0px;
-    margin-top: 10px;
-    display: inline-block;
+    margin-top: 0;
+    display: inline-flex;
     padding: 0px;
     border-radius: 0px;
     rotate: 45deg;
     background-color: transparent;
-    color: rgb(218, 87, 87);
+    color: var(--t-accent-2);
 }
 .removable-icons .remove-btn{
     color: white;
     font-size: 12px;
     position: absolute;
-    background-color: rgb(238, 99, 99);
+    background-color: var(--t-accent-2);
     height: 12px;
     width: 12px;
     border-radius: 12px;
@@ -142,7 +267,7 @@ label:has(> input.show-info:checked){
     margin-left: 3px;
 }
 .removable-icons.select-icon .remove-btn{
-    background-color: black;
+    background-color: var(--t-text);
 }
 .removable-icons.hide-social .remove-btn::after{
     opacity: 0;
@@ -150,36 +275,30 @@ label:has(> input.show-info:checked){
 .removable-icons.hide-social .remove-btn{
     background-color: transparent;
 }
-.profile-bar{
-    height: 400px;
-    display: flex;
-    gap: 50px;
-    position: static;
-    flex-direction: row;
-    animation: opacity_show 1s;
+.m-info select, .m-info input[type="text"]{
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
 }
-@keyframes opacity_show {
-    from{
-        opacity: 0;
-    }
-    to{
-        opacity: 1;
-    }
-}
-@keyframes display_hide {
-    from{
-        opacity: 1;
-    }
-    to{
-        opacity: 0;
-    }
-}
-.m-info {
-    width: 33%;
+.m-info .bio{
+    display: block;
+    color: var(--t-text-dim);
+    font-size: 0.88rem;
+    line-height: 1.55;
 }
 .m-info textarea{
+    width: 100%;
     height: 180px;
     resize: none;
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text);
+    border-radius: 10px;
+    padding: 10px;
+    font-family: inherit;
 }
 .m-info textarea.hide-bio-editor{
     height: 20px;
@@ -188,61 +307,111 @@ label:has(> input.show-info:checked){
 .m-info .save_changes,.m-info .discard_changes,.m-info .add_social{
     animation:opacity_show 1s forwards;
 }
+.save_changes, .discard_changes, .add_social{
+    border-radius: 999px !important;
+    padding: 6px 16px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600;
+}
+.save_changes{
+    color: var(--t-accent) !important;
+    border-color: var(--t-accent) !important;
+}
+.discard_changes{
+    color: var(--t-accent-2) !important;
+    border-color: var(--t-accent-2) !important;
+}
+.add_social{
+    background-color: var(--t-accent) !important;
+    border-color: var(--t-accent) !important;
+    color: #05130e !important;
+}
+
+/* ---------- compact "sticky" card shown while scrolled past the header —
+   same .right-bar class toggled by profile.js's scroll listener, just a
+   smaller floating card instead of the full profile bar. ---------- */
 .profile-bar.right-bar{
-    width: 40%;
-    display: grid;
-    grid-template-columns: auto auto;
-    gap: 25px;
     position: fixed;
-    flex-direction: column;
-    right: 100px;
-    top: 15px;
-    animation: show_right_bar 1s;
+    top: 76px;
+    right: 24px;
+    width: 280px;
+    z-index: 40;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    animation: show_right_bar .35s ease;
 }
 .profile-bar.right-bar .profile-image{
-    max-width: fit-content;
-    margin-top: 25px;
-    width: 200px;
-    height: 200px;
+    width: 56px;
+    height: 56px;
 }
+.profile-bar.right-bar .profile-name{
+    font-size: 1.05rem;
+}
+.profile-bar.right-bar .profile-main-col > h4,
+.profile-bar.right-bar .p-infos,
 .profile-bar.right-bar .m-info{
-    width: 80%;
-    perspective:1000px;
-    grid-column: 1/3;
+    display: none;
 }
 @keyframes show_right_bar {
-    from{
-        top: -1000px;
-    }
-    to{
-        top: 15px;
-    }
+    from{ opacity: 0; transform: translateY(-16px); }
+    to{ opacity: 1; transform: translateY(0); }
 }
+
+/* ---------- post-type filter tabs (kept — see post.js) ---------- */
 .post-selector{
-    width: 700px;
+    width: 100%;
+    margin-top: 28px;
+}
+.post-selector .p-selector{
+    display: flex;
+    gap: 28px;
+    border-bottom: 1px solid var(--t-border);
 }
 .post-selector .p-selector h3{
     position: relative;
     cursor: pointer;
+    margin: 0;
+    padding-bottom: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--t-text-faint);
+    transition: color .2s ease;
+}
+.post-selector .p-selector h3:hover{
+    color: var(--t-text);
+}
+.post-selector h3.actived{
+    color: var(--t-accent);
 }
 .post-selector h3::after{
     content: "";
     display: block;
     position: absolute;
-    width: fit-content;
-    top: 56px;
+    left: 0;
+    bottom: -1px;
     width: 100%;
-    height: 3px;
-    background: #000;
+    height: 2px;
+    background: var(--t-accent);
     transition: transform 0.2s ease-in-out;
     transform: scale(0);
 }
 .post-selector h3.actived::after{
     transform: scale(1);
 }
-.posts .post{
-    border: 1px solid rgba(117, 117, 117, 0.7);
-    border-radius: 10px;
+.post-selector h3.no_posts{
+    cursor: default;
+    color: var(--t-text-faint);
+}
+.post-selector h3.no_posts::after{
+    display: none;
+}
+
+.posts{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
 }
 .remove-post{
     border: 1px solid rgba(0,0,0,0) !important;
@@ -250,18 +419,46 @@ label:has(> input.show-info:checked){
     opacity: 0;
     overflow: hidden;
     height: 50px;
-    animation: removepost 1s forwards;
+    animation: removepost .5s forwards;
 }
 .remove-post *{
     color: transparent;
     background-color: transparent;
 }
 @keyframes removepost {
-    0%{opacity: 1;display: block;height:100%;}
-    90%{opacity: 0;height: 100px;}
-    100%{display: none;height: 0px;}
+    0%{opacity: 1;display: block;height:100%;margin-bottom: 16px;}
+    90%{opacity: 0;height: 50px;margin-bottom: 0;}
+    100%{display: none;height: 0px;margin-bottom: 0;}
 }
 .no_posts{
-    margin-left: auto;
-    margin-right: auto;
+    margin: 40px auto;
+    color: var(--t-text-faint);
+    font-weight: 600;
+    text-align: center;
+}
+
+@media (max-width: 720px){
+    .profile-bar{
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .profile-main-col > div:first-child{
+        flex-direction: column;
+        align-items: center !important;
+    }
+    .m-info{
+        max-width: none;
+        width: 100%;
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid var(--t-border);
+        padding-top: 20px;
+        text-align: left;
+    }
+    .profile-bar.right-bar{
+        left: 16px;
+        right: 16px;
+        width: auto;
+    }
 }

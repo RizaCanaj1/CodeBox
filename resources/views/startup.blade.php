@@ -3,13 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Applied before first paint so there's no flash of the wrong
+         theme — kept as small/synchronous as possible. -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('cb-theme');
+                var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="../assets/css/theme.css"/>
     <link rel="stylesheet" href="../assets/css/startup.css"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Document</title>
+    <title>Set up your account — CodeBox</title>
 </head>
-<body class='bg-light'>
+<body>
+    <button type="button" class="t-toggle startup-theme-toggle" aria-pressed="false" title="Toggle day/night mode">
+        <i class="fa-solid fa-sun t-toggle-light"></i>
+        <i class="fa-solid fa-moon t-toggle-dark"></i>
+    </button>
     <p class='hover_message'></p>
     <div class='errors d-flex flex-column gap-3'>
         </div>
@@ -119,8 +137,8 @@
             <button class="btn btn-secondary remove_cv">Remove</button>
         </div>
     </div>
-    <iframe id='responseFrame' frameborder="0"></iframe>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/theme.js"></script>
     <script src="assets/js/components/pdf.min.js"></script>
     <script src="assets/js/startup.js"></script>
     <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>

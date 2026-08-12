@@ -56,6 +56,20 @@
                             <label for="media" class='add-media d-none'><i class='fa-solid fa-image'></i> Add media</label>
                             <input type="file" name="media[]" class="media d-none" id='media' accept='image/video' multiple />
                         </div>
+                        <div class='composer-invitation-fields d-none'>
+                            <div class='composer-field'>
+                                <label for="programming_languages"><i class="fa-solid fa-code"></i> Programming languages</label>
+                                <input type="text" name="programming_languages" id="programming_languages" class='form-control' placeholder="e.g. PHP, JavaScript, Laravel — optional">
+                            </div>
+                            <div class='composer-field'>
+                                <label for="working_hours"><i class="fa-regular fa-clock"></i> Working hours</label>
+                                <input type="text" name="working_hours" id="working_hours" class='form-control' placeholder="e.g. 10h/week, Flexible — optional">
+                            </div>
+                            <div class='composer-field'>
+                                <label for="payment"><i class="fa-solid fa-sack-dollar"></i> Payment</label>
+                                <input type="text" name="payment" id="payment" class='form-control' placeholder="Leave blank for Free, or specify amount">
+                            </div>
+                        </div>
                         <textarea name="content" class='description' placeholder='Description'></textarea>
                         <div class='composer-footer'>
                             <button type="submit" class='post-btn'>Post</button>

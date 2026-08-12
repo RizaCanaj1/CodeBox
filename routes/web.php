@@ -34,12 +34,17 @@ Route::post('/dashboard',[PostController::class, 'create_post'])->name('create_p
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/authid',[CrudController::class,'get_auth']);
 Route::get('/course', function () { return view('course');});
-Route::get('/beta-test', function () { return view('beta-test');});
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified'
 ])->group(function () {
+    // Was registered outside this middleware group (and the actual file
+    // fetch bypassed Laravel entirely, hitting the storage symlink
+    // directly) — this page previewed uploaded HTML with no auth check at
+    // all. Registered here, before the '/{path}' catch-all below, so it
+    // doesn't get swallowed by that wildcard.
+    Route::get('/beta-test', function () { return view('beta-test'); })->name('beta_test');
     Route::get('/{path}',function ($path) {
         if (auth()->user()->hasAnyRole(Role::all())) {
             if($path=='dashboard'){return view('dashboard');}
@@ -83,6 +88,14 @@ Route::middleware([
     Route::get('/group_chat/{id}',[GroupController::class,'get_group_chat'])->name('group_chat');
     Route::post('/send_group_message/{id}',[GroupController::class,'send_group_message'])->name('send_group_message');
     Route::post('/add-group-role/{id}',[GroupController::class,'add_group_role'])->name('add_group_role');
+    Route::put('/group/{groupId}/roles/{roleId}',[GroupController::class,'update_group_role'])->name('update_group_role');
+    Route::delete('/group/{groupId}/roles/{roleId}',[GroupController::class,'delete_group_role'])->name('delete_group_role');
+    Route::post('/group/{groupId}/members/{userId}/roles',[GroupController::class,'set_member_roles'])->name('set_member_roles');
+    Route::get('/group/{groupId}/todos',[GroupController::class,'get_group_todos'])->name('group_todos');
+    Route::post('/group/{groupId}/todos',[GroupController::class,'store_group_todo'])->name('store_group_todo');
+    Route::put('/group/{groupId}/todos/{todoId}',[GroupController::class,'update_group_todo'])->name('update_group_todo');
+    Route::post('/group/{groupId}/todos/{todoId}/toggle',[GroupController::class,'toggle_group_todo'])->name('toggle_group_todo');
+    Route::delete('/group/{groupId}/todos/{todoId}',[GroupController::class,'delete_group_todo'])->name('delete_group_todo');
     Route::get('/searched/{text}',[SearchController::class,'searchEngine'])->name('searched');
     //Crud
     //User
@@ -98,20 +111,24 @@ Route::middleware([
     //Post
     //Route::get('/get-posts', [CrudController::class, 'get_posts'])->name('posts');
     Route::get('/get-post-code/{id}', [CrudController::class, 'post_codes'])->name('post_codes');
+    Route::get('/preview-post-code/{file_name}', [PostController::class, 'preview_post_code']);
     Route::get('/count-view/{id}',[CrudController::class,'count_view']);
-    Route::get('/get-posts-from-user/{id}', [PostController::class, 'get_posts_from_user'])->name('posts_from_user');
+    Route::get('/get-posts-from-user/{id}', [CrudController::class, 'get_posts_from_user'])->name('posts_from_user');
     Route::get('/get-comments/{post_id}', [CrudController::class, 'get_comments']);
     Route::get('/get-group/{id}',[CrudController::class,'get_group'])->name('get_group');
     Route::get('/applications/{id}',  [ApplicationsController::class, 'get_applications'])->name('applications');
-    Route::get('/group-settings/{id}',[CrudController::class,'group_settings'])->name('group_settings');
     Route::get('/get_project/{id}',[PostController::class,'get_project'])->name('get_project');
-    Route::get('/handle_applications/{id}',[ApplicationsController::class, 'handle_applications'])->name('handle_applications');
+    Route::post('/handle_applications/{id}',[ApplicationsController::class, 'handle_applications'])->name('handle_applications');
     Route::get('/get-code/{file_name}',[PostController::class,'get_post_code']);
     Route::post('/applications/{id}',  [ApplicationsController::class, 'apply'])->name('apply');
     Route::post('/add-comment/{post_id}', [CrudController::class, 'add_comment']);
     Route::post('/edit-comment', [PostController::class, 'edit_comment']);
     Route::post('/project_code',[PostController::class,'project_code']);
     Route::post('/get-code',[PostController::class,'get_code']);
+    Route::post('/update-project-file',[PostController::class,'update_project_file']);
+    Route::post('/delete-project-file',[PostController::class,'delete_project_file']);
+    Route::post('/create-project-folder',[PostController::class,'create_project_folder']);
+    Route::post('/add-project-files',[PostController::class,'add_project_files']);
     
     //Course
     //Route::get('/get_teachers',[CourseController::class,'get_teachers'])->name('get_teachers');

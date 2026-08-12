@@ -188,6 +188,23 @@ function open_code_box(){
     //    page load, not once per .codebox-animation element found.
     codeblock_event();
 }
+// Shared by post.js's initial showcase-post render and this file's own
+// ".../" back-button re-render below — both used to build the "Beta Open"
+// button independently and had drifted apart: one used class="pid-${id}
+// test-beta" (which codeblock_event()'s id-parsing expects), the other
+// used class="${id} test-beta" (no prefix, so parsing it returned
+// "undefined") with a stray unmatched </div>. One shared builder means
+// they can't diverge again. Also fixes extension detection to use the
+// LAST dot-segment (post.js's old version used [1], the second segment —
+// wrong for any filename with an internal dot, e.g. "index.min.html").
+function buildSourceButtons(postId, source){
+    const openButton = `<button class="pid-${postId} source-btn" onclick="open_code(event,${postId})">${source}</button>`
+    const ext = source.split('.').pop().toLowerCase()
+    if(ext === 'html' || ext === 'htm'){
+        return `<div>${openButton}<button class="pid-${postId} test-beta" title="Open a live preview"> Open</button></div>`
+    }
+    return openButton
+}
 function codeblock_event() {
     let test_beta = document.querySelectorAll('.test-beta')
     // 4. querySelectorAll always returns a NodeList (truthy even when empty),
@@ -196,12 +213,16 @@ function codeblock_event() {
         test_beta.forEach(t=>{
             // 16. Same reasoning as open_code_box() above — this is now
             //     re-run for every new page of posts, so already-wired
-            //     "Beta Open" buttons from earlier pages need to be skipped.
+            //     "Open" buttons from earlier pages need to be skipped.
             if (t.dataset.testBetaWired) return;
             t.dataset.testBetaWired = '1';
             t.addEventListener('click',()=>{
-               let t_id=t.getAttribute('class').split(' ')[0].split('-')[1]
-                window.location.href = `../beta-test?id=${t_id}&file=${t.parentElement.children[0].innerText}`
+                let t_id=t.getAttribute('class').split(' ')[0].split('-')[1]
+                let fileName = t.parentElement.children[0].innerText
+                // Opens in a new tab (rather than navigating the feed away)
+                // and encodes the filename — it's user-controlled at
+                // upload time and can contain spaces/'&'/etc.
+                window.open(`../beta-test?post=${t_id}&file=${encodeURIComponent(fileName)}`, '_blank')
             })
             t.addEventListener('mouseover',e=>{
                 t.alt = ''
@@ -583,16 +604,9 @@ function open_code(event,id,code,file_extention){
                     code_box.innerHTML = ''
                     if (Array.isArray(response)) {
                         response.forEach(code => {
-                            let src_btn = (id,source) =>{return `<button class="pid-${id} source-btn" onclick="open_code(event,${id})">${source}</button>`}
-                            let ex =code.source.split('.')[code.source.split('.').length-1]
-                            if(ex == 'html'){
-                                code_box.innerHTML += `${src_btn(id,code.source)}<button class="${id} test-beta">Beta Open</button></div>`
-                            }
-                            else{
-                                code_box.innerHTML += src_btn(id,code.source)
-                            }
+                            code_box.innerHTML += buildSourceButtons(id, code.source)
                         })
-                        
+
                         codeblock_event(id)
                     }
                 },

@@ -1,10 +1,20 @@
+/*
+ * Group workspace reskin — same left-nav-tabs/right-panel structure and
+ * interaction model as before (screenUpdate() in group.js swaps .screen's
+ * content, same class names), just themed with the shared --t-* tokens
+ * (theme.css) instead of hardcoded grays/blacks, to match the
+ * dashboard/profile/applications redesign and follow the light/dark toggle.
+ * Bootstrap utility classes (d-flex, gap-2, btn, ...) generated throughout
+ * group.js/file_management.js/group_roles.js/group_todos.js are left as-is
+ * for layout — only colors/surfaces/borders are overridden here.
+ */
 *{
-    transition: all .3s;
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease;
     margin: 0px;
     padding: 0px;
 }
 :root{
-    --role_color:rgb(206, 89, 89);
+    --role_color: var(--t-accent-2);
 }
 p{
     margin: 0px;
@@ -14,24 +24,50 @@ pre{
 }
 hr{
     margin: 0px;
+    border-color: var(--t-border);
+}
+.groups-shell{
+    max-width: 960px;
+}
+.group-card{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    box-shadow: var(--t-shadow);
+    overflow: hidden;
+}
+.group-card .card-title h1{
+    color: var(--t-text);
+    font-size: 1.3rem;
+    font-weight: 700;
 }
 .features{
     width: 15%;
     display: grid;
-    grid-template-rows: 25% 25% 25% 25%;
+    grid-template-rows: 20% 20% 20% 20% 20%;
+    background: var(--t-surface-2);
 }
 div[class^="feature-"]{
     height: 100%;
-    transition: all .5s;
+    transition: all .3s;
     display: block;
-    border-right: 3px solid rgba(0,0,0,.125);
+    color: var(--t-text-dim);
+    border-right: 3px solid transparent;
+}
+div[class^="feature-"] h4{
+    font-size: 0.95rem;
 }
 div[class^="feature-"]:not(:last-child){
-    border-bottom: 1px solid rgba(0,0,0,.125);
+    border-bottom: 1px solid var(--t-border);
+}
+div[class^="feature-"]:hover{
+    background-color: var(--t-surface);
+    color: var(--t-text);
 }
 div[class^="feature-"].active{
-    background-color: rgba(0,0,0,.05);
-    border-right: 3px solid rgba(0,0,0,.5);
+    background-color: var(--t-surface);
+    border-right: 3px solid var(--t-accent);
+    color: var(--t-accent);
 }
 .screen_wrapper{
     width: 85%;
@@ -42,8 +78,10 @@ div[class^="feature-"].active{
     transition: all .5s;
     margin: 1rem;
     height: 65vh;
-    border: 2px solid rgba(0,0,0,.5);
+    background: var(--t-bg);
+    border: 1px solid var(--t-border);
     border-radius: 10px;
+    color: var(--t-text);
 }
 .screen .chat{
     overflow-y: auto;
@@ -51,25 +89,36 @@ div[class^="feature-"].active{
 }
 .screen .message_form{
     padding: 10px;
-    background-color: rgb(211,211,211);
+    background-color: var(--t-surface);
+    border-top: 1px solid var(--t-border);
     bottom: 0px;
 }
 .screen .message_form .chat_msg{
     resize: none;
     height: 42px;
     border-radius: 20px;
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
+    padding: 8px 14px;
 }
 .screen .message_form .emojis_btn , .screen .message_form .send_message{
-    background-color: whitesmoke;
-    border: 1px solid black;
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
     padding: 8px;
     border-radius: 15px;
     cursor: pointer;
 }
+.screen .message_form .send_message:hover, .screen .message_form .emojis_btn:hover{
+    border-color: var(--t-accent);
+    color: var(--t-accent);
+}
 div[class^='message-'] .msg{
-    border: 1px solid rgba(0,0,0,.5);
-    box-shadow: 0px 0px 5px 1px rgba(0,0,0,.5) inset;
-    padding: 7px;
+    border: 1px solid var(--t-border);
+    background: var(--t-surface);
+    padding: 7px 10px;
+    color: var(--t-text);
 }
 div[class^='message-'] pre{
     margin-top:auto;
@@ -86,10 +135,12 @@ div[class^='message-'] pre{
 }
 .message-me .msg{
     border-radius: 10px 0px 10px 10px;
+    background: var(--t-accent-soft);
+    border-color: transparent;
 }
 .message-profile-image{
     height: 40px;
-    border: 1px solid rgba(0,0,0,.5);
+    border: 1px solid var(--t-border);
 }
 
 .message-others .message-profile-image{
@@ -100,12 +151,13 @@ div[class^='message-'] pre{
 }
 .message-profile-image:hover{
     height: 50px;
-    border: 1px solid rgba(0,0,0,.5);
+    border: 1px solid var(--t-border);
     border-radius: 0px;
 }
 .user-profile-image{
-    height: 60px;
+    height: 42px;
     border-radius: 50%;
+    border: 1px solid var(--t-border);
 }
 .remove-previous-screen *{
     opacity: 0;
@@ -116,11 +168,13 @@ div[class^='message-'] pre{
 .screen .code{
     height: 95%;
     overflow-y: scroll;
+    padding: 10px 0;
 }
 .screen .code .file_position{
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: var(--t-text);
 }
 .file_position .edit_button{
     margin-right: 20px;
@@ -130,13 +184,13 @@ div[class^='message-'] pre{
     height: 45px;
     padding: 10px;
     border-radius: 50%;
-    background-color: rgba(155,155,155,.5);
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
 }
 .file_position .edit_button button:hover{
     border-radius: 20px;
-    background-color: rgba(68, 68, 68, 0.5);
-    border: 1px solid black;
-    color: white;
+    background-color: var(--t-accent-soft);
+    color: var(--t-accent);
 }
 .screen .code:has(.folder.open_folder) .folder
 {
@@ -146,20 +200,13 @@ div[class^='message-'] pre{
     margin-right: -10px;
     background-color: transparent;
 }
-.screen .code::-webkit-scrollbar:hover {
-    margin-right: -10px;
-    background-color: white;
-}
 .screen .code::-webkit-scrollbar-thumb {
     border-radius: 7px;
-    background: #79797980;
-}
-.screen .code::-webkit-scrollbar-thumb:hover {
-    border-radius: 10px;
-    background: #797979;
+    background: var(--t-border-strong);
 }
 .folder,.file{
     position: relative;
+    color: var(--t-text);
 }
 .folder,.file{
     user-select: none;
@@ -176,7 +223,10 @@ div[class^='message-'] pre{
 .folder:hover .folder_icon{
     top: 2px;
     color: #a57c53;
-    text-shadow:0px 0px 2px black;
+}
+.folder .info, .file .info{
+    color: var(--t-text-faint);
+    font-size: 0.85rem;
 }
 .folder .file_icon{
     width: 0px;
@@ -185,7 +235,7 @@ div[class^='message-'] pre{
     opacity: 0;
     top: 0px;
     left: 0px;
-    color: black;
+    color: var(--t-text-faint);
     z-index: 1;
 }
 .folder:hover .file_icon{
@@ -210,7 +260,7 @@ div[class^='message-'] pre{
     rotate: -90deg;
     position: absolute;
     left: 0px;
-    color: rgb(236, 90, 46);
+    color: var(--t-accent-2);
     font-size: 10px;
     opacity: 0;
     z-index: 2;
@@ -219,8 +269,7 @@ div[class^='message-'] pre{
     margin-left: 7px;
 }
 .file:hover .file_icon{
-    text-shadow:0px 0px 2px black;
-    color: #bebebe;
+    color: var(--t-text-faint);
 }
 .file:hover .extention{
     left: -14px;
@@ -252,7 +301,6 @@ div[class^='message-'] pre{
     .folder:hover .folder_icon{
         top: 0px;
         color: #c68e56;
-        text-shadow:0px;
     }
     .folder .file_icon{
         margin-left: -.5rem;
@@ -271,35 +319,456 @@ div[class^='message-'] pre{
 .screen .codeblock {
     margin-top: 20px;
     white-space: pre-wrap;
-    word-wrap: break-word; 
+    word-wrap: break-word;
     width: 100%;
     height: 85%;
+    color: var(--t-text);
 }
+
+/* ---------- roles (Settings tab) ---------- */
 .screen .roles {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-}
-.screen .roles{
+    gap: 10px;
     position: relative;
-    .role,.add_role{
-        user-select: none;
-        padding: 5px 15px 5px 15px;
-        border-radius: 20px;
-        cursor: pointer;
-    }
-    .role{
-        background-color: var(--role_color);
-    }
-    .add_role{
-        background-color: rgba(0, 0, 0, 0.25);
-    }
-    .add_role_form{
-        position: absolute;
-        top: 100%;
-    }
-    .add_role_form input{
-        border-radius: 20px;
-        border: 1px solid black;
-    }
+}
+.screen .roles .role{
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 15px;
+    border-radius: 20px;
+    background-color: var(--role_color);
+    color: #fff;
+    font-size: 0.85rem;
+}
+.screen .roles .role .manage-badge{
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+.screen .roles .role .role-action{
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.screen .roles .role .role-action:hover{
+    background: rgba(255,255,255,0.32);
+}
+.screen .roles .role .role-delete:hover{
+    background: var(--t-accent-2);
+}
+.manage-check{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+}
+.roles .buttons .cancel{
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    padding: 6px 16px;
+    cursor: pointer;
+}
+.screen .roles .add_role{
+    user-select: none;
+    padding: 5px 15px;
+    border-radius: 20px;
+    background-color: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text-dim);
+    cursor: pointer;
+}
+.screen .roles .add_role:hover{
+    border-color: var(--t-accent);
+    color: var(--t-accent);
+}
+.screen .roles .add_role_form{
+    width: 100%;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    padding: 14px;
+}
+.screen .roles .add_role_form input[type="text"]{
+    border-radius: 8px;
+    border: 1px solid var(--t-border);
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    padding: 7px 10px;
+}
+.folders_hint{
+    font-size: 0.78rem;
+    color: var(--t-text-faint);
+}
+.role_folders_list{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.folder-check{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+}
+.roles .buttons .save{
+    background: var(--t-accent);
+    color: #05130e;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ---------- members (Users tab) ---------- */
+.members{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.user{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--t-text);
+}
+.member-roles{
+    margin-left: auto;
+}
+.role-badge{
+    background: var(--t-accent-2-soft);
+    color: var(--t-accent-2);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+}
+.role-check{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--t-text-dim);
+    background: var(--t-surface-2);
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+/* ---------- tasks ---------- */
+.tasks{
+    color: var(--t-text);
+}
+.add_task_form{
+    align-items: center;
+}
+.task_title, .task_assignee{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    color: var(--t-text);
+    border-radius: 8px;
+    padding: 7px 10px;
+}
+.todo_list{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.todo_item{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+.todo_item.done .todo_title{
+    text-decoration: line-through;
+    color: var(--t-text-faint);
+}
+.todo_title{
+    flex: 1;
+}
+.todo_assignee{
+    font-size: 0.78rem;
+    color: var(--t-text-faint);
+}
+.todo_delete, .todo_edit{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+.todo_delete:hover{
+    color: var(--t-accent-2);
+    background: var(--t-accent-2-soft);
+}
+.todo_edit:hover{
+    color: var(--t-accent);
+    background: var(--t-accent-soft);
+}
+.todo_editing{
+    flex-wrap: wrap;
+}
+.todo_edit_title, .todo_edit_assignee{
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    color: var(--t-text);
+    border-radius: 8px;
+    padding: 5px 8px;
+}
+.todo_edit_title{
+    flex: 1;
+    min-width: 120px;
+}
+.todo_save, .todo_cancel{
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+.todo_save{ color: var(--t-accent); }
+.todo_save:hover{ background: var(--t-accent-soft); }
+.todo_cancel{ color: var(--t-text-faint); }
+.todo_cancel:hover{ color: var(--t-accent-2); background: var(--t-accent-2-soft); }
+
+/* ---------- file management (Code tab) ---------- */
+.item-delete{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, background-color .15s ease;
+}
+.folder:hover .item-delete, .file:hover .item-delete{
+    opacity: 1;
+}
+.item-delete:hover{
+    color: var(--t-accent-2);
+    background: var(--t-accent-2-soft);
+}
+.add_item_controls{
+    margin: 0;
+}
+.add-item-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: none;
+    cursor: pointer;
+    margin: 0;
+}
+.add-item-btn:hover{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+}
+.file_position{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.file_actions{
+    display: flex;
+    gap: 6px;
+    margin-right: 20px;
+}
+.file-edit-btn, .file-delete-btn, .file-open-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: none;
+    cursor: pointer;
+}
+.file-edit-btn:hover, .file-open-btn:hover{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+}
+.file-delete-btn:hover{
+    background: var(--t-accent-2-soft);
+    color: var(--t-accent-2);
+}
+.item-open{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, background-color .15s ease;
+}
+.file:hover .item-open{
+    opacity: 1;
+}
+.item-open:hover{
+    color: var(--t-accent);
+    background: var(--t-accent-soft);
+}
+
+/* Styled to match .codeblock (same dark surface/font) rather than
+   introducing a new visual language for the editor. */
+.code_editor{
+    margin-top: 20px;
+    height: 85%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.code_editor_cm{
+    flex: 1;
+    min-height: 260px;
+    position: relative;
+}
+.code_editor_cm .CodeMirror{
+    height: 100%;
+    min-height: 260px;
+}
+.code_editor_actions{
+    padding: 0 4px;
+}
+.code_editor_error{
+    font-size: 0.8rem;
+    color: var(--t-accent-2);
+}
+
+/* ---------- CodeMirror theme (matches .codeblock's palette) ---------- */
+.cm-s-codebox.CodeMirror{
+    background: rgb(50,50,50);
+    color: #f5f5f5;
+    border: 5px solid rgb(22,22,22);
+    border-radius: 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+}
+.cm-s-codebox .CodeMirror-gutters{
+    background: rgb(40,40,40);
+    border-right: 1px solid rgb(22,22,22);
+}
+.cm-s-codebox .CodeMirror-linenumber{
+    color: rgba(255,255,255,0.4);
+}
+.cm-s-codebox .CodeMirror-cursor{
+    border-left: 1px solid #fff;
+}
+.cm-s-codebox .CodeMirror-selected{
+    background: rgba(255,255,255,0.15);
+}
+.cm-s-codebox .cm-keyword{ color: #fd7a7a; }
+.cm-s-codebox .cm-string, .cm-s-codebox .cm-string-2{ color: #a8e08f; }
+.cm-s-codebox .cm-comment{ color: rgba(255,255,255,0.4); font-style: italic; }
+.cm-s-codebox .cm-atom{ color: #d29aff; }
+.cm-s-codebox .cm-number{ color: #ffcf7a; }
+.cm-s-codebox .cm-property, .cm-s-codebox .cm-attribute{ color: #7ac6ff; }
+.cm-s-codebox .cm-tag{ color: #fd7a7a; }
+.cm-s-codebox .cm-variable, .cm-s-codebox .cm-variable-2{ color: #f5f5f5; }
+.cm-s-codebox .cm-def{ color: #7ac6ff; }
+.cm-s-codebox .cm-meta{ color: rgba(255,255,255,0.6); }
+
+/* Autocomplete dropdown */
+.CodeMirror-hints{
+    background: rgb(40,40,40);
+    border: 1px solid rgb(22,22,22);
+    color: #f5f5f5;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85rem;
+    box-shadow: var(--t-shadow);
+}
+.CodeMirror-hint{
+    color: #f5f5f5;
+}
+li.CodeMirror-hint-active{
+    background: var(--t-accent);
+    color: #05130e;
+}
+
+/* ---------- Ask AI (selection popup — see wireAskAiSelection()) ---------- */
+.ask_ai_btn{
+    position: absolute;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--t-accent);
+    color: #05130e;
+    border: none;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.ask_ai_popover{
+    position: fixed;
+    z-index: 2000;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, 90vw);
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 12px;
+    box-shadow: var(--t-shadow);
+    padding: 14px 16px;
+    color: var(--t-text);
+}
+.ask_ai_popover_head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.ask_ai_popover_head i{
+    color: var(--t-accent);
+    margin-right: 6px;
+}
+.ask_ai_close{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.ask_ai_popover p{
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+    margin-bottom: 8px;
+}
+.ask_ai_preview{
+    max-height: 140px;
+    overflow-y: auto;
+    background: rgb(50,50,50);
+    color: #f5f5f5;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
 }

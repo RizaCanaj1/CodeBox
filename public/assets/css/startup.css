@@ -1,8 +1,23 @@
+/* Note: this * { transition: all .5s } already covers background-color
+   and color for the day/night toggle below — a separate faster
+   transition on those two specifically would just get silently
+   overridden by this same rule anyway (a later `all` entry in a
+   transition list always wins over an earlier specific one for any
+   property they both cover), so there's no point declaring both. */
 *{
     transition: all .5s;
 }
 body{
     overflow-x: hidden;
+    min-height: 100vh;
+    background: var(--t-bg);
+    color: var(--t-text);
+}
+.startup-theme-toggle{
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10001;
 }
 .errors{
     position: absolute;
@@ -114,8 +129,9 @@ body{
 
 .hover_message{
     position: absolute;
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: var(--t-surface);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
     border-radius: 0px 0px 10px 10px;
     padding: 5px;
     z-index: 9999;
@@ -253,9 +269,10 @@ body{
 }
 .second_setup .bio_length.move_down{
     top: 5px;
-    border: 1px solid #1e1e1eab;
-    border-top: 3px solid white;
-    background-color: white;
+    border: 1px solid var(--t-border-strong);
+    border-top: 3px solid var(--t-accent);
+    background-color: var(--t-surface);
+    color: var(--t-text);
     height: 35px;
     padding-left: 5px;
     width: 70px;
@@ -279,14 +296,15 @@ body{
     border: 0px;
     text-align: center;
     display: inline-block;
-    background-color: #cccccc27;
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
 }
 .second_setup .show_cv {
     position: absolute;
     height: 370px;
     left: 100%;
     width: 350px;
-    background-color: #cccccc27;
+    background-color: var(--t-surface-2);
     animation: show_opacity 1s forwards;
 }
 .second_setup .cv_image{
@@ -297,7 +315,7 @@ body{
 }
 .focus_cv.d-none{
     backdrop-filter: blur(0px);
-    background-color: #cccccc17;
+    background-color: transparent;
 }
 .focus_cv{
     position: absolute;
@@ -307,7 +325,7 @@ body{
     right: 50%;
     transform: translate(50%,-50%);
     backdrop-filter: blur(2px);
-    background-color: #cccccc17;
+    background-color: var(--t-overlay);
     animation: show_opacity 1s forwards;
 }
 .focus_cv img{
@@ -315,7 +333,7 @@ body{
     max-height: 75dvh;
 }
 .added_social a{
-    color:#000;
+    color: var(--t-text);
 }
 .removable-icons{
     position: relative;

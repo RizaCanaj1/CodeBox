@@ -6,6 +6,7 @@ const add_code = document.querySelector('.add-code');
 const add_media = document.querySelector('.add-media');
 const type_of_post = document.querySelector('.type_of_post');
 const add_post_form = document.querySelector('.add_post_form')
+const invitation_fields = document.querySelector('.composer-invitation-fields');
 
 
 
@@ -53,14 +54,22 @@ type_of_post.addEventListener('change',e=>{
             case 'showcase':
                 add_code.classList.remove('d-none');
                 add_media.classList.add('d-none');
+                invitation_fields.classList.add('d-none');
                 break;
             case 'community':
                 add_media.classList.remove('d-none');
                 add_code.classList.add('d-none');
+                invitation_fields.classList.add('d-none');
+                break;
+            case 'invitation':
+                add_code.classList.add('d-none');
+                add_media.classList.add('d-none');
+                invitation_fields.classList.remove('d-none');
                 break;
             default:
                 add_code.classList.add('d-none');
                 add_media.classList.add('d-none');
+                invitation_fields.classList.add('d-none');
                 break;
         }
 

@@ -9,21 +9,20 @@ use App\Models\UserMedia;
 use App\Models\PostComments;
 use Illuminate\Http\Request;
 use App\Models\Notifications;
+use App\Models\GroupRoles;
 use App\Models\PostInvitations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 
 class CrudController extends Controller
 {   
     public function show_group($groupId){
-        $check_user = PostInvitations::where('from_user_id', auth()->id())->where('post_id', $groupId)->where('status', 'approved')->get()->count();
-        $check_creator = Posts::where('id','=', $groupId)->where('user_id', auth()->id())->get()->count();
-        if($check_user == 0 && $check_creator == 0) return redirect()->route('applications', ['id' => $groupId]);
-        
-        return view('groups', compact('groupId'));
+        $post = Posts::findOrFail($groupId);
+        if (!$post->isAccessibleBy(auth()->id())) return redirect()->route('applications', ['id' => $groupId]);
+
+        return view('groups', compact('groupId', 'post'));
     }
     public function get_auth (){
         return response()->json(auth()->id());
@@ -70,8 +69,20 @@ class CrudController extends Controller
         // auto-injected Request param here — use the request() helper instead.
         $seed = (int) request()->query('seed', random_int(1, 2147483647));
         $posts = Posts::orderByRaw('RAND(?)', [$seed])->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')->paginate(10);
+        $this->decoratePosts($posts);
+        // Hand the seed back so the frontend can pass it on the next page
+        // request instead of letting the server pick a fresh one each time.
+        $result = $posts->toArray();
+        $result['seed'] = $seed;
+        return response()->json($result);
+    }
+
+    // Used by both get_posts() (dashboard feed) and get_posts_from_user()
+    // (profile page) so a post looks/behaves identically wherever it's
+    // rendered — same media/code/invitation-status/views/comments shape
+    // createpost() in post.js expects.
+    private function decoratePosts($posts){
         foreach ($posts as $post) {
-            
             $post->auth_id = auth()->id();
             if($post->type == 'community'){
                 $media = $post->media()->pluck('source')->toArray();
@@ -111,13 +122,23 @@ class CrudController extends Controller
             }
             $post->comments = $comments;
         }
-        // Hand the seed back so the frontend can pass it on the next page
-        // request instead of letting the server pick a fresh one each time.
-        $result = $posts->toArray();
-        $result['seed'] = $seed;
-        return response()->json($result);
     }
-    
+
+    // Profile page's post.js fetches this for the .post-selector type tabs
+    // and post feed — was routed to a PostController method that no longer
+    // existed (BadMethodCallException, 500 on every profile page load), so
+    // no posts ever rendered here at all.
+    public function get_posts_from_user($id){
+        $posts = Posts::where('posts.user_id', $id)
+            ->join('users', 'users.id', '=', 'posts.user_id')
+            ->select('posts.*', 'users.name as username', 'users.profile_photo_path as profile')
+            ->orderByDesc('posts.created_at')
+            ->get();
+        $this->decoratePosts($posts);
+        return response()->json(['data' => $posts]);
+    }
+
+
     public function post_codes($id){
         $data = PostCodes::where('post_id', $id)->get();
         if (!$data) {
@@ -175,7 +196,7 @@ class CrudController extends Controller
     }
     public function get_user(Request $request, $user_id)
     {
-        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email','bio')->find($user_id);
+        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email', 'bio', 'cv_path')->find($user_id);
         if (!$data) {
             return response()->json(['error' => 'User not found'], 404); 
         }
@@ -184,17 +205,28 @@ class CrudController extends Controller
         return response()->json($data);
     }
     public function get_group($id){
+        $post = Posts::findOrFail($id);
+        if (!$post->isAccessibleBy(auth()->id())) {
+            return response()->json(['message' => 'You are not a member of this group'], 403);
+        }
+
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
         $data['users'] = PostInvitations::with('user')->where('post_id', '=', $id)->where('status', '=', 'approved')->groupBy('from_user_id')->orderByDesc('from_user_id')->get();
-        $settingsFilePath = 'Group ' . $id . '/settings.json';
-        if (Storage::exists($settingsFilePath)) {
-            $settingsJson = Storage::get($settingsFilePath);
-            $settingsData = json_decode($settingsJson, true);
-            
-        } else {
-            $settingsData =  'Settings for group ' . $id .' not found';
-        }
-        $data['settings'] = $settingsData ;
+        $data['roles'] = GroupRoles::with('folders', 'members:id,name')->where('group_id', $id)->get();
+        $data['manageable_folders'] = $post->manageableFoldersFor(auth()->id());
+        // creator_id used to come only from Group/{id}/settings.json — but
+        // some groups have that file under the old 'Group {id}' (space)
+        // path, and some (created before that feature existed at all) never
+        // had one. Either way this silently returned a plain error string
+        // instead of an object, so every `settings.creator_id` read on the
+        // frontend (every creator-only check — "Add Role" included) came
+        // back undefined. The post's own user_id is already the reliable
+        // source of truth for who created the group, so settings.json is
+        // no longer needed for this at all.
+        $data['settings'] = [
+            'group_id' => $post->id,
+            'creator_id' => $post->user_id,
+        ];
         return response()->json($data);
         
     }

@@ -110,10 +110,11 @@
 
 /* The dashboard's redesigned content lives inside layouts/app.blade.php's
    shared `.min-h-screen.bg-gray-100` wrapper (Tailwind, hardcoded light).
-   Scoped to pages that actually render dashboard content instead of
+   Scoped to pages that actually render redesigned content instead of
    giving every page under this layout a dark background, since only the
-   dashboard has been redesigned to use these tokens so far. */
-:root[data-theme="dark"] .min-h-screen.bg-gray-100:has(.db-shell){
+   dashboard, profile and applications pages have been redesigned to use
+   these tokens so far. */
+:root[data-theme="dark"] .min-h-screen.bg-gray-100:has(.db-shell, .profile-shell, .applications-shell, .groups-shell){
     background-color: var(--t-bg) !important;
 }
 

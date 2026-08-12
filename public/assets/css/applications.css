@@ -1,80 +1,272 @@
-.applications{
-    position: absolute;
-    top: 0px;
-    bottom: 0px;
-    left: 0; 
-    right: 0; 
-    margin: auto;
-    max-height: fit-content;
-    width: 700px;
-    box-shadow: 0px 0px 200px 20px black;
-    border: 2px solid grey;
-    border-radius: 5px;
-    z-index: 1;
+/*
+ * Applications ("apply to an invitation") page. Reworked to use the shared
+ * --t-* theme tokens (theme.css) and .pinv-chip/.post-type-badge (post.css)
+ * instead of the old Bootstrap-only look, so it matches the dashboard/
+ * profile redesign and follows the light/dark toggle.
+ */
+
+.d-none{
+    display: none !important;
 }
-a{
-    color: black;
+
+.applications-shell{
+    max-width: 640px;
+    margin: 32px auto;
+    padding: 0 16px 48px;
 }
-.applications a{
+
+.app-alert{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+}
+
+.app-card{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--t-shadow);
+}
+
+.app-card-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.app-owner{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+}
+.app-owner img{
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.app-title{
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--t-text);
+    margin: 0 0 8px;
+}
+.app-content{
+    color: var(--t-text-dim);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0 0 4px;
+}
+
+.post-invitation-meta{
+    margin: 12px 0 4px;
+}
+
+/* ---------- buttons / status ---------- */
+.app-apply-section, .app-owner-section{
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--t-border);
+}
+.app-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
     text-decoration: none;
 }
-.user-checkbox{
-    transition: all .3s;
-    padding: 5px;
-    width: fit-content;
-    background-color: rgb(47, 149, 245);
+.app-btn-primary{
+    background: var(--t-accent);
+    color: #05130e;
 }
-.selector {
-    transition: all .3s;
+:root[data-theme="light"] .app-btn-primary{
+    color: #ffffff;
 }
-.selector:focus,.selector:hover{
-    padding: 1px;
-    border: 1px solid black ;
-    box-shadow: 0px 0px 1px 1px rgba(0,0,0,0);
+.app-btn-secondary{
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
 }
-.selector:checked{
-    border: 2px solid white ;
-    box-shadow: 0px 0px 2px 2px black;
+.app-btn-approve{
+    background: var(--t-accent);
+    color: #05130e;
 }
-.user-checkbox:has(> .selector:checked) {
-    background-color: rgb(238, 120, 120);
+:root[data-theme="light"] .app-btn-approve{
+    color: #ffffff;
 }
-.hide-applications{
-    box-shadow: 0px 0px 0px 0px rgba(0,0,0,0);
-    border: 0px;
+.app-btn-refuse{
+    background: var(--t-accent-2-soft);
+    color: var(--t-accent-2);
 }
-.hide-animation{
-    transition: all .2s;
-    color:rgba(0,0,0,0)!important;
+.app-status{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    border-radius: 999px;
+    padding: 8px 16px;
 }
-.hide-animation *{
-    color:rgba(0,0,0,0)!important;
-    border: 0px solid rgba(0,0,0,0) !important;
-    background-color: rgba(0,0,0,0) !important;
+.app-status-pending{
+    background: rgba(216,173,33,0.14);
+    color: #d8ad21;
 }
-.hide-animation img{
-    width: 10px;
-    height: 10px;
+.app-status-refused{
+    background: var(--t-accent-2-soft);
+    color: var(--t-accent-2);
 }
-.d-none-applications>.applications-form,.d-none-applications h2{
-    display: none!important;
+
+.app-stats{
+    display: flex;
+    gap: 18px;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+    margin-bottom: 12px;
 }
-a[class^='back_to']{
-    width: fit-content;
-    height: fit-content;
+.app-stats strong{
+    color: var(--t-text);
 }
-i.fa-solid{
-    transition: all .2s;
-    width: fit-content;
-    height: fit-content;
+.app-owner-actions{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
-a[class^='back_to']:hover i.fa-solid{
-    color: white;
-    background-color: rgba(0,0,0,.25);
+.app-empty{
+    margin-top: 10px;
+    color: var(--t-text-faint);
+    font-size: 0.85rem;
 }
-.user-img{
-    transition: all .5s;
-    width: 20%;
-    height: 20%;
-    margin: auto;
+
+/* ---------- applicants panel ---------- */
+.applications-panel{
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--t-overlay);
+    padding: 16px;
+}
+.applications-panel-inner{
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--t-shadow);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s ease, transform .2s ease;
+}
+.applications-panel.open .applications-panel-inner{
+    opacity: 1;
+    transform: translateY(0);
+}
+.applications-panel h2{
+    text-align: center;
+    font-size: 1.05rem;
+    color: var(--t-text);
+    margin: 4px 0 16px;
+}
+.app-back{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    font-size: 0.95rem;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.app-back:hover{
+    color: var(--t-text);
+    background: var(--t-surface-2);
+}
+
+.applicants-list{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.applicant-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+.applicant-row:has(.applicant-checkbox:checked){
+    background: var(--t-accent-soft);
+    border-color: var(--t-accent);
+}
+.applicant-checkbox{
+    accent-color: var(--t-accent);
+}
+.applicant-name{
+    color: var(--t-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.applicant-name:hover{
+    color: var(--t-accent);
+}
+.applicants-actions{
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.applicant-detail{
+    text-align: center;
+    padding-top: 8px;
+}
+.applicant-detail-avatar{
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 6px auto 10px;
+    display: block;
+}
+.applicant-detail-name{
+    color: var(--t-text);
+    margin: 0 0 6px;
+}
+.applicant-detail-bio{
+    color: var(--t-text-dim);
+    font-size: 0.85rem;
+    margin: 0 0 14px;
+    white-space: pre-wrap;
+}
+.applicant-detail-cv{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--t-accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid var(--t-accent);
+    border-radius: 8px;
+    padding: 6px 14px;
 }

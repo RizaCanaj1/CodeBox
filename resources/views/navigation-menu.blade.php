@@ -232,5 +232,5 @@
             </div>
         </div>
     </div>
-    <script src="assets/js/components/search.js"></script>
+    <script src="../assets/js/components/search.js"></script>
 </nav>

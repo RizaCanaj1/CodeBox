@@ -163,6 +163,10 @@ else{
                 if(selector.className.split(' ')[0]!='no_posts') post_selection(selector)
             })
         });
+        // Same reason as the dashboard's get_posts() — this batch of posts
+        // arrives asynchronously and may not exist yet when the one-time
+        // setTimeout(...,1000) below runs, so it needs its own explicit call.
+        wirePostInteractions();
     })
 }
 // Closes whichever post is currently in fullscreen focus mode (there's
@@ -504,7 +508,6 @@ function createpost(post,i){
                 ${comment_form}
             </div>`
         case 'showcase': {
-            let button = (id,source) =>{return `<button class="pid-${id} source-btn" onclick="open_code(event,${id})">${source}</button>`}
             return `
             <div class="pid-${post.id} post pshowcase" id="${post.id}" style='--show_post_delay:${i * 0.3}s'>
                 ${header}
@@ -514,7 +517,7 @@ function createpost(post,i){
                 </div>
                 <div class='d-flex justify-content-center'>
                     <button class="pid-${post.id} seethrough-btn codebox-animation"><p class="pid-${post.id}"><<span class="pid-${post.id} m_between_code"></span>/<span class="pid-${post.id} nr_of_code">${post.code.length}CodeBox</span><span class="pid-${post.id} m_between_code"></span>></p></button>
-                    <p><pre class='codeblock d-none align-items-center flex-column' id="pid-${post.id}">${post.code.map(source => `${(source.split(".")[1] == 'html') ?`<div>${button(post.id,source)}<button class="pid-${post.id} test-beta" title='This feature is still in development. This works only for simple HTML files for now'> Beta Open</button></div>`:button(post.id,source)}`).join('')}</pre></p>
+                    <p><pre class='codeblock d-none align-items-center flex-column' id="pid-${post.id}">${post.code.map(source => buildSourceButtons(post.id, source)).join('')}</pre></p>
                 </div>
                 ${footer}
                 ${comment_form}
@@ -528,20 +531,18 @@ function createpost(post,i){
                     <h3 class='post-title'>${escapeHtml(post.title)}</h3>
                     <p>${escapeHtml(post.content)}</p>
                 </div>
+                <div class='post-invitation-meta'>
+                    <span class='pinv-chip'><i class="fa-solid fa-code"></i> ${escapeHtml(post.programming_languages || 'Not defined')}</span>
+                    <span class='pinv-chip'><i class="fa-regular fa-clock"></i> ${escapeHtml(post.working_hours || 'Not defined')}</span>
+                    <span class='pinv-chip pinv-chip-payment'><i class="fa-solid fa-sack-dollar"></i> ${escapeHtml(post.payment || 'Free')}</span>
+                </div>
                 <div class='post-invitation-action'>
-                    ${(my_id != post.user_id)?(`${(post.applied > 0 ?
-                        (post.applied >= 5 && post.invitation_status == 'refused' ?
-                            `<a class="p-2 bg-danger text-white rounded-3">Contact the owner for more information!</a>` :
-                            (post.invitation_status == 'approved' ?
-                                `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
-                                (post.invitation_status == 'pending' ?
-                                    `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
-                                    `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
-                                )
-                            )
-                        ) :
+                    ${(my_id != post.user_id) ? (
+                        post.invitation_status == 'approved' ? `<a href="/group/${post.id}" class="btn btn-secondary">Group</a>` :
+                        post.invitation_status == 'pending' ? `<a href='applications/${post.id}' class="p-2 bg-warning text-white rounded-3">Wait for response</a>` :
+                        post.invitation_status == 'refused' ? `<a href='applications/${post.id}' class="p-2 bg-danger text-white rounded-3">Not selected</a>` :
                         `<a href='applications/${post.id}' class="btn btn-outline-primary">Apply</a>`
-                    )}`):(`<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`)}
+                    ) : `<a href='applications/${post.id}' class="btn btn-outline-success">View applications</a>`}
                 </div>
             </div>`
         case 'community':
