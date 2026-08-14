@@ -9,4 +9,11 @@
     </div>
 
     <script src="assets/js/beta-test.js?v={{ filemtime(public_path('assets/js/beta-test.js')) }}"></script>
+    <!-- The shared nav (navigation-menu.blade.php, rendered by x-app-layout
+         on every page including this one) uses fa-solid/fa-regular class
+         names — the FA6 kit convention, not the old v5.7.0 fas/far classes
+         the <link> above provides. Without this script those icons never
+         resolve to anything and render invisibly. Every other page that
+         uses x-app-layout already loads this; it was just missing here. -->
+    <script src="https://kit.fontawesome.com/51d87a716e.js" crossorigin="anonymous"></script>
 </x-app-layout>

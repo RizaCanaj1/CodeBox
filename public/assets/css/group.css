@@ -1225,8 +1225,14 @@ div[class^='message-'] pre{
    elements. The addon's own default (10) loses to .code_fullscreen's 999,
    which made the whole popup render invisibly behind the editor whenever
    fullscreen was active — the most common way this editor actually gets
-   used. */
-.CodeMirror-hints{
+   used.
+   Selector is doubled (.CodeMirror-hints.CodeMirror-hints) on purpose: this
+   stylesheet loads BEFORE show-hint.min.css in <head> (CodeMirror's own
+   addon CSS has to come after the editor's core CSS), so a plain
+   single-class selector here has identical specificity to the addon's own
+   z-index:10 rule and loses the cascade tie to load order — doubling the
+   class bumps specificity just enough to win regardless of load order. */
+.CodeMirror-hints.CodeMirror-hints{
     z-index: 1200;
     background: var(--t-surface);
     border: 1px solid var(--t-border-strong);
