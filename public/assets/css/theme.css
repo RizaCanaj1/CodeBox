@@ -99,13 +99,57 @@
 :root[data-theme="dark"] .nav-links a:not(.active):hover::before{
     color: var(--t-text) !important;
 }
-:root[data-theme="dark"] .searchbar .form-control{
-    background-color: var(--t-surface-2) !important;
+:root[data-theme="dark"] .search-toggle-btn{
     color: var(--t-text) !important;
+}
+:root[data-theme="dark"] .search-toggle-btn:hover{
+    background: var(--t-border) !important;
+}
+:root[data-theme="dark"] .search_overlay{
+    background: var(--t-overlay) !important;
+}
+:root[data-theme="dark"] .search_palette{
+    background: var(--t-surface) !important;
+    box-shadow: var(--t-shadow) !important;
+}
+:root[data-theme="dark"] .search_palette_input_row{
+    border-color: var(--t-border) !important;
+    color: var(--t-text-faint) !important;
+}
+:root[data-theme="dark"] .search_palette_input{
+    color: var(--t-text) !important;
+}
+:root[data-theme="dark"] .search_palette_esc{
+    color: var(--t-text-faint) !important;
     border-color: var(--t-border) !important;
 }
-:root[data-theme="dark"] .searchbar .form-control::placeholder{
+:root[data-theme="dark"] .search_empty{
     color: var(--t-text-faint) !important;
+}
+:root[data-theme="dark"] .search_result_group_label{
+    color: var(--t-text-faint) !important;
+}
+:root[data-theme="dark"] .search_result_row{
+    color: var(--t-text) !important;
+}
+:root[data-theme="dark"] .search_result_row:hover{
+    background: var(--t-border) !important;
+}
+:root[data-theme="dark"] .search_result_icon{
+    background: var(--t-surface-2) !important;
+    color: var(--t-text-dim) !important;
+}
+:root[data-theme="dark"] .search_result_sub,
+:root[data-theme="dark"] .search_result_meta,
+:root[data-theme="dark"] .search_requested{
+    color: var(--t-text-faint) !important;
+}
+:root[data-theme="dark"] .search_add_friend_btn{
+    background: var(--t-surface-2) !important;
+    color: var(--t-text-dim) !important;
+}
+:root[data-theme="dark"] .search_add_friend_btn:hover{
+    background: var(--t-border-strong) !important;
 }
 
 /* The dashboard's redesigned content lives inside layouts/app.blade.php's
@@ -114,7 +158,7 @@
    giving every page under this layout a dark background, since only the
    dashboard, profile and applications pages have been redesigned to use
    these tokens so far. */
-:root[data-theme="dark"] .min-h-screen.bg-gray-100:has(.db-shell, .profile-shell, .applications-shell, .groups-shell){
+:root[data-theme="dark"] .min-h-screen.bg-gray-100:has(.db-shell, .profile-shell, .applications-shell, .groups-shell, .course-shell, .puzzle-shell, .friends-shell, .bh-shell){
     background-color: var(--t-bg) !important;
 }
 

@@ -12,7 +12,7 @@ use App\Models\Notifications;
 use App\Models\GroupRoles;
 use App\Models\PostInvitations;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -196,12 +196,13 @@ class CrudController extends Controller
     }
     public function get_user(Request $request, $user_id)
     {
-        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email', 'bio', 'cv_path')->find($user_id);
+        $data = User::select('id', 'name as username', 'profile_photo_path as profile', 'email', 'bio', 'cv_path', 'created_at')->find($user_id);
         if (!$data) {
-            return response()->json(['error' => 'User not found'], 404); 
+            return response()->json(['error' => 'User not found'], 404);
         }
         $social_media = UserMedia::where('user_id', $user_id)->get();
         $data->social_media = $social_media;
+        $data->badges = $data->badges();
         return response()->json($data);
     }
     public function get_group($id){
@@ -214,6 +215,7 @@ class CrudController extends Controller
         $data['users'] = PostInvitations::with('user')->where('post_id', '=', $id)->where('status', '=', 'approved')->groupBy('from_user_id')->orderByDesc('from_user_id')->get();
         $data['roles'] = GroupRoles::with('folders', 'members:id,name')->where('group_id', $id)->get();
         $data['manageable_folders'] = $post->manageableFoldersFor(auth()->id());
+        $data['downloadable_folders'] = $post->downloadableFoldersFor(auth()->id());
         // creator_id used to come only from Group/{id}/settings.json — but
         // some groups have that file under the old 'Group {id}' (space)
         // path, and some (created before that feature existed at all) never

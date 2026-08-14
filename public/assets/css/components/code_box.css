@@ -26,11 +26,11 @@
  */
 
 .codeblock{
-    border: 5px solid rgb(22, 22, 22);
+    border: 5px solid var(--t-border-strong);
     padding: 7px;
     border-radius: 5px;
-    background-color: rgb(50,50,50);
-    color: white;
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
     width: 90%;
     height: 300px;
     overflow: scroll;
@@ -45,10 +45,10 @@ pre[id^='pid-']{
     width: 10px;
 }
 .codeblock::-webkit-scrollbar-track {
-    background: rgb(44, 44, 44);
+    background: var(--t-bg-soft);
 }
 .codeblock::-webkit-scrollbar-thumb {
-    background: #000000;
+    background: var(--t-border-strong);
     border-radius: 5px;
 }
 .codeblock span[id^='line-']{
@@ -69,8 +69,8 @@ pre[id^='pid-']{
     to{ opacity: 1; }
 }
 .codeblock ::selection {
-    background: #ffb7b7; 
-    color: #000000;     
+    background: #ffb7b7;
+    color: #000000;
 }
 .codeblock ::-moz-selection {
     background: #ffb7b7;
@@ -84,28 +84,28 @@ pre[id^='pid-']{
         color:rgba(0,0,0,0);
     }
     to{
-        color: white;
+        color: var(--t-text);
     }
 }
 
 .codeblock span[id^='line-']:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--t-border);
 }
 .codeblock span[id^='line-']:hover a{
     color:rgb(131, 171, 223);
 }
 
 .codeblock a{
-    color: rgba(250, 200, 200, 0.7)!important;
+    color: var(--t-accent-2)!important;
 }
 .hide-code{
-    color:rgba(255, 255, 255, 0.3);
+    color: var(--t-text-faint);
 }
 .hide-code a{
-    color:rgba(250, 200, 200, 0.4);
+    color: var(--t-accent-2-soft);
 }
 .hide-code:hover {
-    background-color: rgba(160, 160, 160, 0.1);
+    background-color: var(--t-border);
 }
 .hide-code:hover a{
     color:rgba(131, 171, 223, 0.4);
@@ -118,22 +118,23 @@ pre[id^='pid-']{
 .code-search{
     position: absolute;
     right: 10px; /* 4. stable default anchor, JS only ever sets `top` */
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--t-surface);
     padding: 12px;
     z-index: 3;
 }
 .code-search input.form-control{
-    color: white;
+    color: var(--t-text);
     height: 20px;
     min-width: 100px;
     animation: open-input .5s;
     font-size:small;
-    background-color: rgb(59, 59, 59);
+    background-color: var(--t-surface-2);
+    border-color: var(--t-border);
 }
 .code-search input.form-control:focus{
-    color: white;
+    color: var(--t-text);
     box-shadow: none;
-    background-color: rgb(70, 70, 70);
+    background-color: var(--t-surface-2);
 }
 
 @keyframes open-input {
@@ -155,23 +156,25 @@ pre[id^='pid-']{
 .sorted_counter{
     height: 20px;
     font-size:small;
-    background-color: rgb(59, 59, 59);
+    background-color: var(--t-surface-2);
+    color: var(--t-text);
     max-width: fit-content;
-} 
+}
 .scroll-button {
     position:fixed;
     right: 24px; /* 3. stable default anchor, JS only ever sets `top` */
     width: 40px;
     height: 40px;
     padding: 7px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--t-surface);
+    border: 1px solid var(--t-border);
     border-radius: 50%;
     z-index: 2;
 }
 .scroll-button:hover {
     transition: all .3s;
     padding: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--t-surface-2);
 }
 
 .codeblock.edit_code span[id^='line-']:hover {
@@ -206,7 +209,7 @@ pre[id^='pid-']{
 .code-loading-line{
     height: 14px;
     border-radius: 4px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.16) 37%, rgba(255,255,255,0.06) 63%);
+    background: linear-gradient(90deg, var(--t-border) 25%, var(--t-border-strong) 37%, var(--t-border) 63%);
     background-size: 400% 100%;
     animation: code-loading-shimmer 1.4s ease infinite;
 }
@@ -227,16 +230,17 @@ pre[id^='pid-']{
     padding: 4px 8px;
     margin: 4px 0;
     font-size: 12px;
-    color: rgba(255,255,255,0.7);
-    background: rgba(0,0,0,0.5);
+    color: var(--t-text-dim);
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
     border-radius: 4px;
     width: fit-content;
 }
 .code-render-progress .spinner{
     width: 10px;
     height: 10px;
-    border: 2px solid rgba(255,255,255,0.25);
-    border-top-color: rgba(255,255,255,0.9);
+    border: 2px solid var(--t-border-strong);
+    border-top-color: var(--t-text);
     border-radius: 50%;
     animation: code-render-spin .6s linear infinite;
     flex-shrink: 0;

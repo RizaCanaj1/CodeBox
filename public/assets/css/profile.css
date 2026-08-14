@@ -80,6 +80,27 @@ p,h6 {
     display: flex;
     gap: 10px;
 }
+.badges-row{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 4px;
+}
+.badge-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--badge_color, var(--t-accent));
+    background: color-mix(in srgb, var(--badge_color, var(--t-accent)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--badge_color, var(--t-accent)) 35%, transparent);
+}
+.profile-bar.right-bar .badges-row{
+    display: none;
+}
 .profile-main-col > h4{
     font-size: 0.78rem;
     font-weight: 700;

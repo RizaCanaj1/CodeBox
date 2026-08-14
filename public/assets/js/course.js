@@ -1,245 +1,281 @@
-let path = window.location.pathname.slice(1)[0].toUpperCase() +window.location.pathname.slice(2)
+let path = window.location.pathname.slice(1)[0].toUpperCase() + window.location.pathname.slice(2)
 let actived = document.querySelector(`a[data-type="${path}"]`)
-let teachers = document.querySelector('.teachers')
-let add_teacher_button = document.querySelector('.add_teacher_button')
-let add_teacher_btn = add_teacher_button.querySelector('.btn-add-t')
-let adding_teacher=false
-let add_course_button = document.querySelector('.add_course_button')
-let add_course_btn = add_teacher_button.querySelector('.btn-add-c')
-let adding_course=false
-let twrapper = document.querySelector('.twrapper')
-let more_teacher_btn = ''
-let maxTeachersShown = 3
-actived.classList.add('active')
-actived.addEventListener('click', e=>{
-    e.preventDefault();
-});
-fetch(`get_role`)
-.then(response=>response.json())
-.then(role=>{
-    if(role =='admin'){
-        add_teacher_button.classList.remove('d-none')
-        console.log(add_course_button)
-        add_course_button.classList.remove('d-none')
-        window.addEventListener('click',e=>{
-            add_course_btn = e.target.closest('.btn-add-c')
-            add_course_button = document.querySelector('.add_course_button')
-            add_teacher_btn = e.target.closest('.btn-add-t')
-            add_teacher_button = document.querySelector('.add_teacher_button')
-            if(add_course_btn) add_course_btn.onclick = ()=>{
-                document.querySelector('.form_add_course').classList.remove('d-none')
-                adding_course = true
-                add_course_button.classList.remove('shifting')
-                add_course_button.classList.add('d-none')
-                close_teacher_form()
-            }
-            if(add_teacher_btn) add_teacher_btn.onclick =()=>{
-                document.querySelector('.form_add_teacher').classList.remove('d-none')
-                adding_teacher = true
-                add_teacher_button.classList.remove('shifting')
-                add_teacher_button.classList.add('d-none')
-                close_course_form()
-                
-            }
-           
-        })
-    }
-})
-let close_teacher_form = ()=>{
-    if(adding_teacher) add_teacher_button.classList.add('shifting')
-    setTimeout(()=>{add_teacher_button.classList.remove('d-none'); add_teacher_button.classList.remove('shifting')},300)
-    document.querySelector('.form_add_teacher').classList.add('d-none')
-    adding_teacher = false
+if(actived){
+    actived.classList.add('active')
+    actived.addEventListener('click', e=>{
+        e.preventDefault();
+    });
 }
-let close_course_form = ()=>{
-    if(adding_course) add_course_button.classList.add('shifting')
-    setTimeout(()=>{add_course_button.classList.remove('d-none'); add_course_button.classList.remove('shifting')},300)
-    document.querySelector('.form_add_course').classList.add('d-none')
-    adding_course = false
+
+let myRoles = []
+let allTeachers = []
+let allCourses = []
+let myTeacherRow = null
+let filterTeacherId = null
+let my_id = null
+
+function escapeHtml(text){
+    const div = document.createElement('div')
+    div.textContent = text ?? ''
+    return div.innerHTML
 }
-window.addEventListener('keyup',e=>{
-    if(e.key=='Escape' && (adding_teacher||adding_course)){
-        close_teacher_form()
-        close_course_form()
-    }
-})
-let theight = 320
-fetch(`get_teachers`)
+function photoUrl(path, fallback){
+    return path ? `../storage/${path}` : fallback
+}
+function csrfToken(){
+    return document.querySelector('meta[name="csrf-token"]').content
+}
+
+fetch('get_role')
 .then(response=>response.json())
-.then(t=>{
-    function handleHoverEffect() {
-        twrapper.querySelectorAll('.teacher').forEach((x) => {
-            x.addEventListener('mouseenter', () => {
-                theight += 120;
-                twrapper.querySelector('.teachers').style.height = theight + 'px';
-            });
-            x.addEventListener('mouseleave', () => {
-                theight -= 120;
-                twrapper.querySelector('.teachers').style.height = theight + 'px';
-                document.querySelectorAll('.teachers .btext:has(span.dots)').forEach(element=>{
-                    if(element.parentElement.parentElement == x && element.parentElement.parentElement.classList.contains('expanded')){
-                        theight -= 120;
-                        twrapper.querySelector('.teachers').style.height = theight + 'px';
-                        const bioId = element.getAttribute('id');
-                        element.innerHTML = element.innerHTML .substring(0, 50) + '<span class="dots">...More</span>';
-                        document.querySelector(`.teacher#t-${bioId}`).classList.remove('expanded');
-                    }    
-                });
-                
-            });
-        });
+.then(roleString=>{
+    myRoles = (roleString || '').split(',').map(r=>r.trim()).filter(Boolean)
+    if(myRoles.includes('admin')){
+        document.querySelector('.btn-add-teacher').classList.remove('d-none')
     }
-    if(t.length>0){
-        let tposition = 0
-        t.forEach(teacher => {
-            tposition++
-            teachers.setAttribute('data-quantity',t.length)
-            teachers.innerHTML+=`
-            <div class='teacher mt-3 p-4 ${(tposition == 1)?('left'):((tposition == 2)?('middle'):('right'))}' id='t-${teacher.id}'>
-                <div class='d-flex flex-column align-items-center gap-3'>
-                    <img src="./assets/images/user.png" alt="user">
-                    <h4><a href="${(teacher.user_id)?(`./profile?id=${teacher.user_id}`):('')}">${teacher.name}</a></h4>
+    renderAddCourseButton()
+})
+
+function renderAddCourseButton(){
+    const canAddCourse = myRoles.includes('admin') || myRoles.includes('teacher')
+    document.querySelector('.btn-add-course').classList.toggle('d-none', !canAddCourse)
+}
+
+function loadTeachersAndCourses(){
+    Promise.all([
+        fetch('get_teachers').then(r=>r.json()),
+        fetch('get_courses').then(r=>r.json()),
+    ]).then(([teachers, courses])=>{
+        allTeachers = teachers
+        allCourses = courses
+        myTeacherRow = teachers.find(t => t.user_id == my_id) || null
+        renderTeachers()
+        renderCourses()
+    })
+}
+
+function courseCountFor(teacherId){
+    return allCourses.filter(c => c.teacher_id === teacherId).length
+}
+
+function renderTeachers(){
+    const row = document.querySelector('.teachers-row')
+    if(allTeachers.length === 0){
+        row.innerHTML = `<p class="empty-note">No teachers yet.</p>`
+        return
+    }
+    row.innerHTML = allTeachers.map(teacher => {
+        const profileLink = teacher.user_id ? `../profile?id=${teacher.user_id}` : null
+        const nameHtml = profileLink
+            ? `<a href="${profileLink}">${escapeHtml(teacher.name)}</a>`
+            : escapeHtml(teacher.name)
+        const bio = teacher.bio ? `<p class="teacher-bio">${escapeHtml(teacher.bio)}</p>` : ''
+        const count = courseCountFor(teacher.id)
+        return `<div class="teacher-card">
+            <img src="${photoUrl(teacher.profile_photo_path, '../assets/images/user.png')}" alt="${escapeHtml(teacher.name)}">
+            <h4>${nameHtml}</h4>
+            ${bio}
+            <button type="button" class="teacher-courses-btn" onclick="filterByTeacher(${teacher.id}, '${escapeHtml(teacher.name).replace(/'/g, "\\'")}')">${count === 1 ? '1 course' : count + ' courses'}</button>
+        </div>`
+    }).join('')
+}
+
+function filterByTeacher(teacherId, teacherName){
+    filterTeacherId = teacherId
+    const filterBar = document.querySelector('.courses-filter')
+    filterBar.classList.remove('d-none')
+    filterBar.querySelector('.filter-teacher-name').textContent = teacherName
+    renderCourses()
+    document.querySelector('.courses-section').scrollIntoView({behavior: 'smooth', block: 'start'})
+}
+function clearTeacherFilter(){
+    filterTeacherId = null
+    document.querySelector('.courses-filter').classList.add('d-none')
+    renderCourses()
+}
+
+function renderCourses(){
+    const grid = document.querySelector('.courses-grid')
+    const visible = filterTeacherId === null ? allCourses : allCourses.filter(c => c.teacher_id === filterTeacherId)
+    if(visible.length === 0){
+        grid.innerHTML = `<p class="empty-note">No courses ${filterTeacherId !== null ? 'from this teacher ' : ''}yet.</p>`
+        return
+    }
+    grid.innerHTML = visible.map(course => {
+        const canManage = myRoles.includes('admin') || (myTeacherRow && myTeacherRow.id === course.teacher_id)
+        const teacherName = course.teacher ? escapeHtml(course.teacher.name) : 'Unknown teacher'
+        const teacherLink = course.teacher && course.teacher.user_id ? `../profile?id=${course.teacher.user_id}` : null
+        const teacherHtml = teacherLink ? `<a href="${teacherLink}">${teacherName}</a>` : teacherName
+        const priceHtml = course.price != null ? `$${course.price}` : 'Free'
+        const chips = [
+            course.languages ? `<span class="course-chip"><i class="fa-solid fa-code"></i> ${escapeHtml(course.languages)}</span>` : '',
+            course.total_hours != null ? `<span class="course-chip"><i class="fa-regular fa-clock"></i> ${course.total_hours}h total</span>` : '',
+            course.schedule_days ? `<span class="course-chip"><i class="fa-regular fa-calendar"></i> ${escapeHtml(course.schedule_days)}</span>` : '',
+            course.schedule_time ? `<span class="course-chip"><i class="fa-solid fa-business-time"></i> ${escapeHtml(course.schedule_time)}</span>` : '',
+        ].filter(Boolean).join('')
+        const actions = canManage ? `<div class="course-actions">
+            <button type="button" class="course-edit-btn" onclick="openCourseForm(${course.id})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="course-delete-btn" onclick="deleteCourse(${course.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        </div>` : ''
+        return `<div class="course-card">
+            <img src="${photoUrl(course.profile_photo_path, '../assets/images/code.png')}" alt="${escapeHtml(course.name)}">
+            <div class="course-card-body">
+                <div class="course-card-head">
+                    <h4>${escapeHtml(course.name)}</h4>
+                    <span class="course-price">${priceHtml}</span>
                 </div>
-                ${(teacher.bio)?(`<div class='bio'><h4>Bio:</h4><p class='btext' id="${teacher.id}">${(teacher.bio.split('').length<=50)?(teacher.bio):(teacher.bio.substring(0, 50) + `<span class="dots" >...More</span>`)}</p></div>`):('')}
-                
-                <div class='to_courses flex-column align-items-center'><buton class='btn btn-outline-secondary courses_btn'> Courses </buton></div>
-            </div>`
-            if(tposition == 3) tposition = 0
-            if (document.querySelector('.dots')) {
-                document.addEventListener('click', function (event) {
-                    if (event.target.classList.contains('dots')) {
-                        const bioElement = event.target.parentElement;
-                        if(bioElement){
-                            const bioId = bioElement.getAttribute('id');
-                            if (!event.target.closest('.teacher').classList.contains('expanded')) {
-                                bioElement.innerHTML = teacher.bio + '<span class="dots">...Less</span>';
-                                document.querySelector(`.teacher#t-${bioId}`).classList.add('expanded');
-                            } else {
-                                theight -= 240;
-                                twrapper.querySelector('.teachers').style.height = theight + 'px';
-                                bioElement.innerHTML = teacher.bio.substring(0, 50) + '<span class="dots">...More</span>';
-                                document.querySelector(`.teacher#t-${bioId}`).classList.remove('expanded');
-                            }
-                        }
-                        
-                    }
-                });
-            }
-            document.querySelector('.add_course #teacher').innerHTML+=`<option value="${teacher.id}" data-name="${teacher.name}">ID:${teacher.id} Name:${teacher.name}</option>`
-        });
-        if (t.length > maxTeachersShown) {
-            twrapper.innerHTML+=`<div class='mt-4 more_teachers d-flex justify-content-center align-items-center'><buton class='btn btn-outline-secondary btn-more-teachers'> More </buton></div>`
-        
-            more_teacher_btn = twrapper.querySelector('.btn-more-teachers');
-            more_teacher_btn.onclick = () => {
-                if (t.length > maxTeachersShown) {
-                    maxTeachersShown += 3;
-                    if(t.length > maxTeachersShown-3 ){
-                        more_teacher_btn.classList.add('less');
-                        more_teacher_btn.innerHTML = 'Less';
-                    }
-                    theight += 320;
-                }
-                else {
-                    more_teacher_btn.classList.remove('less');
-                    more_teacher_btn.innerHTML = 'More';
-                    theight -= 320;
-                    maxTeachersShown -= 3;
-                }
-                twrapper.querySelector('.teachers').style.height = theight + 'px';
-            };
-        }
-        handleHoverEffect();
-    }
-    else{
-        teachers.innerHTML+=`<p class='text-danger'>No teachers added yet<p>`
-    }
-    
-})
-
-fetch(`get-not-teachers`)
-.then(response=>response.json())
-.then(users=>users.forEach(user => {
-    console.log(users)
-    document.querySelector('.add_teacher #user').innerHTML+=`<option value="${user.id}" data-name="${user.name}">ID:${user.id} Name:${user.name}</option>`
-}))
-document.querySelector('.add_teacher #user').addEventListener('change',e=>{
-    if(e.target.value=='' || e.target.value=='none') {
-        document.querySelector('.add_teacher #id').value = null
-    }
-    else {
-        update_t_info()
-        document.querySelector('.add_teacher #id').value = e.target.value
-    }
-    document.querySelectorAll('.add_teacher #user option').forEach(option => {
-        option.style.display = '';
-    });
-})
-document.querySelector('.add_teacher #id').addEventListener('change',e=>{
-    document.querySelector('.add_teacher #user').value = e.target.value
-    if(document.querySelector('.add_teacher #user').value =='' || document.querySelector('.add_teacher #user').value =='none'){
-        document.querySelector('.add_teacher #user').value ='none'
-        document.querySelector('.add_teacher #name').value = ''
-        document.querySelectorAll('.add_teacher #user option').forEach(option => {
-            option.style.display = '';
-        });
-    }
-    
-    else update_t_info()
-})
-document.querySelector('.add_teacher #name').addEventListener('change', e => {
-    document.querySelector('.add_teacher #id').value=''
-    const selectedName = e.target.value.toLowerCase();
-    const options = [...document.querySelector('.add_teacher #user').options];
-    options.forEach(option => {
-        const optionValue = option.getAttribute('data-name').toLowerCase(); // Convert to lowercase for case-insensitive comparison
-        if (!optionValue.includes(selectedName)) {
-            option.style.display = 'none'; // Hide options that don't include the selected name
-        } else {
-            option.style.display = ''; // Show options that include the selected name
-        }
-    });
-});
-function update_t_info(){
-    document.querySelector('.add_teacher #name').value = document.querySelector('.add_teacher #user').options[document.querySelector('.add_teacher #user').selectedIndex].getAttribute('data-name')
+                <p class="course-teacher">by ${teacherHtml}</p>
+                ${course.description ? `<p class="course-description">${escapeHtml(course.description)}</p>` : ''}
+                <div class="course-chips">${chips}</div>
+                ${actions}
+            </div>
+        </div>`
+    }).join('')
 }
-//
-document.querySelector('.add_course #teacher').addEventListener('change',e=>{
-    if(e.target.value=='' || e.target.value=='none') {
-        document.querySelector('.add_course #id').value = null
-    }
-    else {
-        document.querySelector('.add_course #id').value = e.target.value
-    }
-    document.querySelectorAll('.add_course #teacher option').forEach(option => {
-        option.style.display = '';
-    });
-})
-document.querySelector('.add_course #id').addEventListener('change',e=>{
-    document.querySelector('.add_course #teacher').value = e.target.value
-    if(document.querySelector('.add_course #teacher').value =='' || document.querySelector('.add_course #teacher').value =='none'){
-        document.querySelector('.add_course #teacher').value ='none'
-        document.querySelector('.add_course #name').value = ''
-        document.querySelectorAll('.add_course #teacher option').forEach(option => {
-            option.style.display = '';
-        });
-    }
-})
-document.querySelector('.add_course #name').addEventListener('change', e => {
-    document.querySelector('.add_course #id').value=''
-    const selectedName = e.target.value.toLowerCase();
-    const options = [...document.querySelector('.add_course #teacher').options];
-    options.forEach(option => {
-        const optionValue = option.getAttribute('data-name').toLowerCase(); 
-        if (!optionValue.includes(selectedName)) {
-            option.style.display = 'none'; 
+
+// ---------- Add Teacher (admin only) ----------
+function openTeacherForm(){
+    const existing = document.querySelector('.course_modal')
+    if(existing) existing.remove()
+    fetch('get-not-teachers').then(r=>r.json()).then(users=>{
+        const modal = document.createElement('div')
+        modal.className = 'course_modal'
+        modal.innerHTML = `
+            <div class='confirm_modal_head'><strong>Add teacher</strong></div>
+            <form class='course_form' enctype="multipart/form-data">
+                <label>Existing user (optional)
+                    <select name="user_id">
+                        <option value="">— none, just a listing —</option>
+                        ${users.map(u=>`<option value="${u.id}">${escapeHtml(u.name)}</option>`).join('')}
+                    </select>
+                </label>
+                <label>Name <input type="text" name="name" required></label>
+                <label>Bio <textarea name="bio" rows="3"></textarea></label>
+                <label>Photo <input type="file" name="profile_photo_path" accept="image/*"></label>
+                <div class='course_form_error'></div>
+                <div class='confirm_modal_actions d-flex gap-2 justify-content-end'>
+                    <button type='button' class='btn btn-secondary cancel'>Cancel</button>
+                    <button type='submit' class='btn btn-success save'>Add Teacher</button>
+                </div>
+            </form>`
+        modal.querySelector('.cancel').addEventListener('click', ()=>modal.remove())
+        modal.querySelector('.course_form').addEventListener('submit', e=>{
+            e.preventDefault()
+            const formdata = new FormData(e.target)
+            fetch('add_teacher', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json'},
+                body: formdata
+            })
+            .then(response => response.json().then(body => ({ok: response.ok, body})))
+            .then(({ok, body})=>{
+                if(!ok) throw new Error(body.error || body.message || 'Failed to add teacher')
+                modal.remove()
+                loadTeachersAndCourses()
+            })
+            .catch(error=>{ modal.querySelector('.course_form_error').textContent = error.message })
+        })
+        document.body.appendChild(modal)
+    })
+}
+
+// ---------- Add / Edit Course ----------
+function openCourseForm(courseId){
+    const existing = document.querySelector('.course_modal')
+    if(existing) existing.remove()
+    const editing = allCourses.find(c => c.id === courseId) || null
+    const isAdmin = myRoles.includes('admin')
+    const teacherOptionsHtml = isAdmin
+        ? `<label>Teacher
+            <select name="teacher_id" required>
+                ${allTeachers.map(t=>`<option value="${t.id}" ${editing && editing.teacher_id===t.id ? 'selected':''}>${escapeHtml(t.name)}</option>`).join('')}
+            </select>
+        </label>`
+        : ''
+    const modal = document.createElement('div')
+    modal.className = 'course_modal'
+    modal.innerHTML = `
+        <div class='confirm_modal_head'><strong>${editing ? 'Edit course' : 'Add course'}</strong></div>
+        <form class='course_form' enctype="multipart/form-data">
+            ${teacherOptionsHtml}
+            <label>Course name <input type="text" name="name" required value="${editing ? escapeHtml(editing.name) : ''}"></label>
+            <label>Description <textarea name="description" rows="3">${editing ? escapeHtml(editing.description || '') : ''}</textarea></label>
+            <div class='course_form_row'>
+                <label>Price ($) <input type="number" name="price" min="0" max="100000" value="${editing && editing.price != null ? editing.price : ''}"></label>
+                <label>Languages <input type="text" name="languages" placeholder="e.g. JS, Python" value="${editing ? escapeHtml(editing.languages || '') : ''}"></label>
+            </div>
+            <div class='course_form_row'>
+                <label>Total hours <input type="number" name="total_hours" min="0" max="10000" value="${editing && editing.total_hours != null ? editing.total_hours : ''}"></label>
+                <label>Days <input type="text" name="schedule_days" placeholder="e.g. Mon, Wed, Fri" value="${editing ? escapeHtml(editing.schedule_days || '') : ''}"></label>
+            </div>
+            <label>Time <input type="text" name="schedule_time" placeholder="e.g. 18:00 - 20:00" value="${editing ? escapeHtml(editing.schedule_time || '') : ''}"></label>
+            ${editing ? '' : `<label>Photo <input type="file" name="profile_photo_path" accept="image/*"></label>`}
+            <div class='course_form_error'></div>
+            <div class='confirm_modal_actions d-flex gap-2 justify-content-end'>
+                <button type='button' class='btn btn-secondary cancel'>Cancel</button>
+                <button type='submit' class='btn btn-success save'>${editing ? 'Save changes' : 'Add Course'}</button>
+            </div>
+        </form>`
+    modal.querySelector('.cancel').addEventListener('click', ()=>modal.remove())
+    modal.querySelector('.course_form').addEventListener('submit', e=>{
+        e.preventDefault()
+        const errorEl = modal.querySelector('.course_form_error')
+        if(editing){
+            const fields = ['name','description','price','languages','total_hours','schedule_days','schedule_time']
+            const payload = {}
+            fields.forEach(f => { payload[f] = new FormData(e.target).get(f) })
+            fetch(`update_course/${editing.id}`, {
+                method: 'PUT',
+                headers: {'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json', 'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json().then(body => ({ok: response.ok, body})))
+            .then(({ok, body})=>{
+                if(!ok) throw new Error(body.message || 'Failed to save course')
+                modal.remove()
+                loadTeachersAndCourses()
+            })
+            .catch(error=>{ errorEl.textContent = error.message })
         } else {
-            option.style.display = '';
+            const formdata = new FormData(e.target)
+            fetch('add_course', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json'},
+                body: formdata
+            })
+            .then(response => response.json().then(body => ({ok: response.ok, body})))
+            .then(({ok, body})=>{
+                if(!ok) throw new Error(body.error || body.message || 'Failed to add course')
+                modal.remove()
+                loadTeachersAndCourses()
+            })
+            .catch(error=>{ errorEl.textContent = error.message })
         }
-    });
-});
+    })
+    document.body.appendChild(modal)
+}
+function deleteCourse(courseId){
+    if(!confirm('Delete this course?')) return
+    fetch(`delete_course/${courseId}`, {
+        method: 'DELETE',
+        headers: {'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json'}
+    })
+    .then(response=>{
+        if(!response.ok) throw new Error('Failed to delete course')
+        return response.json()
+    })
+    .then(()=>loadTeachersAndCourses())
+    .catch(error=>alert(error.message))
+}
 
-
-document.querySelector('.CodeBox').addEventListener('click',()=>{
-    window.location.href='dashboard'
+fetch('authid').then(r=>r.json()).then(id=>{
+    my_id = id
+    loadTeachersAndCourses()
 })
+
+const codeBoxLogo = document.querySelector('.CodeBox')
+if(codeBoxLogo){
+    codeBoxLogo.addEventListener('click',()=>{
+        window.location.href='dashboard'
+    })
+}

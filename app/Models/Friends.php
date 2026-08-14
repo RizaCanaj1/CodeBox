@@ -10,6 +10,7 @@ class Friends extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
-        'from_user_id'
+        'from_user_id',
+        'status',
     ];
 }

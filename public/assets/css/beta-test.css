@@ -1,4 +1,42 @@
-iframe{
+/* A bordered container around the preview iframe (rather than an unbounded
+   full-page iframe) — the previewed page gets its own scrollbar inside
+   this box if it's taller than the box, instead of stretching the outer
+   page. Scoped to .beta_window itself, not `body` — body is shared page
+   chrome (it also wraps the nav bar via the layout), so centering/flexing
+   it directly squeezes the whole page including the navbar into a narrow
+   column instead of just this preview. */
+.beta_window{
+    width: 90%;
+    margin: 24px auto;
+    height: 82vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    box-shadow: var(--t-shadow);
+    overflow: hidden;
+}
+.informations{
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--t-border);
+    font-size: 0.8rem;
+    color: var(--t-text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.informations.text-danger{
+    color: var(--t-accent-2);
+}
+.fill_content{
+    flex: 1;
+    min-height: 0;
+}
+.fill_content iframe{
     width: 100%;
-    height: 80dvh;
+    height: 100%;
+    border: none;
+    display: block;
 }

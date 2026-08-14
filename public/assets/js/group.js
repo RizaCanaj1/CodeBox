@@ -8,6 +8,7 @@ let users = null
 let settings = null
 let roles = []
 let manageable_folders = null
+let downloadable_folders = null
 let chatPollTimer = null
 
 function escapeHtml(str) {
@@ -38,13 +39,18 @@ group_features.forEach(field=>{
     field.addEventListener('click',()=>{
         let field_attributes = field.getAttribute('class').split(' ')
         if(field_attributes[field_attributes.length-1]!='active'){
-            group_features.forEach(x=>{
-                x.classList.remove('active')
+            // guardUnsavedChanges() is a no-op (calls straight through) when
+            // there's no open, dirty editor — only actually prompts when
+            // switching tabs would otherwise silently abandon an edit.
+            guardUnsavedChanges(()=>{
+                group_features.forEach(x=>{
+                    x.classList.remove('active')
+                })
+                field.classList.add('active')
+                screen.classList.add('remove-previous-screen');
+                stopChatPolling()
+                setTimeout(()=>{screenUpdate(field_attributes[0].split('-')[1])},200)
             })
-            field.classList.add('active')
-            screen.classList.add('remove-previous-screen');
-            stopChatPolling()
-            setTimeout(()=>{screenUpdate(field_attributes[0].split('-')[1])},200)
         }
     })
 })
@@ -56,6 +62,7 @@ function loadGroupData(){
         users = data.users
         roles = data.roles
         manageable_folders = data.manageable_folders
+        downloadable_folders = data.downloadable_folders
         return data
     })
 }
@@ -205,8 +212,8 @@ function screenUpdate(topic){
                 users.forEach(user=>{
                     const memberRoles = roles.filter(r => r.members.some(m => m.id == user.from_user_id))
                     const rolesHtml = amCreator
-                        ? roles.map(r => `<label class='role-check'><input type='checkbox' data-role-id='${r.id}' ${memberRoles.some(mr=>mr.id===r.id) ? 'checked' : ''}> ${escapeHtml(r.name)}</label>`).join('')
-                        : memberRoles.map(r => `<span class='role-badge'>${escapeHtml(r.name)}</span>`).join('')
+                        ? roles.map(r => `<label class='role-check' style="--role_chip_color: ${r.color || DEFAULT_ROLE_COLOR}"><input type='checkbox' data-role-id='${r.id}' ${memberRoles.some(mr=>mr.id===r.id) ? 'checked' : ''}> ${escapeHtml(r.name)}</label>`).join('')
+                        : memberRoles.map(r => `<span class='role-badge' style="background-color: ${r.color || DEFAULT_ROLE_COLOR}">${escapeHtml(r.name)}</span>`).join('')
                     membersWrap.innerHTML+=`<div class="user m-2 d-flex gap-2 align-items-center flex-wrap" id="user-${user.from_user_id}">
                         <img class="user-profile-image" src="../assets/images/user.png" alt="User-image">
                         <p class='ms-2'>${escapeHtml(user.user.name)}</p>
@@ -261,7 +268,41 @@ function screenUpdate(topic){
             Promise.all([loadGroupData(), check_projet(group_id)])
             .then(([, projectData])=>{
                 if(projectData.error!=false){
-                    document.querySelector(".code").innerHTML = file_model (projectData);
+                    // A persistent sidebar (file tree) + main area (tab bar
+                    // + editor) — file_model() only fills the sidebar now,
+                    // it no longer replaces the whole tab on every click.
+                    // The fullscreen button lives in its own top strip,
+                    // OUTSIDE .code_body, on purpose: .code_main (and
+                    // everything inside it) is hidden whenever no tabs are
+                    // open, which would strand anyone who closed every file
+                    // while fullscreen with no way back out. Giving it a
+                    // dedicated row (instead of floating it over the sidebar
+                    // with absolute positioning) also means it never
+                    // overlaps the sidebar's own header buttons.
+                    document.querySelector(".code").innerHTML = `
+                        <div class='code_topbar'>
+                            <button type='button' class='code-fullscreen-btn' id='code-fullscreen-btn' title="Fullscreen"><i class="fa-solid fa-expand"></i><i class="fa-solid fa-compress"></i></button>
+                        </div>
+                        <div class='code_body'>
+                            <div class='code_sidebar'>${file_model(projectData)}</div>
+                            <div class='code_main'>
+                                <div class='code_tabs' id='code_tabs'></div>
+                                <div class='code_editor_area' id='code_editor_area'></div>
+                            </div>
+                        </div>`
+                    document.getElementById('code-fullscreen-btn').addEventListener('click', () => {
+                        document.querySelector('.code').classList.toggle('code_fullscreen')
+                        if(sharedCM) sharedCM.refresh()
+                    })
+                    // openTabs/sharedCM survive leaving and re-entering the
+                    // Code tab (they're plain JS vars, not tied to this DOM)
+                    // — if there's already open work, restore it into the
+                    // freshly-rebuilt shell instead of losing it.
+                    if(typeof openTabs !== 'undefined' && openTabs.length){
+                        renderTabs()
+                        mountActiveEditor()
+                    }
+                    updateCodeLayoutState()
                 }
                 else{
                     const canUpload = manageable_folders === null || (manageable_folders && manageable_folders.length > 0)

@@ -12,11 +12,14 @@ class GroupRoles extends Model
         'group_id',
         'name',
         'from_user_id',
-        'can_manage_files'
+        'can_manage_files',
+        'can_download',
+        'color'
     ];
 
     protected $casts = [
         'can_manage_files' => 'boolean',
+        'can_download' => 'boolean',
     ];
 
     public function folders()

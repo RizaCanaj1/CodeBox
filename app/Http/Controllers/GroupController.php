@@ -65,8 +65,8 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'can_manage_files' => 'boolean',
-            'folders' => 'array',
-            'folders.*' => 'string|max:255',
+            'can_download' => 'boolean',
+            'color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/i'],
         ]);
 
         $role = GroupRoles::create([
@@ -74,14 +74,9 @@ class GroupController extends Controller
             'name' => $request->input('name'),
             'from_user_id' => auth()->id(),
             'can_manage_files' => $request->boolean('can_manage_files'),
+            'can_download' => $request->boolean('can_download'),
+            'color' => $request->input('color'),
         ]);
-
-        foreach (array_unique($request->input('folders', [])) as $folder) {
-            GroupRoleFolder::create([
-                'group_role_id' => $role->id,
-                'folder_name' => $folder,
-            ]);
-        }
 
         return response()->json($role->load('folders'));
     }
@@ -94,24 +89,73 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'can_manage_files' => 'boolean',
-            'folders' => 'array',
-            'folders.*' => 'string|max:255',
+            'can_download' => 'boolean',
+            'color' => ['nullable', 'regex:/^#[0-9a-f]{6}$/i'],
         ]);
 
         $role->update([
             'name' => $request->input('name'),
             'can_manage_files' => $request->boolean('can_manage_files'),
+            'can_download' => $request->boolean('can_download'),
+            'color' => $request->input('color'),
         ]);
 
-        $role->folders()->delete();
-        foreach (array_unique($request->input('folders', [])) as $folder) {
+        return response()->json($role->load('folders'));
+    }
+
+    // Folder access is now assigned from the file manager itself (pick a
+    // folder there, decide which roles can reach it) instead of from the
+    // role form — these two endpoints are its backend: read which roles
+    // are currently scoped to an exact folder path, and sync that set.
+    // $path may be a nested path ("Alpha/Sub") — group_role_folders.folder_name
+    // just stores whatever full relative path it's given, and Posts'
+    // pathCoveredByAny()/pathHasAllowedDescendant() interpret it as covering
+    // that folder's entire subtree wherever access is actually checked.
+    public function get_folder_roles(Request $request, $groupId)
+    {
+        $this->authorizeCreator($groupId);
+
+        $request->validate(['path' => 'required|string']);
+        $path = ltrim($request->input('path'), '/');
+
+        $roleIds = GroupRoleFolder::where('folder_name', $path)
+            ->whereHas('role', fn ($q) => $q->where('group_id', $groupId))
+            ->pluck('group_role_id');
+
+        return response()->json(['role_ids' => $roleIds]);
+    }
+
+    public function set_folder_roles(Request $request, $groupId)
+    {
+        $this->authorizeCreator($groupId);
+
+        $request->validate([
+            'path' => 'required|string',
+            'role_ids' => 'array',
+            'role_ids.*' => 'integer',
+        ]);
+        $path = ltrim($request->input('path'), '/');
+
+        $groupRoleIds = GroupRoles::where('group_id', $groupId)->pluck('id');
+        $requestedIds = collect($request->input('role_ids', []))->intersect($groupRoleIds)->unique()->values();
+
+        GroupRoleFolder::where('folder_name', $path)
+            ->whereIn('group_role_id', $groupRoleIds)
+            ->whereNotIn('group_role_id', $requestedIds)
+            ->delete();
+
+        $existingIds = GroupRoleFolder::where('folder_name', $path)
+            ->whereIn('group_role_id', $requestedIds)
+            ->pluck('group_role_id');
+
+        foreach ($requestedIds->diff($existingIds) as $roleId) {
             GroupRoleFolder::create([
-                'group_role_id' => $role->id,
-                'folder_name' => $folder,
+                'group_role_id' => $roleId,
+                'folder_name' => $path,
             ]);
         }
 
-        return response()->json($role->load('folders'));
+        return response()->json(['role_ids' => $requestedIds]);
     }
 
     public function delete_group_role($groupId, $roleId)

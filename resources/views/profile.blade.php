@@ -18,6 +18,7 @@
                         <button class="btn-edit d-none opacity-0">Edit</button>
                     </div>
                 </div>
+                <div class='badges-row'></div>
                 <h4>Infos:</h4>
                 <div class='p-infos'>
                 <form class='d-flex flex-column gap-2'>

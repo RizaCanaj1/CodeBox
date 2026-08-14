@@ -13,6 +13,15 @@ class Courses extends Model
         'name',
         'description',
         'price',
+        'languages',
+        'total_hours',
+        'schedule_days',
+        'schedule_time',
         'profile_photo_path',
     ];
+
+    public function teacher()
+    {
+        return $this->belongsTo(Teachers::class, 'teacher_id');
+    }
 }

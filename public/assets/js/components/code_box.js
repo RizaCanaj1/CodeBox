@@ -240,9 +240,22 @@ function open_code(event,id,code,file_extention){
     let extension;
     code_opened=true;
     
-    let code_box 
+    let code_box
     if(!event.target) code_box = event
     else code_box = event.target.closest('pre')
+    // 17. .scroll-button/.code-search only ever had their `top` recomputed
+    //     from code_box's own position (see code_box_scroll below) — `right`
+    //     was always the static CSS default (10px/24px), which anchors to
+    //     the *viewport's* right edge once they become `position: fixed`,
+    //     not to code_box's own right edge. Since the codebox is rarely
+    //     flush with the viewport (a feed card, the group Code tab panel,
+    //     etc.), that's what made both drift far to the right of the actual
+    //     box. Mirrors the existing top computation, just for the
+    //     horizontal axis.
+    function rightOffsetFor(originalRightPx){
+        const boxRect = code_box.getBoundingClientRect()
+        return `${window.innerWidth - boxRect.right + originalRightPx}px`
+    }
     let scroll_button = document.createElement('button');
     scroll_button.classList.add('scroll-button','d-none')
     scroll_button.innerHTML='<i class="fa-solid fa-chevron-up"></i>'
@@ -521,14 +534,17 @@ function open_code(event,id,code,file_extention){
         if(code_box.scrollTop > 20){
             search_bar.style.position='fixed'
             search_bar.style.top = `${rect.top+20}px`
+            search_bar.style.right = rightOffsetFor(10)
         }
         else{
             search_bar.style.position='absolute'
             search_bar.style.top = `auto`
+            search_bar.style.right = ''
         }
         if(code_box.scrollTop > 200){
             scroll_button.classList.remove('d-none')
             scroll_button.style.top = `${rect.top+230}px`
+            scroll_button.style.right = rightOffsetFor(24)
             code_box.classList.add('scrolled')
         }
         else{
@@ -560,6 +576,7 @@ function open_code(event,id,code,file_extention){
             if(code_box.scrollTop > 20){
                 search_bar.style.position='fixed'
                 search_bar.style.top = `${code_box.getBoundingClientRect().top+20}px`
+                search_bar.style.right = rightOffsetFor(10)
             }
             else if(!show_searchbar){
                 search_bar.classList.add('d-none')
@@ -567,6 +584,7 @@ function open_code(event,id,code,file_extention){
             else{
                 search_bar.style.position='absolute'
                 search_bar.style.top = `auto`
+                search_bar.style.right = ''
             }
             scroll_button.classList.add('d-none')
         }
@@ -636,7 +654,9 @@ function open_code(event,id,code,file_extention){
     let remove_code = (searcher,scroller)=>{
         if(searcher&&scroller){
             searcher.style.top = `${code_box.getBoundingClientRect().top}px`
+            searcher.style.right = rightOffsetFor(10)
             scroller.style.top = `${code_box.getBoundingClientRect().top+320}px`
+            scroller.style.right = rightOffsetFor(24)
             searcher.classList.add('d-none')
             scroller.classList.add('d-none')
         }

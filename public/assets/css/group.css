@@ -165,32 +165,157 @@ div[class^='message-'] pre{
 .screen .code .folder,.screen .code .file{
     transition: all .5s;
 }
+/* VS Code-style layout: a persistent sidebar (file tree, never destroyed
+   by opening a file) next to a main area (tab strip + single editor pane).
+   Replaces the old behavior where clicking a file replaced this entire
+   container with a one-off read-only view.
+   .code is a column: a slim top strip (just the fullscreen toggle — kept
+   in its own row instead of floated over the sidebar so it can never
+   overlap the sidebar's own header buttons) above .code_body (the actual
+   sidebar + main split). */
 .screen .code{
     height: 95%;
-    overflow-y: scroll;
-    padding: 10px 0;
-}
-.screen .code .file_position{
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+/* An ancestor's overflow:hidden clips position:fixed descendants no matter
+   how they're positioned — .screen itself has overflow:hidden (for the
+   rounded-corner chat/etc. panels), which was silently clipping the
+   fullscreen overlay down to .screen's own small box. Only relax it while
+   fullscreen is actually active. */
+.screen:has(.code_fullscreen){
+    overflow: visible;
+}
+.code_topbar{
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    padding: 6px 10px;
+}
+.code_body{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+}
+/* Full width by default — nothing to shrink the tree for until a tab is
+   open. Only gets a fixed compact width once .sidebar-compact is applied
+   (as soon as the first file opens), matching the VS Code activity-bar
+   pattern the user asked for. */
+.code_sidebar{
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 0;
+    border-right: 1px solid var(--t-border);
+    transition: flex-basis .2s ease;
+}
+.code_sidebar.sidebar-compact{
+    flex: 0 0 260px;
+    width: 260px;
+}
+.code_sidebar::-webkit-scrollbar{
+    margin-right: -10px;
+    background-color: transparent;
+}
+.code_sidebar::-webkit-scrollbar-thumb{
+    border-radius: 7px;
+    background: var(--t-border-strong);
+}
+/* Hidden until at least one tab is open — with the tree full-width and no
+   file selected there is nothing to show here yet. */
+.code_main{
+    display: none;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
+}
+.code_main.has-tabs{
+    display: flex;
+}
+/* ---------- tab strip ---------- */
+.code_tabs{
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    background: var(--t-surface-2);
+    border-bottom: 1px solid var(--t-border);
+    flex-shrink: 0;
+}
+.code_tab{
+    display: flex;
     align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+    background: var(--t-surface-2);
+    border-right: 1px solid var(--t-border);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.code_tab .file_icon{
+    font-size: 0.8rem;
+    color: var(--t-text-faint);
+}
+.code_tab.active{
+    background: var(--t-surface);
     color: var(--t-text);
+    box-shadow: inset 0 -2px 0 var(--t-accent);
 }
-.file_position .edit_button{
-    margin-right: 20px;
+.code_tab_name{
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.file_position .edit_button button{
-    width: 45px;
-    height: 45px;
-    padding: 10px;
+.code_tab_dot{
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background-color: var(--t-surface-2);
+    background: var(--t-accent-2);
+    flex-shrink: 0;
+    visibility: hidden;
+}
+.code_tab.dirty .code_tab_dot{
+    visibility: visible;
+}
+.code_tab_close{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.code_tab_close:hover{
+    background: var(--t-border-strong);
     color: var(--t-text);
 }
-.file_position .edit_button button:hover{
-    border-radius: 20px;
-    background-color: var(--t-accent-soft);
-    color: var(--t-accent);
+/* ---------- editor pane ---------- */
+.code_editor_area{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+.code_editor_chrome{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 .screen .code:has(.folder.open_folder) .folder
 {
@@ -207,9 +332,27 @@ div[class^='message-'] pre{
 .folder,.file{
     position: relative;
     color: var(--t-text);
+    min-width: 0;
 }
 .folder,.file{
     user-select: none;
+}
+.folder .name, .file .name{
+    min-width: 0;
+}
+/* The visible "gap" between rows was never a margin/padding on the row
+   itself — it was <h5>/<p>'s default browser margins inside the row's flex
+   layout (each one adds its own top/bottom whitespace as a flex item).
+   Reset those and give the row its own small, consistent padding instead. */
+.folder .name h5, .file .name p{
+    margin: 0;
+}
+.folder, .file{
+    padding: 5px 12px;
+    border-radius: 6px;
+}
+.folder:hover, .file:hover{
+    background: var(--t-surface-2);
 }
 .folder .folder_icon,.folder .name ,.file .file_icon ,.file .name{
     cursor: pointer;
@@ -228,33 +371,56 @@ div[class^='message-'] pre{
     color: var(--t-text-faint);
     font-size: 0.85rem;
 }
-.folder .file_icon{
-    width: 0px;
-    height: 0px;
-    position: absolute;
+/* Once a file is open, fade away the informational bits (counts/size/type/
+   last-updated) in the sidebar so it reads as a compact file tree instead
+   of a detail listing — action buttons (delete/download/manage-access)
+   stay put, only the text labels fade. */
+.code_sidebar.sidebar-compact .info .folders,
+.code_sidebar.sidebar-compact .info .files,
+.code_sidebar.sidebar-compact .info .size,
+.code_sidebar.sidebar-compact .info .type,
+.code_sidebar.sidebar-compact .info .last_updated{
     opacity: 0;
-    top: 0px;
-    left: 0px;
-    color: var(--t-text-faint);
-    z-index: 1;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity .25s ease, max-width .25s ease;
 }
-.folder:hover .file_icon{
-    top: -2px;
-    left: -10px;
-    rotate: -17deg;
+/* With a file open, the sidebar is just for navigating — no counts, no
+   icons, no metadata, just names. Tighten row padding/gap and shrink the
+   name text so it reads as a compact tree instead of stretched-out list
+   items, and drop the folder/file icons entirely (name text alone is
+   enough once nothing else is competing for space). */
+.code_sidebar.sidebar-compact .folder,
+.code_sidebar.sidebar-compact .file{
+    padding: 2px 10px;
+    transition: padding .2s ease;
 }
-.folder:hover .file_icon:nth-child(2){
-    top: -5px;
-    left: 0px;
-    rotate: 0deg;
+.code_sidebar.sidebar-compact .name{
+    gap: 0 !important;
+    transition: gap .2s ease;
 }
-.folder:hover .file_icon:nth-child(3){
-    top: -5px;
-    left: 12px;
-    rotate: 10deg;
+.code_sidebar.sidebar-compact .name h5,
+.code_sidebar.sidebar-compact .name .file_name{
+    font-size: 0.8rem;
+    font-weight: 500;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: font-size .2s ease;
 }
-.folder:hover .file_icon{
-    opacity: 1;
+.code_sidebar.sidebar-compact .folder_icon,
+.code_sidebar.sidebar-compact .file .file_icon,
+.code_sidebar.sidebar-compact .file .extention{
+    display: none;
+}
+/* Header simplifies down to just the back button + current path — the
+   download/add-item control cluster (the second direct child of
+   .project_info) is the "other information" to drop while browsing with a
+   file open. */
+.code_sidebar.sidebar-compact .project_info > div:not(.folder_name){
+    display: none;
 }
 .file .extention{
     rotate: -90deg;
@@ -316,14 +482,6 @@ div[class^='message-'] pre{
         top: 60px;
     }
 }
-.screen .codeblock {
-    margin-top: 20px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    width: 100%;
-    height: 85%;
-    color: var(--t-text);
-}
 
 /* ---------- roles (Settings tab) ---------- */
 .screen .roles {
@@ -339,13 +497,13 @@ div[class^='message-'] pre{
     gap: 6px;
     padding: 5px 10px 5px 15px;
     border-radius: 20px;
-    background-color: var(--role_color);
     color: #fff;
     font-size: 0.85rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
-.screen .roles .role .manage-badge{
+.screen .roles .role .role-badge-icon{
     font-size: 0.75rem;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 .screen .roles .role .role-action{
     background: rgba(255,255,255,0.18);
@@ -366,21 +524,6 @@ div[class^='message-'] pre{
 .screen .roles .role .role-delete:hover{
     background: var(--t-accent-2);
 }
-.manage-check{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
-    color: var(--t-text-dim);
-}
-.roles .buttons .cancel{
-    background: var(--t-surface-2);
-    color: var(--t-text-dim);
-    border: 1px solid var(--t-border);
-    border-radius: 8px;
-    padding: 6px 16px;
-    cursor: pointer;
-}
 .screen .roles .add_role{
     user-select: none;
     padding: 5px 15px;
@@ -394,42 +537,164 @@ div[class^='message-'] pre{
     border-color: var(--t-accent);
     color: var(--t-accent);
 }
-.screen .roles .add_role_form{
+
+/* ---------- role form (professional redesign) ---------- */
+.role_form{
     width: 100%;
     background: var(--t-surface);
     border: 1px solid var(--t-border);
-    border-radius: 10px;
-    padding: 14px;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: var(--t-shadow);
 }
-.screen .roles .add_role_form input[type="text"]{
+.role_form_row{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.role_form_label{
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--t-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.role_form_name_row{
+    width: 100%;
+}
+.role_color_input{
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    background: var(--t-surface-2);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.role_name_input{
+    flex: 1;
     border-radius: 8px;
     border: 1px solid var(--t-border);
     background: var(--t-surface-2);
     color: var(--t-text);
-    padding: 7px 10px;
+    padding: 9px 12px;
+    font-size: 0.95rem;
+}
+.role_form_switches{
+    flex-direction: column;
+    gap: 10px;
+}
+.role_switch{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    background: var(--t-surface-2);
+    cursor: pointer;
+    user-select: none;
+}
+.role_switch input[type="checkbox"]{
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.role_switch_track{
+    flex-shrink: 0;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--t-border-strong);
+    position: relative;
+    margin-top: 2px;
+    transition: background-color .15s ease;
+}
+.role_switch_track::after{
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--t-surface);
+    transition: transform .15s ease;
+}
+.role_switch input:checked + .role_switch_track{
+    background: var(--t-accent);
+}
+.role_switch input:checked + .role_switch_track::after{
+    transform: translateX(14px);
+}
+.role_switch_text{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.85rem;
+    color: var(--t-text);
+}
+.role_switch_text small{
+    color: var(--t-text-faint);
+    font-size: 0.75rem;
 }
 .folders_hint{
     font-size: 0.78rem;
     color: var(--t-text-faint);
+    margin: 0;
 }
 .role_folders_list{
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
-.folder-check{
+.folder-chip{
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--t-text-dim);
+    background: var(--t-surface-2);
+    border: 1px solid var(--t-border);
+    border-radius: 999px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
-.roles .buttons .save{
+.folder-chip:hover{
+    border-color: var(--t-accent);
+}
+.folder-chip.selected{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border-color: var(--t-accent);
+    font-weight: 600;
+}
+.role_form_actions{
+    padding-top: 4px;
+    border-top: 1px solid var(--t-border);
+}
+.role_form_error{
+    margin-right: auto;
+}
+.role_form_actions .cancel{
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    padding: 7px 18px;
+    cursor: pointer;
+}
+.role_form_actions .save{
     background: var(--t-accent);
     color: #05130e;
     border: none;
     border-radius: 8px;
-    padding: 6px 16px;
+    padding: 7px 18px;
     font-weight: 600;
     cursor: pointer;
 }
@@ -451,11 +716,11 @@ div[class^='message-'] pre{
     margin-left: auto;
 }
 .role-badge{
-    background: var(--t-accent-2-soft);
-    color: var(--t-accent-2);
+    color: #fff;
     border-radius: 999px;
     padding: 3px 10px;
     font-size: 0.78rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
 }
 .role-check{
     display: inline-flex;
@@ -464,6 +729,7 @@ div[class^='message-'] pre{
     font-size: 0.8rem;
     color: var(--t-text-dim);
     background: var(--t-surface-2);
+    border: 1px solid var(--role_chip_color, var(--t-border));
     border-radius: 999px;
     padding: 3px 10px;
 }
@@ -589,28 +855,6 @@ div[class^='message-'] pre{
     justify-content: space-between;
     align-items: center;
 }
-.file_actions{
-    display: flex;
-    gap: 6px;
-    margin-right: 20px;
-}
-.file-edit-btn, .file-delete-btn, .file-open-btn{
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--t-surface-2);
-    color: var(--t-text-dim);
-    border: none;
-    cursor: pointer;
-}
-.file-edit-btn:hover, .file-open-btn:hover{
-    background: var(--t-accent-soft);
-    color: var(--t-accent);
-}
-.file-delete-btn:hover{
-    background: var(--t-accent-2-soft);
-    color: var(--t-accent-2);
-}
 .item-open{
     background: none;
     border: none;
@@ -628,16 +872,65 @@ div[class^='message-'] pre{
     color: var(--t-accent);
     background: var(--t-accent-soft);
 }
-
-/* Styled to match .codeblock (same dark surface/font) rather than
-   introducing a new visual language for the editor. */
-.code_editor{
-    margin-top: 20px;
-    height: 85%;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.item-download{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, background-color .15s ease;
 }
+.file:hover .item-download{
+    opacity: 1;
+}
+.item-download:hover{
+    color: var(--t-accent);
+    background: var(--t-accent-soft);
+}
+.manage-access-btn{
+    background: none;
+    border: none;
+    color: var(--t-text-faint);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity .15s ease, color .15s ease, background-color .15s ease;
+}
+.folder:hover .manage-access-btn{
+    opacity: 1;
+}
+.manage-access-btn:hover{
+    color: var(--t-accent);
+    background: var(--t-accent-soft);
+}
+.item-select-checkbox{
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--t-accent);
+}
+.select-toggle-btn.active{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+}
+.download-selected-btn{
+    background: var(--t-accent);
+    color: #05130e;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.download-selected-btn:hover{
+    filter: brightness(1.05);
+}
+
 .code_editor_cm{
     flex: 1;
     min-height: 260px;
@@ -654,51 +947,296 @@ div[class^='message-'] pre{
     font-size: 0.8rem;
     color: var(--t-accent-2);
 }
+/* ---------- Run output panel ---------- */
+.code_run_output{
+    flex-shrink: 0;
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    background: var(--t-surface-2);
+    overflow: hidden;
+}
+.code_run_output_header{
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--t-border);
+    flex-shrink: 0;
+}
+.code_run_output_title{
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--t-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.code_run_output_close{
+    border: none;
+    background: transparent;
+    color: var(--t-text-faint);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.code_run_output_close:hover{
+    color: var(--t-text);
+}
+.code_run_output_body{
+    margin: 0;
+    padding: 10px;
+    overflow: auto;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,monospace;
+    font-size: 0.85rem;
+    color: var(--t-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.code_run_output_body.has-error{
+    color: var(--t-accent-2);
+}
+
+/* ---------- editor toolbar (VS Code-style icon bar) ---------- */
+.code_editor_toolbar{
+    padding: 0 2px;
+}
+.editor-tool-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: 1px solid var(--t-border);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.editor-tool-btn:hover, .editor-tool-btn.active{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border-color: var(--t-accent);
+}
+.editor-tool-btn:disabled{
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* Persistent fullscreen/focus toggle — lives in its own top strip (.code_topbar),
+   not inside .code_editor_chrome or floated over the sidebar, so it stays
+   reachable even when every tab is closed and .code_main is hidden, and
+   never overlaps the sidebar's own header buttons. Without this a user
+   could enter fullscreen, close all files, and have no way out. */
+.code-fullscreen-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: 1px solid var(--t-border);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.code-fullscreen-btn:hover{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border-color: var(--t-accent);
+}
+.code-fullscreen-btn .fa-compress{
+    display: none;
+}
+.code.code_fullscreen .code-fullscreen-btn .fa-expand{
+    display: none;
+}
+.code.code_fullscreen .code-fullscreen-btn .fa-compress{
+    display: inline;
+}
+/* Widened to the whole Code tab (sidebar + tabs + editor together) instead
+   of just the editor pane — the file tree and open tabs stay visible and
+   in the same place while fullscreen, same layout as the normal state.
+   Selector is `.screen .code.code_fullscreen` (not just `.code_fullscreen`)
+   specifically to out-specificity `.screen .code{height:95%;padding:0}` —
+   a bare single-class selector here was silently losing that fight, so
+   height/padding never actually changed while "fullscreen" was toggled. */
+.screen .code.code_fullscreen{
+    position: fixed;
+    inset: 16px;
+    z-index: 999;
+    height: auto;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: var(--t-shadow);
+}
+
+/* ---------- unsaved-changes confirm modal ---------- */
+.confirm_modal{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 12px;
+    padding: 20px;
+    width: min(420px, 90vw);
+    box-shadow: var(--t-shadow);
+    color: var(--t-text);
+}
+.confirm_modal::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--t-overlay);
+    z-index: -1;
+}
+.confirm_modal_head strong{
+    font-size: 1.05rem;
+}
+.confirm_modal p{
+    color: var(--t-text-dim);
+    font-size: 0.9rem;
+    margin: 10px 0 18px;
+}
+
+/* ---------- manage-access modal (folder → roles, file manager) ---------- */
+.access_modal{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 12px;
+    padding: 20px;
+    width: min(420px, 90vw);
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--t-shadow);
+    color: var(--t-text);
+}
+.access_modal::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--t-overlay);
+    z-index: -1;
+}
+.access_modal p{
+    color: var(--t-text-dim);
+    font-size: 0.85rem;
+    margin: 10px 0 14px;
+}
+.access_modal_roles{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.access_role_check{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--t-border);
+    border-left: 4px solid var(--role_chip_color, var(--t-border));
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+.access_modal_error{
+    margin-right: auto;
+}
 
 /* ---------- CodeMirror theme (matches .codeblock's palette) ---------- */
+/* Base surface/border/text tokens flip with the site's light/dark toggle
+   via the shared --t-* tokens. The syntax-highlight accents were tuned as
+   light pastels for a permanently-dark editor, which read fine on
+   var(--t-surface-2) in dark mode but wash out on a near-white light-mode
+   surface — so those five swap to darker/more-saturated variants in light
+   mode via their own --cm-* tokens, same override pattern as theme.css. */
+.cm-s-codebox{
+    --cm-keyword: #c2185b;
+    --cm-string: #098658;
+    --cm-atom: #7c1fa2;
+    --cm-number: #b35900;
+    --cm-property: #0451a5;
+}
+:root[data-theme="dark"] .cm-s-codebox{
+    --cm-keyword: #fd7a7a;
+    --cm-string: #a8e08f;
+    --cm-atom: #d29aff;
+    --cm-number: #ffcf7a;
+    --cm-property: #7ac6ff;
+}
+@media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .cm-s-codebox{
+        --cm-keyword: #fd7a7a;
+        --cm-string: #a8e08f;
+        --cm-atom: #d29aff;
+        --cm-number: #ffcf7a;
+        --cm-property: #7ac6ff;
+    }
+}
 .cm-s-codebox.CodeMirror{
-    background: rgb(50,50,50);
-    color: #f5f5f5;
-    border: 5px solid rgb(22,22,22);
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    border: 5px solid var(--t-border-strong);
     border-radius: 5px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.9rem;
 }
 .cm-s-codebox .CodeMirror-gutters{
-    background: rgb(40,40,40);
-    border-right: 1px solid rgb(22,22,22);
+    background: var(--t-surface);
+    border-right: 1px solid var(--t-border-strong);
 }
 .cm-s-codebox .CodeMirror-linenumber{
-    color: rgba(255,255,255,0.4);
+    color: var(--t-text-faint);
 }
 .cm-s-codebox .CodeMirror-cursor{
-    border-left: 1px solid #fff;
+    border-left: 1px solid var(--t-text);
 }
 .cm-s-codebox .CodeMirror-selected{
-    background: rgba(255,255,255,0.15);
+    background: var(--t-border-strong);
 }
-.cm-s-codebox .cm-keyword{ color: #fd7a7a; }
-.cm-s-codebox .cm-string, .cm-s-codebox .cm-string-2{ color: #a8e08f; }
-.cm-s-codebox .cm-comment{ color: rgba(255,255,255,0.4); font-style: italic; }
-.cm-s-codebox .cm-atom{ color: #d29aff; }
-.cm-s-codebox .cm-number{ color: #ffcf7a; }
-.cm-s-codebox .cm-property, .cm-s-codebox .cm-attribute{ color: #7ac6ff; }
-.cm-s-codebox .cm-tag{ color: #fd7a7a; }
-.cm-s-codebox .cm-variable, .cm-s-codebox .cm-variable-2{ color: #f5f5f5; }
-.cm-s-codebox .cm-def{ color: #7ac6ff; }
-.cm-s-codebox .cm-meta{ color: rgba(255,255,255,0.6); }
+.cm-s-codebox .cm-keyword{ color: var(--cm-keyword); }
+.cm-s-codebox .cm-string, .cm-s-codebox .cm-string-2{ color: var(--cm-string); }
+.cm-s-codebox .cm-comment{ color: var(--t-text-faint); font-style: italic; }
+.cm-s-codebox .cm-atom{ color: var(--cm-atom); }
+.cm-s-codebox .cm-number{ color: var(--cm-number); }
+.cm-s-codebox .cm-property, .cm-s-codebox .cm-attribute{ color: var(--cm-property); }
+.cm-s-codebox .cm-tag{ color: var(--cm-keyword); }
+.cm-s-codebox .cm-variable, .cm-s-codebox .cm-variable-2{ color: var(--t-text); }
+.cm-s-codebox .cm-def{ color: var(--cm-property); }
+.cm-s-codebox .cm-meta{ color: var(--t-text-dim); }
 
-/* Autocomplete dropdown */
+/* Autocomplete dropdown — CodeMirror's addon appends this straight to
+   <body> (not inside the editor), so its z-index has to beat everything
+   else that can be visible at the same time, not just editor-local
+   elements. The addon's own default (10) loses to .code_fullscreen's 999,
+   which made the whole popup render invisibly behind the editor whenever
+   fullscreen was active — the most common way this editor actually gets
+   used. */
 .CodeMirror-hints{
-    background: rgb(40,40,40);
-    border: 1px solid rgb(22,22,22);
-    color: #f5f5f5;
+    z-index: 1200;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border-strong);
+    color: var(--t-text);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.85rem;
     box-shadow: var(--t-shadow);
 }
 .CodeMirror-hint{
-    color: #f5f5f5;
+    color: var(--t-text);
 }
 li.CodeMirror-hint-active{
     background: var(--t-accent);

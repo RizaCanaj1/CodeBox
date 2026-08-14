@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BugHunterController;
 use App\Http\Controllers\CrudController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\GroupController;
@@ -34,6 +35,14 @@ Route::post('/dashboard',[PostController::class, 'create_post'])->name('create_p
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
 Route::get('/authid',[CrudController::class,'get_auth']);
 Route::get('/course', function () { return view('course');});
+// Deliberately OUTSIDE the auth:sanctum group below — this endpoint
+// self-authorizes via a signed token (see PostController::makePreviewToken)
+// rather than the session cookie, because the beta-test preview loads
+// content into a sandboxed cross-origin iframe whose own subresource
+// requests (its <link>/<script src> tags) don't carry cookies. If this
+// route sat behind the auth middleware, those requests would 302 to
+// /login instead of reaching the token check at all.
+Route::get('/preview-project-asset/{token}/{path}', [PostController::class,'preview_project_asset'])->where('path', '.*');
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -57,6 +66,8 @@ Route::middleware([
             //User
             if($path=='get-all-users'){return app(CrudController::class)->get_all_users();}
             if($path=='get-requests'){return app(FriendsController::class)->get_requests();}
+            if($path=='get-friends'){return app(FriendsController::class)->get_friends();}
+            if($path=='get-suggestions'){return app(FriendsController::class)->get_suggestions();}
             if($path=='get_role'){return app(CrudController::class)->get_role();}
             //Post
             if($path=='get-posts'){return app(CrudController::class)->get_posts();}
@@ -67,6 +78,7 @@ Route::middleware([
             //Course
             if($path=='get_teachers'){return app(CourseController::class)->get_teachers();}
             if($path=='get-not-teachers'){return app(CourseController::class)->get_not_teachers();}
+            if($path=='get_courses'){return app(CourseController::class)->get_courses();}
         }
         else{
             if($path=='startup'){return view('startup');}
@@ -76,6 +88,19 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    // Two path segments, so it never collides with the single-segment
+    // '/{path}' catch-all above (which is what still serves '/puzzle'
+    // itself) — no extra ordering care needed because of that.
+    Route::get('/puzzle/bug-hunter', function () {
+        return view('bug_hunter');
+    })->name('bug_hunter');
+    Route::get('/bug-hunter/progress', [BugHunterController::class, 'progress']);
+    Route::post('/bug-hunter/complete', [BugHunterController::class, 'complete']);
+    Route::get('/bug-hunter/my-courses', [BugHunterController::class, 'myCourses']);
+    Route::post('/bug-hunter/submit-challenge', [BugHunterController::class, 'submitChallenge']);
+    Route::get('/bug-hunter/submissions', [BugHunterController::class, 'submissions']);
+    Route::get('/bug-hunter/puzzle/{id}', [BugHunterController::class, 'puzzle']);
+    Route::post('/bug-hunter/report/{id}', [BugHunterController::class, 'report']);
     //Views
     //Route::get('/puzzle', function () { return view('puzzle');});
     //Route::get('/invitation', function () { return view('invitation_posts');});
@@ -91,6 +116,8 @@ Route::middleware([
     Route::put('/group/{groupId}/roles/{roleId}',[GroupController::class,'update_group_role'])->name('update_group_role');
     Route::delete('/group/{groupId}/roles/{roleId}',[GroupController::class,'delete_group_role'])->name('delete_group_role');
     Route::post('/group/{groupId}/members/{userId}/roles',[GroupController::class,'set_member_roles'])->name('set_member_roles');
+    Route::get('/group/{groupId}/folder-roles',[GroupController::class,'get_folder_roles'])->name('get_folder_roles');
+    Route::post('/group/{groupId}/folder-roles',[GroupController::class,'set_folder_roles'])->name('set_folder_roles');
     Route::get('/group/{groupId}/todos',[GroupController::class,'get_group_todos'])->name('group_todos');
     Route::post('/group/{groupId}/todos',[GroupController::class,'store_group_todo'])->name('store_group_todo');
     Route::put('/group/{groupId}/todos/{todoId}',[GroupController::class,'update_group_todo'])->name('update_group_todo');
@@ -106,6 +133,8 @@ Route::middleware([
     //Route::get('/get-requests', [FriendsController::class, 'get_requests'])->name('get_requests');
     //Route::get('/get_role',[CrudController::class,'get_role']);
     Route::get('/add-friend/{user_id}', [FriendsController::class, 'add_friend'])->name('add_friend');
+    Route::post('/accept-friend/{user_id}', [FriendsController::class, 'accept_friend'])->name('accept_friend');
+    Route::post('/decline-friend/{user_id}', [FriendsController::class, 'decline_friend'])->name('decline_friend');
     Route::get('/read_notification/{id}', [NotificationsController::class, 'read_notification'])->name('read_notification');
     Route::post('/upload_user', [StartupController::class, 'upload_user']);
     //Post
@@ -125,16 +154,23 @@ Route::middleware([
     Route::post('/edit-comment', [PostController::class, 'edit_comment']);
     Route::post('/project_code',[PostController::class,'project_code']);
     Route::post('/get-code',[PostController::class,'get_code']);
+    // Throttled — this proxies to a shared public code-execution API
+    // (Piston), so an unbounded loop of Run clicks would burn through their
+    // rate limit for every user of this app, not just the one clicking.
+    Route::post('/run-code', [PostController::class,'run_code'])->middleware('throttle:12,1');
     Route::post('/update-project-file',[PostController::class,'update_project_file']);
     Route::post('/delete-project-file',[PostController::class,'delete_project_file']);
     Route::post('/create-project-folder',[PostController::class,'create_project_folder']);
     Route::post('/add-project-files',[PostController::class,'add_project_files']);
+    Route::post('/download-project-files',[PostController::class,'download_project_files']);
     
     //Course
     //Route::get('/get_teachers',[CourseController::class,'get_teachers'])->name('get_teachers');
     //Route::get('/get-not-teachers',[CourseController::class,'get_not_teachers']);
     Route::post('/add_teacher',[CourseController::class,'add_teacher'])->name('add_teacher');
     Route::post('/add_course',[CourseController::class,'add_course'])->name('add_course');
+    Route::put('/update_course/{id}',[CourseController::class,'update_course'])->name('update_course');
+    Route::delete('/delete_course/{id}',[CourseController::class,'delete_course'])->name('delete_course');
 
     //Stories
     // GET /get-stories is handled by the /{path} catch-all above instead

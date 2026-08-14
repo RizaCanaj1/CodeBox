@@ -1,0 +1,112 @@
+/*
+ * Puzzle hub — mode picker. The actual gameplay (Bug Hunter) lives on its
+ * own page/assets now (bug_hunter.blade.php / bug_hunter.js / bug_hunter.css)
+ * so this file only needs to style the hub itself.
+ */
+
+.puzzle-shell{
+    max-width: 900px;
+    margin: 48px auto;
+    padding: 0 16px 48px;
+    color: var(--t-text);
+    text-align: center;
+}
+
+.puzzle-hero{
+    margin-bottom: 44px;
+}
+.puzzle-hero-icon{
+    font-size: 2.2rem;
+    color: var(--t-accent);
+    margin-bottom: 14px;
+}
+.puzzle-hero h1{
+    margin: 0 0 12px;
+    font-size: 1.8rem;
+}
+.puzzle-hero p{
+    margin: 0 auto;
+    max-width: 560px;
+    color: var(--t-text-dim);
+    line-height: 1.55;
+}
+
+.puzzle-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+.puzzle-card{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 16px;
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    text-decoration: none;
+    font: inherit;
+    color: inherit;
+    cursor: default;
+    opacity: 0.75;
+    transition: opacity .15s ease, transform .15s ease, border-color .15s ease;
+}
+.puzzle-card:hover{
+    opacity: 1;
+    transform: translateY(-2px);
+    border-color: var(--t-accent);
+}
+.puzzle-card i{
+    font-size: 1.6rem;
+    color: var(--t-text-faint);
+}
+.puzzle-card h4{
+    margin: 4px 0 0;
+    font-size: 1rem;
+    color: var(--t-text);
+}
+.puzzle-card p{
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--t-text-faint);
+    line-height: 1.4;
+}
+.puzzle-soon{
+    margin-top: 6px;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* Bug Hunter — the one real, playable mode: full opacity, accent border,
+   cursor communicates it's clickable (it's an <a>, the others are inert). */
+.puzzle-card-live{
+    opacity: 1;
+    border-color: var(--t-accent);
+    cursor: pointer;
+}
+.puzzle-card-live i{
+    color: var(--t-accent);
+}
+.puzzle-live{
+    margin-top: 6px;
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 500px){
+    .puzzle-hero h1{ font-size: 1.5rem; }
+}

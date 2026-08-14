@@ -1,297 +1,337 @@
-*{
-    transition: all .3s;
+/*
+ * Courses page — full rebuild using the shared --t-* theme tokens (matches
+ * the dashboard/profile/applications/groups redesign) instead of the old
+ * Bootstrap-only 3-at-a-time carousel. Bootstrap isn't loaded here anymore,
+ * so a handful of small utility classes are defined locally (same pattern
+ * applications.css already uses).
+ */
+
+.d-none{ display: none !important; }
+.d-flex{ display: flex; }
+.gap-2{ gap: 8px; }
+.align-items-center{ align-items: center; }
+.justify-content-end{ justify-content: flex-end; }
+
+.course-shell{
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 16px 48px;
+    color: var(--t-text);
 }
 
-.twrapper {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 80% 20%;
-    transition: width .2s;
-}
-
-.twrapper:has(> .add_teacher_button.d-none ) {
-    grid-template-columns: 100%;
-    width: 100%;
-    animation:switch_twrapper .3s forwards;
-}
-@keyframes switch_twrapper {
-    from{ width: 80%;}
-    to{ width: 100%;}
-}
-.twrapper:has(> .add_teacher_button.shifting ) {
-    animation: switch_twrapper_reverse  .3s forwards;
-}
-@keyframes switch_twrapper_reverse {
-    from{ width: 100%;}
-    to{ width: 80%;}
-}
-.teachers{
-    transition: height 1s;
-    display: grid;
-    height: 325px;
-    overflow: hidden;
-    grid-template-columns: 33% 34% 33%;
-    grid-template-rows: auto;
-}
-.teacher{
-    transition: all 1s;
-    overflow: hidden;
-    width: 70%;
-    height: 300px;
-    background-color: rgb(228, 209, 206);
-}
-.teacher.middle:hover{
-    margin-left: -5%;
-}
-.teacher.right:hover{
-    margin-left: -10%;
-}
-.teachers:has(>.teacher:hover) {
-    height: 440px;
-}
-.teacher:hover{
-    width: 80%;
-    height: 440px;
-}
-.teacher.expanded:hover{
-    overflow: hidden;
-    height: fit-content;
-}
-.teacher .bio{
-    opacity: 0;
-    animation:change_opacity .5s forwards
-}
-@keyframes change_opacity {
-    to{opacity: 1;}
-}
-.teacher .bio .dots:hover{
-    cursor: pointer;
-    color: rgb(57, 133, 133);
-}
-.teacher:not(:hover) .bio,.teacher:not(:hover) .to_courses{
-    display: none;
-}
-.teacher .to_courses{
+.course-header{
     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
 }
-.teacher .to_courses .courses_btn{
+.course-header h1{
+    margin: 0 0 4px;
+    font-size: 1.7rem;
+}
+.course-header p{
+    margin: 0;
+    color: var(--t-text-dim);
+}
+
+.btn-add-teacher, .btn-add-course{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--t-accent);
+    color: #05130e;
+    border: none;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-add-teacher:hover, .btn-add-course:hover{
+    filter: brightness(1.05);
+}
+
+.teachers-section, .courses-section{
+    margin-bottom: 40px;
+}
+.teachers-section h2, .courses-section h2{
+    font-size: 1.2rem;
+    margin: 0 0 14px;
+}
+
+.teachers-row{
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+.teacher-card{
+    flex: 0 0 200px;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.teacher-card img{
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--t-border);
+}
+.teacher-card h4{
+    margin: 0;
+    font-size: 0.95rem;
+}
+.teacher-card h4 a{
+    color: var(--t-text);
+    text-decoration: none;
+}
+.teacher-card h4 a:hover{
+    color: var(--t-accent);
+}
+.teacher-bio{
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--t-text-faint);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.teacher-courses-btn{
+    margin-top: 4px;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: 1px solid var(--t-border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
     cursor: pointer;
 }
-.teacher img{
-    width: 200px;
+.teacher-courses-btn:hover{
+    border-color: var(--t-accent);
+    color: var(--t-accent);
+}
+
+.courses-section-head{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.courses-section-head h2{
+    margin: 0;
+    flex: 1;
+}
+.courses-filter{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+}
+.clear-filter{
+    background: none;
+    border: 1px solid currentColor;
+    color: inherit;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.76rem;
+    cursor: pointer;
+}
+
+.empty-note{
+    color: var(--t-text-faint);
+    font-size: 0.9rem;
+}
+
+.courses-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+    margin-top: 16px;
+}
+.course-card{
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.course-card img{
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    background: var(--t-surface-2);
+}
+.course-card-body{
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.course-card-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+.course-card-head h4{
+    margin: 0;
+    font-size: 1.02rem;
+}
+.course-price{
+    font-weight: 700;
+    color: var(--t-accent);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+.course-teacher{
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--t-text-faint);
+}
+.course-teacher a{
+    color: var(--t-text-dim);
+}
+.course-description{
+    margin: 4px 0;
+    font-size: 0.85rem;
+    color: var(--t-text-dim);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.course-chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+.course-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.74rem;
+}
+.course-actions{
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+.course-edit-btn, .course-delete-btn{
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
+    border: none;
+    cursor: pointer;
 }
-.teacher a{
-    text-decoration: none;
-    color: black;
+.course-edit-btn:hover{
+    background: var(--t-accent-soft);
+    color: var(--t-accent);
 }
-.teacher img:hover{
-    width: 200px;
-    border-radius: 0%;
+.course-delete-btn:hover{
+    background: var(--t-accent-2-soft);
+    color: var(--t-accent-2);
 }
-.add_teacher #bio {
-    resize: none;
-}
-.form_add_teacher{
-    border: 2px solid rgba(20,20,20,.3);
-    border-radius: 15px;
-    transition: all .3s;
-    position: absolute;
+
+/* ---------- Add/Edit modals (Teacher + Course share this look) ---------- */
+.course_modal{
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    opacity: 0;
-    animation: show_form .4s forwards;
-    box-shadow: 0px 0px 10px 2px black;
+    z-index: 1000;
+    background: var(--t-surface);
+    border: 1px solid var(--t-border);
+    border-radius: 14px;
+    padding: 22px;
+    width: min(480px, 92vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--t-shadow);
+    color: var(--t-text);
 }
-@keyframes show_form {
-    to{opacity: 1;}
+.course_modal::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--t-overlay);
+    z-index: -1;
 }
-
-.add_teacher_button{
+.confirm_modal_head strong{
+    font-size: 1.1rem;
+}
+.course_form{
     display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all .4s;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
 }
-.twrapper:has(.teachers[data-quantity='0']) .add_teacher_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -400%;
-}
-.twrapper:has(.teachers[data-quantity='1']) .add_teacher_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -275%;
-}
-.twrapper:has(.teachers[data-quantity='2']) .add_teacher_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -150%;
-}
-.add_teacher_button .btn-add-t{
-    height: 100px;
-    width: 100px;
-    border-radius: 50%;
-}
-.add_teacher_button .btn-add-t:hover{
-    border-color: rgb(250, 57, 57);
-    background-color: rgb(255, 96, 96);
-}
-.add_teacher{
-    border-radius: 15px;
-    display: inline-block;
-    background-color: rgb(255, 255, 255);
-}
-.twrapper .more_teachers{
-    margin-left: -10%;
-}
-.twrapper .btn-more-teachers{
-    width: 20%;
-}
-.cwrapper {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 80% 20%;
-    transition: width .2s;
-}
-
-.cwrapper:has(> .add_course_button.d-none ) {
-    grid-template-columns: 100%;
-    width: 100%;
-    animation:switch_cwrapper .3s forwards;
-}
-@keyframes switch_cwrapper {
-    from{ width: 80%;}
-    to{ width: 100%;}
-}
-.cwrapper:has(> .add_course_button.shifting ) {
-    animation: switch_cwrapper_reverse  .3s forwards;
-}
-@keyframes switch_cwrapper_reverse {
-    from{ width: 100%;}
-    to{ width: 80%;}
-}
-.courses:not([data-quantity='0']){
-    transition: height 1s;
-    display: grid;
-    height: 325px;
-    overflow: hidden;
-    grid-template-columns: 33% 34% 33%;
-    grid-template-rows: auto;
-}
-.course{
-    transition: all 1s;
-    overflow: hidden;
-    width: 70%;
-    height: 300px;
-    background-color: rgb(228, 209, 206);
-}
-.course.middle:hover{
-    margin-left: -5%;
-}
-.course.right:hover{
-    margin-left: -10%;
-}
-.courses:has(>.course:hover) {
-    height: 440px;
-}
-.course:hover{
-    width: 80%;
-    height: 440px;
-}
-.course.expanded:hover{
-    overflow: hidden;
-    height: fit-content;
-}
-.course .bio{
-    opacity: 0;
-    animation:change_opacity .5s forwards
-}
-.course .bio .dots:hover{
-    cursor: pointer;
-    color: rgb(57, 133, 133);
-}
-.course:not(:hover) .bio,.course:not(:hover) .to_courses{
-    display: none;
-}
-.course .to_courses{
+.course_form label{
     display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.82rem;
+    color: var(--t-text-dim);
+    flex: 1;
 }
-.course .to_courses .courses_btn{
+.course_form_row{
+    display: flex;
+    gap: 12px;
+}
+.course_form input, .course_form select, .course_form textarea{
+    border-radius: 8px;
+    border: 1px solid var(--t-border);
+    background: var(--t-surface-2);
+    color: var(--t-text);
+    padding: 8px 10px;
+    font-size: 0.88rem;
+    font-family: inherit;
+}
+.course_form_error{
+    color: var(--t-accent-2);
+    font-size: 0.82rem;
+    min-height: 1em;
+}
+.confirm_modal_actions .btn{
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 0.85rem;
     cursor: pointer;
 }
-.course img{
-    width: 200px;
-    border-radius: 50%;
+.confirm_modal_actions .btn-secondary{
+    background: var(--t-surface-2);
+    color: var(--t-text-dim);
 }
-.course a{
-    text-decoration: none;
-    color: black;
+.confirm_modal_actions .btn-success{
+    background: var(--t-accent);
+    color: #05130e;
+    font-weight: 600;
 }
-.course img:hover{
-    width: 200px;
-    border-radius: 0%;
-}
-.add_course #bio {
-    resize: none;
-}
-.form_add_course{
-    border: 2px solid rgba(20,20,20,.3);
-    border-radius: 15px;
-    transition: all .3s;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    animation: show_form .4s forwards;
-    box-shadow: 0px 0px 10px 2px black;
-}
-.add_course_button{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all .4s;
-}
-.cwrapper:has(.courses[data-quantity='0']) .add_course_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -400%;
-}
-.cwrapper:has(.courses[data-quantity='1']) .add_course_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -275%;
-}
-.cwrapper:has(.courses[data-quantity='2']) .add_course_button{
-    display: block;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: -150%;
-}
-.add_course_button .btn-add-c{
-    height: 100px;
-    width: 100px;
-    border-radius: 50%;
-}
-.add_course_button .btn-add-c:hover{
-    border-color: rgb(250, 57, 57);
-    background-color: rgb(255, 96, 96);
-}
-.add_course{
-    border-radius: 15px;
-    display: inline-block;
-    background-color: rgb(255, 255, 255);
-}
-.cwrapper .more_course{
-    margin-left: -10%;
-}
-.cwrapper .btn-more-course{
-    width: 20%;
+
+@media (max-width: 640px){
+    .course-header{ flex-direction: column; }
+    .course_form_row{ flex-direction: column; }
 }

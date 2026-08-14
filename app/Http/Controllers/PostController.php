@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class PostController extends Controller
@@ -241,8 +243,8 @@ class PostController extends Controller
             return response()->json(['message' => 'Your project is not found'], 404);
         }
 
-        $topFolder = $path !== '' ? (explode('/', ltrim($path, '/'))[0] ?? null) : null;
-        if (!$group->canManageFiles(auth()->id(), $topFolder)) {
+        $fullPath = $path !== '' ? ltrim($path, '/') : null;
+        if (!$group->canManageFiles(auth()->id(), $fullPath)) {
             return response()->json(['message' => 'You do not have permission to manage this folder'], 403);
         }
 
@@ -376,23 +378,59 @@ class PostController extends Controller
         if ($path === '' && $post !== null) {
             $allowedFolders = $post->allowedFoldersFor(auth()->id());
             if ($allowedFolders !== null) {
-                $result['contents'] = array_intersect_key($result['contents'], array_flip($allowedFolders));
-                $folderCount = 0;
-                $fileCount = 0;
-                foreach ($result['contents'] as $entry) {
-                    if ($entry['info']['type'] === 'directory') {
-                        $folderCount += 1 + $entry['folder_count'];
-                        $fileCount += $entry['file_count'];
-                    } else {
-                        $fileCount++;
-                    }
-                }
-                $result['folder_count'] = $folderCount;
-                $result['file_count'] = $fileCount;
+                $result = $this->filterTreeByAllowedPaths($result, $allowedFolders, '');
             }
         }
 
         return $result;
+    }
+
+    // Prunes $node's tree down to only entries a restricted member can
+    // reach: a file/folder is kept whole if its own path is granted
+    // (pathCoveredByAny — an ancestor restriction covers everything under
+    // it), and a folder that isn't itself granted is still kept — recursed
+    // and pruned — if something inside it is (pathHasAllowedDescendant),
+    // so e.g. restricting only "Alpha/Sub" still shows "Alpha" in the
+    // listing, just pruned down to "Sub". Recomputes folder_count/
+    // file_count from what's left, same aggregation the unfiltered build
+    // above already does.
+    private function filterTreeByAllowedPaths(array $node, array $allowedPaths, string $currentPath): array
+    {
+        $filtered = [];
+        foreach ($node['contents'] as $name => $entry) {
+            $childPath = $currentPath === '' ? $name : $currentPath . '/' . $name;
+            $isDirectory = $entry['info']['type'] === 'directory';
+
+            if (!$isDirectory) {
+                if (Posts::pathCoveredByAny($childPath, $allowedPaths)) {
+                    $filtered[$name] = $entry;
+                }
+                continue;
+            }
+
+            if (Posts::pathCoveredByAny($childPath, $allowedPaths)) {
+                $filtered[$name] = $entry;
+            } elseif (Posts::pathHasAllowedDescendant($childPath, $allowedPaths)) {
+                $pruned = $this->filterTreeByAllowedPaths($entry, $allowedPaths, $childPath);
+                if (!empty($pruned['contents'])) {
+                    $filtered[$name] = $pruned;
+                }
+            }
+        }
+
+        $node['contents'] = $filtered;
+        $node['folder_count'] = 0;
+        $node['file_count'] = 0;
+        foreach ($filtered as $entry) {
+            if ($entry['info']['type'] === 'directory') {
+                $node['folder_count'] += 1 + $entry['folder_count'];
+                $node['file_count'] += $entry['file_count'];
+            } else {
+                $node['file_count']++;
+            }
+        }
+
+        return $node;
     }
 
     public function get_code(Request $request)
@@ -420,11 +458,8 @@ class PostController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         $allowedFolders = $groupPost->allowedFoldersFor(auth()->id());
-        if ($allowedFolders !== null) {
-            $topFolder = explode('/', ltrim($filePosition, '/'))[0] ?? '';
-            if (!in_array($topFolder, $allowedFolders, true)) {
-                return response()->json(['message' => 'You do not have access to this folder'], 403);
-            }
+        if ($allowedFolders !== null && !Posts::pathCoveredByAny(ltrim($filePosition, '/'), $allowedFolders)) {
+            return response()->json(['message' => 'You do not have access to this folder'], 403);
         }
 
         $destinationPath = 'Group/' . $request->group_id . '/Code' . $filePosition;
@@ -435,7 +470,14 @@ class PostController extends Controller
             // the actual file content, not format_code()'s line-numbered
             // HTML built for the read-only viewer.
             if ($request->boolean('raw')) {
-                return response()->json(['code' => $rawContent], 200);
+                return response()->json([
+                    'code' => $rawContent,
+                    // Only meaningful for HTML (the beta-test preview), but
+                    // harmless to include unconditionally — CodeMirror's
+                    // raw-fetch-for-editing caller just ignores the extra
+                    // field.
+                    'preview_token' => $this->makePreviewToken((int) $request->group_id, (int) auth()->id()),
+                ], 200);
             }
             $formattedCode = $this->format_code($rawContent);
             return response()->json(['code' => $formattedCode], 200);
@@ -459,6 +501,162 @@ class PostController extends Controller
         return response()->json(['code' => Storage::disk('public')->get($filePath)]);
     }
 
+    // Signs a short-lived (group_id, user_id, expiry) token for
+    // preview_project_asset() below. That endpoint can't use the normal
+    // session-cookie auth check like get_code() does: the beta-test preview
+    // loads the HTML into a sandboxed `srcdoc` iframe WITHOUT
+    // `allow-same-origin` (deliberately — see renderPreview()'s comment in
+    // beta-test.js on why), which gives that document an opaque origin.
+    // Requests that document itself initiates (its own <link>/<script src>
+    // tags fetching sibling CSS/JS) are then treated as cross-site for
+    // SameSite cookie purposes and silently sent WITHOUT the session
+    // cookie — so a cookie-based auth check on those requests always fails,
+    // which is exactly why CSS/JS never loaded before this. A signed token
+    // baked into the URL path sidesteps cookies entirely while still
+    // enforcing the same access check (re-evaluated fresh at verify time,
+    // not just baked into the token, so a role change mid-session still
+    // takes effect).
+    private function makePreviewToken(int $groupId, int $userId): string
+    {
+        $expires = time() + 1800;
+        $payload = $groupId . '|' . $userId . '|' . $expires;
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        return rtrim(strtr(base64_encode($payload . '|' . $signature), '+/', '-_'), '=');
+    }
+
+    // Returns [groupId, userId] on success, null if the token is malformed,
+    // tampered with, or expired.
+    private function verifyPreviewToken(string $token): ?array
+    {
+        $decoded = base64_decode(strtr($token, '-_', '+/'), true);
+        if ($decoded === false) {
+            return null;
+        }
+        $parts = explode('|', $decoded);
+        if (count($parts) !== 4) {
+            return null;
+        }
+        [$groupId, $userId, $expires, $signature] = $parts;
+        $payload = $groupId . '|' . $userId . '|' . $expires;
+        $expected = hash_hmac('sha256', $payload, config('app.key'));
+        if (!hash_equals($expected, $signature) || (int) $expires < time()) {
+            return null;
+        }
+        return [(int) $groupId, (int) $userId];
+    }
+
+    // Serves a single raw file (any type — css/js/images/fonts, not just
+    // HTML) from a group's project tree with its real Content-Type, so a
+    // previewed HTML file's own relative <link>/<script src>/<img> tags
+    // resolve correctly against a <base> tag pointing here instead of
+    // rendering unstyled/broken. Same view-level access check as get_code()
+    // (any member, scoped to the folders their role allows), just
+    // re-derived from a signed token instead of the session — see
+    // makePreviewToken() above for why.
+    public function preview_project_asset($token, $path)
+    {
+        $verified = $this->verifyPreviewToken((string) $token);
+        if (!$verified) {
+            abort(403, 'This preview link has expired — reopen the file to refresh it');
+        }
+        [$group_id, $userId] = $verified;
+
+        $filePosition = '/' . ltrim((string) $path, '/');
+        if (!preg_match('/^[A-Za-z0-9_\-\/\.]+$/', $filePosition) || str_contains($filePosition, '..')) {
+            abort(422, 'Invalid file path');
+        }
+
+        $groupPost = Posts::find($group_id);
+        if (!$groupPost || !$groupPost->isAccessibleBy($userId)) {
+            abort(403);
+        }
+        $allowedFolders = $groupPost->allowedFoldersFor($userId);
+        if ($allowedFolders !== null && !Posts::pathCoveredByAny(ltrim($filePosition, '/'), $allowedFolders)) {
+            abort(403);
+        }
+
+        $storagePath = 'Group/' . $group_id . '/Code' . $filePosition;
+        if (!Storage::exists($storagePath)) {
+            abort(404);
+        }
+
+        $mimeTypes = [
+            'css' => 'text/css', 'js' => 'application/javascript', 'mjs' => 'application/javascript',
+            'json' => 'application/json', 'html' => 'text/html', 'htm' => 'text/html',
+            'svg' => 'image/svg+xml', 'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif', 'webp' => 'image/webp', 'ico' => 'image/x-icon',
+            'woff' => 'font/woff', 'woff2' => 'font/woff2', 'ttf' => 'font/ttf',
+        ];
+        $ext = strtolower(pathinfo($filePosition, PATHINFO_EXTENSION));
+        $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
+
+        return response(Storage::get($storagePath), 200)->header('Content-Type', $mime);
+    }
+
+    // Extension/mode name -> Piston's language identifier (piston-api.com,
+    // a free public code-execution sandbox — running arbitrary
+    // user-submitted code ourselves would mean building/maintaining our own
+    // container sandbox, well beyond what a single self-hosted app needs).
+    private const RUNNABLE_LANGUAGES = [
+        'js' => 'javascript', 'javascript' => 'javascript', 'mjs' => 'javascript',
+        'py' => 'python', 'python' => 'python',
+        'php' => 'php',
+        'cpp' => 'c++', 'cc' => 'c++', 'cxx' => 'c++', 'c++' => 'c++',
+        'c' => 'c',
+        'java' => 'java',
+        'cs' => 'csharp', 'csharp' => 'csharp',
+    ];
+
+    // Runs a snippet through Piston and returns stdout/stderr — used by the
+    // editor's "Run" button. Not tied to a saved project file: the client
+    // sends whatever's currently in the buffer (including unsaved edits),
+    // same as pressing Run in an online IDE.
+    public function run_code(Request $request)
+    {
+        $request->validate([
+            'language' => 'required|string',
+            'code' => 'required|string',
+            'stdin' => 'nullable|string',
+        ]);
+
+        $language = self::RUNNABLE_LANGUAGES[strtolower($request->language)] ?? null;
+        if (!$language) {
+            return response()->json(['message' => 'Running code is not supported for this file type yet'], 422);
+        }
+
+        // Cached — Piston's runtime list rarely changes and this avoids an
+        // extra round trip to their API on every single Run click.
+        $runtimes = Cache::remember('piston_runtimes', 3600, function () {
+            $response = Http::timeout(10)->get('https://emkc.org/api/v2/piston/runtimes');
+            return $response->successful() ? $response->json() : [];
+        });
+        $runtime = collect($runtimes)->firstWhere('language', $language);
+        if (!$runtime) {
+            return response()->json(['message' => 'The code runner is temporarily unavailable for this language'], 503);
+        }
+
+        $response = Http::timeout(15)->post('https://emkc.org/api/v2/piston/execute', [
+            'language' => $language,
+            'version' => $runtime['version'],
+            'files' => [['content' => $request->code]],
+            'stdin' => $request->input('stdin', ''),
+        ]);
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Failed to run your code — the runner may be busy, try again shortly'], 502);
+        }
+
+        $result = $response->json();
+        return response()->json([
+            'stdout' => $result['run']['stdout'] ?? '',
+            'stderr' => $result['run']['stderr'] ?? '',
+            // Compile-stage errors (C/C++/Java/C#) are separate from
+            // run-stage stderr — surfaced distinctly so a syntax error
+            // doesn't get mistaken for program output on stderr.
+            'compile_stderr' => $result['compile']['stderr'] ?? null,
+            'exit_code' => $result['run']['code'] ?? null,
+        ]);
+    }
+
     // Shared by update_project_file()/delete_project_file(): same
     // path-traversal guard as get_code(), plus a canManageFiles() check
     // (stricter than get_code()'s view-only isAccessibleBy()). Returns
@@ -476,8 +674,7 @@ class PostController extends Controller
             return response()->json(['message' => 'Your project is not found'], 404);
         }
 
-        $topFolder = explode('/', ltrim($filePosition, '/'))[0] ?? '';
-        if (!$group->canManageFiles(auth()->id(), $topFolder)) {
+        if (!$group->canManageFiles(auth()->id(), ltrim($filePosition, '/'))) {
             return response()->json(['message' => 'You do not have permission to manage this file'], 403);
         }
 
@@ -489,7 +686,10 @@ class PostController extends Controller
         $request->validate([
             'group_id' => 'required',
             'file_position' => 'required|string',
-            'content' => 'required|string',
+            // 'present' (not 'required') so an empty string is a valid
+            // value — otherwise a brand-new blank file, or clearing an
+            // existing file down to zero bytes, would fail validation.
+            'content' => 'present|string',
         ]);
 
         $resolved = $this->resolveManageableGroupFile($request->group_id, $request->file_position);
@@ -498,9 +698,12 @@ class PostController extends Controller
         }
         [, $storagePath] = $resolved;
 
-        if (!Storage::exists($storagePath)) {
-            return response()->json(['message' => 'Your file is not found'], 404);
-        }
+        // Upsert — Storage::put() already creates-or-overwrites, so this
+        // covers a normal save (existing file), "Save As" (writing the
+        // edited content to a brand new path the user just picked), and
+        // creating a brand-new blank file from the sidebar's "New file"
+        // button. Permission is still fully checked above, scoped to the
+        // target path's own top folder either way.
         if (!Storage::put($storagePath, $request->input('content'))) {
             return response()->json(['message' => 'Failed to save your file'], 500);
         }
@@ -532,6 +735,73 @@ class PostController extends Controller
         }
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    // Zips one or more files/folders from a group's Code/ tree and streams
+    // it back as a download — used for the file browser's per-file download
+    // icon (single file, no zip needed there — that path is handled
+    // client-side via get-code's raw content instead) as well as the
+    // multi-select and "download all" flows, which both funnel into this
+    // same endpoint with different path lists. Every path's top folder is
+    // independently checked against canDownloadFiles() — the whole request
+    // is rejected if any single path isn't permitted, rather than silently
+    // zipping only the allowed subset (which would be confusing: "why is
+    // this folder missing from my download?").
+    public function download_project_files(Request $request)
+    {
+        $request->validate([
+            'group_id' => 'required',
+            'paths' => 'required|array|min:1',
+            'paths.*' => 'string',
+        ]);
+
+        $group = Posts::find($request->group_id);
+        if (!$group) {
+            return response()->json(['message' => 'Your project is not found'], 404);
+        }
+
+        $codePrefix = 'Group/' . $request->group_id . '/Code';
+        $entries = [];
+        foreach ($request->input('paths') as $path) {
+            $path = (string) $path;
+            if ($path === '' || !preg_match('/^[A-Za-z0-9_\-\/\.]+$/', $path) || str_contains($path, '..')) {
+                return response()->json(['message' => 'Invalid file path'], 422);
+            }
+
+            if (!$group->canDownloadFiles(auth()->id(), ltrim($path, '/'))) {
+                return response()->json(['message' => 'You do not have permission to download this folder'], 403);
+            }
+
+            $storagePath = $codePrefix . $path;
+            if (!Storage::exists($storagePath) && !Storage::directoryExists($storagePath)) {
+                return response()->json(['message' => "File not found: {$path}"], 404);
+            }
+
+            $entries[] = ['path' => $path, 'storagePath' => $storagePath];
+        }
+
+        Storage::makeDirectory('tmp');
+        $zipPath = storage_path('app/tmp/download_' . uniqid() . '.zip');
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return response()->json(['message' => 'Failed to create zip'], 500);
+        }
+        foreach ($entries as $entry) {
+            if (Storage::directoryExists($entry['storagePath'])) {
+                foreach (Storage::allFiles($entry['storagePath']) as $file) {
+                    $relative = ltrim(substr($file, strlen($codePrefix)), '/');
+                    $zip->addFromString($relative, Storage::get($file));
+                }
+            } else {
+                $relative = ltrim($entry['path'], '/');
+                $zip->addFromString($relative, Storage::get($entry['storagePath']));
+            }
+        }
+        $zip->close();
+
+        $safeTitle = preg_replace('/[^A-Za-z0-9_\-]+/', '-', $group->title) ?: 'project';
+        return response()->download($zipPath, trim($safeTitle, '-') . '.zip')->deleteFileAfterSend(true);
     }
 
     public function format_code($code)

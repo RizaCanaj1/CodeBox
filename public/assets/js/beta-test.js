@@ -20,10 +20,42 @@ function showError(message){
     infoEl.textContent = message;
     infoEl.classList.add('text-danger');
 }
-function renderPreview(html){
+// Group-project preview only (postId previews are a single flat file with
+// no siblings to resolve) — points relative <link>/<script src>/<img> tags
+// in the previewed HTML at preview_project_asset() so the page doesn't
+// render unstyled/broken just because its CSS/JS live in sibling files.
+// Uses a signed token (from get-code's response) rather than the raw group
+// id — see PostController::makePreviewToken() for why a plain group id +
+// session cookie doesn't work here (the sandboxed iframe below can't send
+// cookies on its own subresource requests).
+function baseHrefFor(previewToken, currentFilePath){
+    const dir = currentFilePath.split('/').slice(0, -1).join('/');
+    return `/preview-project-asset/${previewToken}${dir}/`;
+}
+// Inserts the <base> tag right inside <head> (immediately after the opening
+// tag) rather than just prepending it to the whole document — prepending
+// ahead of a leading <!DOCTYPE>/<html> works in principle (the parser
+// relocates stray tags into an implied <head>), but real-world HTML files
+// are inconsistent enough about doctype/head formatting that inserting it
+// at a known-good spot is far more reliable than trusting recovery
+// behavior. Falls back to prepending only if no <head> tag exists at all.
+function withBaseTag(html, baseHref){
+    const baseTag = `<base href="${baseHref}">`;
+    const headMatch = html.match(/<head[^>]*>/i);
+    if(headMatch){
+        const insertAt = headMatch.index + headMatch[0].length;
+        return html.slice(0, insertAt) + baseTag + html.slice(insertAt);
+    }
+    const htmlMatch = html.match(/<html[^>]*>/i);
+    if(htmlMatch){
+        const insertAt = htmlMatch.index + htmlMatch[0].length;
+        return html.slice(0, insertAt) + `<head>${baseTag}</head>` + html.slice(insertAt);
+    }
+    return baseTag + html;
+}
+function renderPreview(html, baseHref){
     infoEl.textContent = filePath || '';
     const iframe = document.createElement('iframe');
-    iframe.style.border = 'none';
     // Scripts in the previewed HTML run in an opaque, unique origin — no
     // access to this app's cookies/DOM/session — since the content being
     // previewed is user-uploaded and would otherwise be a stored-XSS
@@ -36,7 +68,7 @@ function renderPreview(html){
     // at all. srcdoc sets the content declaratively before the frame even
     // loads, so no same-origin access is needed either way.
     iframe.setAttribute('sandbox', 'allow-scripts');
-    iframe.srcdoc = html;
+    iframe.srcdoc = baseHref ? withBaseTag(html, baseHref) : html;
     contentEl.appendChild(iframe);
 }
 
@@ -57,7 +89,7 @@ else if(groupId){
     .then(response => response.json().then(body => ({ok: response.ok, body})))
     .then(({ok, body}) => {
         if(!ok) throw new Error(body.message || "This file doesn't exist");
-        renderPreview(body.code);
+        renderPreview(body.code, baseHrefFor(body.preview_token, filePath));
     })
     .catch(error => showError(error.message));
 }

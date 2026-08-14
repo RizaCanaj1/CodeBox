@@ -25,10 +25,7 @@
                 
             </div>
             <div class='searchbar'>
-                <input type="text" placeholder='Search' class='form-control' onKeyUp="searchUp(event)">
-                <div class='search_results'>
-
-                </div>
+                <button type="button" class="search-toggle-btn" onclick="openSearchOverlay()" aria-label="Search" title="Search (Ctrl+K)"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
                 <button type="button" class="t-toggle" aria-pressed="false" title="Toggle day/night mode">

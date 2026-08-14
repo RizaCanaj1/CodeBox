@@ -34,6 +34,17 @@ function post_selection(selected){
     }
 
 }
+function renderBadges(badges){
+    const row = document.querySelector('.badges-row')
+    if(!row) return
+    if(!badges.length){ row.innerHTML = ''; return }
+    // Badge name/description are server-computed from numbers (post count,
+    // year, rank) — never raw user input — so no HTML escaping is needed
+    // for them specifically, unlike the bio/username fields elsewhere here.
+    row.innerHTML = badges.map(b => `<span class='badge-pill' style="--badge_color: ${b.color}" title="${b.description}">
+        <i class="${b.icon}"></i> ${b.name}
+    </span>`).join('')
+}
 profile_name.innerHTML=''
 fetch(`get-user/${user_id}`)
 .then(response=>{
@@ -43,7 +54,6 @@ fetch(`get-user/${user_id}`)
     return response.json();
 })
 .then(data=>{
-    console.log(data)
     document.querySelector('.profile-name').innerHTML=data.username
     if(data.profile){
         document.querySelector('.profile-image').src=`./storage/${data.profile}`
@@ -51,6 +61,7 @@ fetch(`get-user/${user_id}`)
     if(data.bio){
         bio.innerHTML=data.bio
     }
+    renderBadges(data.badges || [])
     if(data.social_media){
         data.social_media.forEach(s=>{
             contacts_element.innerHTML +=`<span class='removable-icons' id='${s.social_media}-icon'><a href="${s.media_link}" id='${s.social_media}-link'><i class="fa-brands fa-${s.social_media} fa-2x ${s.social_media}-icon"></i></a><span class='remove-btn d-none'></span></span>`

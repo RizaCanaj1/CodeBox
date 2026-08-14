@@ -29,6 +29,13 @@
     animation-duration: 1s;
     cursor: pointer;
     background-color: white;
+    /* The markup also carries Bootstrap's `d-flex justify-content-center`
+       for this, but Bootstrap is only loaded on SOME pages (not every page
+       that includes this shared nav) — set directly here so the logo
+       centers correctly regardless of which page it's rendered on. */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .CodeBox p{
     margin-top: 3px;
@@ -72,6 +79,23 @@
     width: 250px;
     height: 50px;
     gap: 60px;
+    /* The markup also carries Bootstrap's `d-flex` for this, but Bootstrap
+       is only loaded on SOME pages (not every page that includes this
+       shared nav) — without it, .nav-links falls back to plain block
+       layout and its .link children (each holding one icon) stack
+       vertically instead of sitting in a row. Set directly here so this
+       works regardless of which page it's rendered on; this also carries
+       through the @media override below since that block never touches
+       `display`.
+       Deliberately NOT setting align-items here (stretch, the flex
+       default, is what's wanted) — each .link's only content is its
+       absolutely-positioned <a> icon, so .link itself has ~zero natural
+       height. `stretch` still anchors that zero-height box at the
+       container's own top edge and the icon (top:0 relative to .link)
+       lines up correctly; `center` instead centers that zero-height box
+       in the middle of the 50px container, which shoves the icon down
+       from there and made it spill out below the navbar. */
+    display: flex;
 }
 .nav-links .link {
     position: relative;
@@ -138,23 +162,90 @@
 .navbar a:hover{
     color: white;
 }
+/* Search is now a single icon button at every viewport size — clicking it
+   opens the command-palette overlay built by search.js (see search.css)
+   instead of expanding an input inline here, so there's no wide input to
+   manage responsively any more. */
 .searchbar {
-    width: 20%;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
-.searchbar .form-control{
-    transition: all .2s;
-    border-radius: 15px;
+.search-toggle-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    flex-shrink: 0;
 }
-.searchbar .form-control:focus{
-    text-align: center;
-    border: 1px solid black;
-    color: white;
-    box-shadow: 0px 0px 0px 20px rgb(160, 160, 160) inset;
+.search-toggle-btn:hover{
+    background: rgba(0,0,0,0.06);
 }
-.searchbar .form-control:focus::placeholder{
-    text-align: center;
-    color: white;
+
+/* ---------- Responsive nav (shared with navigation-menu.blade.php) ----------
+   .nav-links/.CodeBox/.searchbar above were built assuming a desktop-width
+   navbar with no reflow behavior at all — narrower viewports had .nav-links'
+   hardcoded 250px/150px-offset absolute box collide with the logo and
+   squeeze the search input to nothing. Left the desktop rules above
+   untouched and only added narrower-viewport overrides here, so existing
+   desktop layout can't regress. Cutoff is 1024px (not the usual 768px
+   tablet breakpoint) — .nav-links' fixed 250px width + 150px offset only
+   has room next to a visible search input once the row is wider than
+   that. */
+@media (max-width: 1024px){
+    .nav-links{
+        position: static;
+        margin-left: 10px;
+        width: auto;
+        height: auto;
+        gap: 18px;
+    }
+    .nav-links a{
+        /* At desktop width this is `position: absolute`, which forces
+           block-level layout regardless of the <a> tag's default inline
+           display. `relative` doesn't — so without setting display
+           explicitly here, this stayed `inline`, and an inline element's
+           vertical padding doesn't properly participate in layout (it
+           paints outside the line box instead of sizing it), which is
+           what pushed the icon above the navbar's top edge here. */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        top: 0px;
+        padding: 8px;
+    }
+    .nav-links a.active,
+    .nav-links a:not(.active):hover{
+        top: 0px;
+    }
+    /* The hover/active "show label under the icon" animation assumes
+       spare vertical room and a mouse hover — neither holds up at this
+       width (no hover on touch, and the label would overlap the row
+       below), so it's suppressed rather than left to overlap. */
+    .nav-links a.active::before,
+    .nav-links a:not(.active):hover::before{
+        display: none;
+    }
+    .nav-links a i{
+        font-size: 1.15rem;
+    }
+    .CodeBox{
+        width: 38px;
+        height: 38px;
+        margin-top: 8px;
+    }
+    .CodeBox p{
+        font-size: 20px;
+    }
 }
+
 /* The rest of the old landing page's styles (.welcome, .first-text,
    .welcome_code, .second_section and their keyframes) were removed along
    with that page — see public/assets/css/welcome.css for the current
